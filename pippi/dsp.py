@@ -26,12 +26,13 @@ try:
     from _pippic import curve
     from _pippic import pulsar
     from _pippic import fold
-    from _pippic import env as cenv
     from _pippic import tone as wtone
     from _pippic import cycle as ccycle
 
 except ImportError:
     print 'Warning: could not import C dsp extensions'
+
+from _pippicython import env
 
 SAMPLING_RATE = 44100
 BIT_DEPTH = 16
@@ -433,55 +434,6 @@ def pan(slice, pan_pos=0.5, amp=1.0):
 
     slice = audioop.add(lslice, rslice, audio_params[1])
     return audioop.mul(slice, audio_params[1], amp)
-
-def env(audio_string, wavetype="sine", fullres=False, highval=1.0, lowval=0.0, wtype=0, amp=1.0, phase=0.0, offset=0.0, mult=1.0):
-    """ Temp wrapper for new env function \n
-        Purpose and Function of each parameter:
-          * wavetype: Specifies the wavetype that the original audio string is multiplied with
-                    * Options:
-                        *  sine/sine2pi
-                        *  cos/cos2pi
-                        *  hann
-                        *  tri
-                        *  saw/line
-                        *  isaw/phasor
-                        *  vary
-                        *  impulse
-                        *  square
-                        *  random
-          * fullres: Does not currently change the sound
-          * highval: Does not currently change the sound
-          * lowval: Does not currently change the sound
-          * wtype: Sets the wave type (0-8), but it is easier just to use the wavetype parameter
-          * amp: Changes the amplitude of the wave that the audio string is multiplied with
-          * phase: Changes the phase of the wave that the audio string is multiplied with
-          * offset: Offsets the wave that the audio string is multiplied with
-          * mult: A multiplier for the frequency of the wave that the original audio string is multiplied with.
-    """
-
-    # Quick and dirty mapping to transition to the new api
-    if wavetype == 'sine2pi' or wavetype == 'sine':
-        wtype = 0
-    elif wavetype == 'cos2pi' or wavetype == 'cos':
-        wtype = 1
-    elif wavetype == 'hann':
-        wtype = 2
-    elif wavetype == 'tri':
-        wtype = 3
-    elif wavetype == 'saw' or wavetype == 'line':
-        wtype = 4
-    elif wavetype == 'isaw' or wavetype == 'phasor':
-        wtype = 5
-    elif wavetype == 'vary':
-        wtype = 6
-    elif wavetype == 'impulse':
-        wtype = 7
-    elif wavetype == 'square':
-        wtype = 8
-    elif wavetype == 'random':
-        wtype = randint(0, 8)
-
-    return cenv(audio_string, int(wtype), float(amp), float(phase), float(offset), float(mult))
 
 def benv(sound, points):
     chunksize = mstf(3)

@@ -1,11 +1,11 @@
 from setuptools import setup, Extension
+from Cython.Build import cythonize
 
-pippic = Extension('_pippic', 
-        sources = ['src/pippi.c'], 
-        )
+pippic = Extension('_pippic', sources = ['src/pippi.c'])
+pippicython = Extension('_pippicython', sources = ['src/amplitude.pyx'])
 
 setup(name='pippi',
-        version='1.0b1-3',
+        version='1.0b2',
         description='Computer music with python',
         url='http://hecanjog.github.com/pippi',
 
@@ -28,7 +28,11 @@ setup(name='pippi',
         ],
 
         packages=['pippi'],
-        ext_modules=[ pippic ],
+
+        ext_modules=cythonize([ 
+            pippic, 
+            pippicython,
+        ]),
 
         data_files=[
             ('pippi', ['pippi/default.config'])
