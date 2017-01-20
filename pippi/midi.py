@@ -1,6 +1,7 @@
 import mido
 import multiprocessing as mp
-import dsp
+from . import dsp
+from . import tune
 
 def list_output_devices():
     return mido.get_output_names()
@@ -24,6 +25,7 @@ def validate_output_device_by_id(device_id, devices=None):
         return devices[device_id]
     except IndexError:
         return False
+
 
 def validate_output_device(device):
     return device in list_output_devices()
@@ -65,6 +67,9 @@ def input_log(ns, active=True):
     else:
         delattr(ns, 'midi_log_active')
 
+def get_output_device(device):
+    return mido.open_output(device)
+
 def device_scribe(device_name, ns):
     try:
         with mido.open_input(device_name) as incoming:
@@ -85,6 +90,7 @@ def device_scribe(device_name, ns):
     except IOError:
         dsp.log('Could not open MIDI device %s' % device_name)
 
+
 def register_midi_listener(device_name, ns):
     # check to see if this device has a listener already
     # start one up if not
@@ -94,7 +100,7 @@ def register_midi_listener(device_name, ns):
             listener.start()
             setattr(ns, '%s-listener' % device_name, listener.pid)
         except IOError:
-            dsp.log('Could not start listener for unknown MIDI device: %s' % device_name)
+            dsp.log('Could not start listener for MIDI device: %s' % device_name)
 
 def get_midi_readers(devices, mappings, ns):
     readers = {}
@@ -126,9 +132,45 @@ class MidiTrigger:
 
         return (None, None)
 
-class MidiWriter:
-    def __init__(self):
-        pass
+class MidiOutput:
+    def __init__(self, device=None):
+        self.playing = {}
+
+        if device is None:
+            self.config = config.init()
+            device = self.config.get('device', None)
+
+        self._out = mido.open_output(device)
+
+    def noteon(self, freq, amp, channel=0):
+        if channel not in self.playing:
+            self.playing[channel] = []
+
+        velocity = int(round(amp * 127.0))
+        note = int(round(tune.ftom(freq)))
+        self.playing[channel] += [ (note, velocity, channel) ]
+
+        self._out.send(mido.Message('note_on', note=note, velocity=velocity, channel=channel))
+
+    def stop(self, channel=None):
+        if channel is None:
+            voices = []
+            for c, v in self.playing.iteritems():
+                voices += v
+
+            self.playing = {}
+
+        else:
+            try:
+                voices = self.playing[channel]
+                del self.playing[channel]
+            except IndexError:
+                voices = []
+
+        for voice in voices:
+            self._out.send(mido.Message('note_off', note=voice[0], velocity=voice[1], channel=voice[2]))
+
+
 
 class MidiReader:
     def __init__(self, device_name, ns, offset=None, mappings=None):
@@ -185,3 +227,27 @@ class MidiReader:
                 velocity = default
 
         return velocity
+
+class MidiClock:
+    def __init__(self, device):
+        self.out = mido.open_output(device)
+        self.startmsg = mido.Message('start')
+        self.stopmsg = mido.Message('stop')
+        self.clockmsg = mido.Message('clock')
+
+    def start(self):
+        self.out.send(self.startmsg)
+
+    def stop(self):
+        self.out.send(self.stopmsg)
+
+    def tick(self):
+        self.out.send(self.clockmsg)
+
+class MidiNote:
+    def __init__(self, length=44100, note=60, freq=None, amp=None, velocity=127):
+        self.length = length
+        self.note = int(tune.ftom(freq)) if freq is not None else int(note)
+        self.velocity = int(round(amp * 127.0)) if amp is not None else int(velocity)
+
+

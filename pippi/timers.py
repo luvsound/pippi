@@ -36,11 +36,20 @@ except OSError:
     def monotonic():
         return time.time()
 
-def delay(length):
-    """ Length in frames """
-    
-    duration = dsp.fts(length)
-    start = monotonic()
 
-    while monotonic() < start + duration:
-        pass
+def get_delay_seconds(length):
+    seconds = dsp.fts(length)
+    busy_time = 0.02 # Final 0 - 20ms should be busy
+
+    if seconds > busy_time:
+        return seconds - busy_time, busy_time
+    else:
+        return 0, seconds
+
+
+def delay(length):
+    sleep_seconds, busy_seconds = get_delay_seconds(length)
+    time.sleep(sleep_seconds)
+    busy_start = monotonic()
+    while monotonic() < busy_start + busy_seconds:
+        time.sleep(0)

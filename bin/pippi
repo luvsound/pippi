@@ -11,7 +11,7 @@ import uuid
 import time
 from pippi import params
 
-from pippi import dsp, midi, config, osc
+from pippi import dsp, midi, config, osc, project
 from pippi.io import IOManager
 from pippi.params import ParamManager
 
@@ -77,9 +77,11 @@ List the number of voices for currently running instrument scripts.
                 self.params.get('octave', 3)
             )
         
-        if len(self.io.playing) > 0:
+        voice_info = self.io.get_voice_info()
+
+        if len(voice_info) > 0:
             print 'voices playing:'
-            for voice_id, instrument_name in self.io.playing.iteritems():
+            for voice_id, instrument_name in voice_info.iteritems():
                 print '    {} - {}'.format(voice_id, instrument_name)
             print
 
@@ -133,10 +135,11 @@ Usage:
         self.params.set('channel', int(cmd), 'global')
 
     def do_s(self, voice_id):
-        # stop flag in ns
-        self.params.set('%s-loop' % voice_id, False)
-        # remove from array (pop)
-        del self.io.playing[int(voice_id)]
+        if voice_id == '':
+            for voice_id, inst in self.io.get_voice_info().iteritems():
+                self.params.set('%s-loop' % voice_id, False)
+        else:
+            self.params.set('%s-loop' % voice_id, False)
 
     def do_reload(self, opt):
         if opt == 'on':
@@ -154,11 +157,12 @@ Usage:
         pass
 
 if __name__ == '__main__':
-    console = Pippi()
-
-    # Start looping command prompt
-    try:
-        console.cmdloop()
-    except KeyboardInterrupt:
-        exit()
+    if len(sys.argv) > 2 and sys.argv[1] == 'init':
+        project.init(sys.argv[2])                
+    else:
+        try:
+            console = Pippi()
+            console.cmdloop()
+        except KeyboardInterrupt:
+            exit()
 

@@ -22,11 +22,6 @@ setup(name='pippi',
 
         keywords = 'music dsp',
 
-        install_requires = [
-            'pyaudio',
-            'mido',
-        ],
-
         packages=['pippi'],
 
         ext_modules=cythonize([ 

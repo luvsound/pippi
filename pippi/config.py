@@ -1,3 +1,6 @@
+""" FIXME: this is a dumb way to do config
+"""
+
 import os
 import shutil
 
@@ -29,31 +32,31 @@ def parse(config_file):
 
     return parsed
 
-def init_user_config():
-    config_path = os.path.expanduser('~/pippi.config')
-    if not os.path.isfile(config_path):
-        shutil.copy(default_path, config_path)
+def create_config(path):
+    path = os.path.join(path, 'pippi.config')
+    if not os.path.isfile(path):
+        shutil.copy(default_path, path)
 
     config = {}
-    execfile(config_path, config)
+    execfile(path, config)
     return config
 
 def init():
     """ Look for a config file and load into dict, otherwise load defaults
     """
     config = None
-    user_config_path = os.path.expanduser('~/pippi.config')
-    local_config_path = os.getcwd() + '/pippi.config'
+    user_config_path = os.path.expanduser('~')
+    local_config_path = os.getcwd()
 
     # look for a local config file
-    if os.path.isfile(user_config_path):
+    if os.path.isfile(os.path.join(user_config_path, 'pippi.config')):
         config = parse(user_config_path)
 
-    if os.path.isfile(local_config_path):
+    if os.path.isfile(os.path.join(local_config_path, 'pippi.config')):
         config = parse(local_config_path)
 
     if config is None:
-        config = init_user_config()
+        config = create_config(user_config_path)
 
     return config
 

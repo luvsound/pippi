@@ -6,7 +6,6 @@ import time
 import __main__
 import multiprocessing as mp
 import midi
-import mido
 from params import ParamManager
 import config
 import seq
@@ -44,8 +43,9 @@ class IOManager:
             3: mp.Event(),  # 32nd note
         }
 
-        self.instruments             = self.findInstruments()
-        self.playing                = {}
+        self.instruments            = self.findInstruments()
+        self.playing                = self.manager.Namespace()
+        self.playing.voices         = {}
         self.osc_servers            = {}
 
     def startOscServer(self, port=None):
@@ -97,9 +97,29 @@ class IOManager:
         out = self.openAudioDevice()
         out.write(snd)
 
+    def register_voice_start(self, voice_id, instrument_name):
+        voice_id = str(voice_id)
+        if not hasattr(self.playing, voice_id):
+            voices = self.playing.voices
+            voices[voice_id] = instrument_name
+            self.playing.voices = voices
+            setattr(self.playing, voice_id, instrument_name)
+
+    def register_voice_stop(self, voice_id):
+        voice_id = str(voice_id)
+        if hasattr(self.playing, voice_id):
+            voices = self.playing.voices
+            del voices[voice_id]
+            self.playing.voices = voices
+            delattr(self.playing, voice_id)
+
+    def get_voice_info(self):
+        return self.playing.voices
+
     def play(self, instrument_name, voice_id, loop=False):
         # register info / id for `i` cmd
-        self.playing[voice_id] = instrument_name
+        self.register_voice_start(voice_id, instrument_name)
+
         p = mp.Process(target=self._play, args=(instrument_name, voice_id, loop))
         p.start()
 
@@ -146,15 +166,24 @@ class IOManager:
 
             if getattr(self.ns, 'reload', False) == True:
                 reload(inst)
-
+            
+            ####################################
+            # Wait for trigger if trigger is set
+            ####################################
+            triggered = False
             try:
+                dsp.log('Voice %s waiting for trigger...' % voice_id)
                 note_info = trigger.wait()
                 ctl['note'] = note_info
+                triggered = True
 
             except NameError:
                 pass
 
-            if self.params.get('%s-quantize' % voice_id, False):
+            ##############################################
+            # Wait for master clock tick if quantize is on
+            ##############################################
+            if hasattr(inst, 'QUANTIZE') and inst.QUANTIZE:
                 if not self.ns.grid:
                     bpm = self.params.get('bpm', 120)
                     self.startGrid(bpm)
@@ -163,6 +192,9 @@ class IOManager:
                 div = self.divs[div]
                 self.ticks[div].wait()
 
+            #####################
+            # sequence() playback
+            #####################
             if hasattr(inst, 'sequence'):
                 # Sequenced play
                 step, delay, msg = inst.sequence(ctl)
@@ -178,12 +210,18 @@ class IOManager:
                 if delay:
                     dsp.delay(delay)
 
-            else:
+            #####################
+            # play() playback
+            #####################
+            elif hasattr(inst, 'play'):
                 # spawn re-render
                 def _render(inst, ctl, ns, voice_id):
                     snd = inst.play(ctl)
                     setattr(ns, '%s-buffer' % voice_id, snd)
-
+                
+                ########################
+                # play() phrase playback
+                ########################
                 if hasattr(inst, 'phrase'):
                     phrase = inst.phrase(ctl)
                     ctl['phrase'] = phrase
@@ -205,6 +243,9 @@ class IOManager:
 
                         dsp.delay(delay_length)
 
+                #########################
+                # play() oneshot playback
+                #########################
                 else:
                     # End-to-end loop play
                     if not hasattr(self.ns, '%s-buffer' % voice_id):
@@ -215,13 +256,33 @@ class IOManager:
                     p = mp.Process(target=_render, args=(inst, ctl, self.ns, voice_id))
                     p.start()
 
-                    self._stream(snd)
+                    if triggered:
+                        dsp.log('Voice %s playback triggered' % voice_id)
+                        # We don't want playback to block the main loop when triggering with MIDI/OSC
+                        p = mp.Process(target=self._stream, args=(snd,))
+                        p.start()
+                    else:
+                        # Blocking playback will restart the loop when playback is done
+                        self._stream(snd)
 
+            #####################
+            # send() playback
+            #####################
+            elif hasattr(inst, 'send'):
+                print 'playing'
+                notes = inst.send(ctl)
+                midi_out = midi.get_output_device(inst.midiout)
+                print notes
+                for note in notes:
+                    print 'bout to play'
+                    midi.play_note(midi_out, note.length, note.note, note.velocity)
+                    print 'play note'
 
             count += 1
             once = False
 
         dsp.log('Stopping voice %s' % voice_id)
+        self.register_voice_stop(voice_id)
 
     def setupCtl(self, inst, voice_index=0):
         param_manager = ParamManager(self.ns)
@@ -305,17 +366,14 @@ class IOManager:
         count = 0
 
         if self.params.get('clock', 'off') == 'on':
-            out = mido.open_output(self.default_midi_device)
-            start = mido.Message('start')
-            stop = mido.Message('stop')
-            clock = mido.Message('clock')
-            out.send(start)
+            clock = midi.MidiClock(self.default_midi_device)
+            clock.start()
 
         while getattr(self.ns, 'grid', True):
             beat = dsp.bpm2frames(bpm) / 24
 
             if self.params.get('clock', 'off') == 'on':
-                out.send(clock)
+                clock.tick()
 
             if count % 24 == 0:
                 divs[24].set()
@@ -341,10 +399,12 @@ class IOManager:
             count += 1
 
         if self.params.get('clock', 'off') == 'on':
-            out.send(stop)
+            clock.stop()
 
     def set_bpm(self, bpm):
-        self.grid.terminate()
+        if self.ns.grid:
+            self.grid.terminate()
+
         self.startGrid(bpm)
  
     def open_alsa_pcm(self, device='default'):
