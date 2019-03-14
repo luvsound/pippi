@@ -9,7 +9,8 @@ ext_modules = cythonize([
         Extension('pippi.dsp', ['pippi/dsp.pyx']), 
         Extension('pippi.drummachine', ['pippi/drummachine.pyx']), 
         Extension('pippi.fx', ['pippi/fx.pyx'],
-            libraries=['soundpipe'], 
+            libraries=['soundpipe', 'm'], 
+            extra_compile_args=['-O3', '-ffast-math', '-march=native', '-fopenmp'],
             library_dirs=['/usr/local/lib'],
             include_dirs=['/usr/local/include']
         ),
