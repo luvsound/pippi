@@ -80,32 +80,34 @@ Flip-flopped back to using strings for name lookups when calling from python.
 So use eg `dsp.wt('sine')` instead of `dsp.wt(dsp.SINE)` or `sound.pan(0.1, method='gogins')` etc.
 
 Wavetable / window options are:
-    - `sine`
-    - `sinein`
-    - `sineout`
-    - `cos`
-    - `tri`
-    - `saw`
-    - `phasor`
-    - `rsaw`
-    - `hann`
-    - `hamm`
-    - `black` or `blackman`
-    - `bart` or `bartlett`
-    - `kaiser`
-    - `rnd`
-    - `line`
-    - `hannin`
-    - `hannout`
-    - `square`
-    - `sinc`
 
-And panning / interpolation types: 
-    - `linear`
-    - `trunc`
-    - `hermite`
-    - `constant`
-    - `gogins`
+- `sine`
+- `sinein`
+- `sineout`
+- `cos`
+- `tri`
+- `saw`
+- `phasor`
+- `rsaw`
+- `hann`
+- `hamm`
+- `black` or `blackman`
+- `bart` or `bartlett`
+- `kaiser`
+- `rnd`
+- `line`
+- `hannin`
+- `hannout`
+- `square`
+- `sinc`
+
+Panning types: 
+
+- `constant`
+- `linear`
+- `sine`
+- `gogins`
+
 
 #### Features
 
@@ -142,7 +144,7 @@ And panning / interpolation types:
     - Uses `mincer` for pitch shifting
     - Grainlength and grain density are no longer tightly coupled: no more `density` param. It is replaced with a `grainlength` value/wavetable and a `grid` value/wavetable.
     - Grain masking
-- Many params can be given as either a fixed-value float (like `1.3`), a built-in wavetable flag (like `dsp.HANNOUT` or `dsp.RND`), or a wavetable-like object (a list, numpy array, sound buffer, etc). EG a cloud frozen in time `Cloud(position=0.75)`, advancing linearly through time `Cloud(position=dsp.PHASOR)`, or interpolated through four points in time `Cloud(position=[0, 1, 0.25, 0.75])`.
+- Many params can be given as either a fixed-value float (like `1.3`), a built-in wavetable flag (like `hannout` or `rnd`), or a wavetable-like object (a list, numpy array, sound buffer, etc). EG a cloud frozen in time `Cloud(position=0.75)`, advancing linearly through time `Cloud(position='phasor')`, or interpolated through four points in time `Cloud(position=[0, 1, 0.25, 0.75])`.
 - A simple envelope follower interface on `SoundBuffer` which produces a `Wavetable` via `SoundBuffer.toenv()`, also available as `fx.envelope_follower()`
 - A `SoundBuffer`-to-`Wavetable` shortcut via `SoundBuffer.towavetable()`
 

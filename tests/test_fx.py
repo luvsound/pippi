@@ -13,6 +13,12 @@ class TestFx(TestCase):
         snd = snd + g
         snd.write('tests/renders/fx_vspeed.wav')
 
+    def test_crossfade(self):
+        snd1 = dsp.read('tests/sounds/linux.wav').cut(0, 3)
+        snd2 = dsp.read('tests/sounds/guitar10s.wav').cut(0, 3)
+        out = fx.crossfade(snd1, snd2, 'saw')
+        out.write('tests/renders/fx_crossfade.wav')
+
     def test_envelope_follower(self):
         snd = dsp.read('tests/sounds/linux.wav')
         osc = oscs.Osc('sine')
@@ -29,6 +35,28 @@ class TestFx(TestCase):
         out = osc.play(snd.dur)
         out = fx.widen(out, dsp.win('phasor', 0, 1))
         out.write('tests/renders/fx_widen_sine.wav')
+
+    def test_crush(self):
+        snd = dsp.read('tests/sounds/linux.wav')
+        out = fx.crush(snd)
+        out.write('tests/renders/fx_crush_linux.wav')
+
+        snd = dsp.read('tests/sounds/guitar1s.wav')
+        out = fx.crush(snd)
+        out.write('tests/renders/fx_crush_guitar.wav')
+
+    def test_crossover(self):
+        snd = dsp.read('tests/sounds/linux.wav')
+        amount = dsp.win('phasor', 0, 1)
+        smooth = 0.3
+        fade = dsp.win('rsaw', 0, 1)
+        out = fx.crossover(snd, amount, smooth, fade)
+        out.write('tests/renders/fx_crossover_linux.wav')
+
+        osc = oscs.Osc('sine', amp=0.2)
+        out = osc.play(snd.dur)
+        out = fx.crossover(out, amount, smooth, fade)
+        out.write('tests/renders/fx_crossover_sine.wav')
 
     def test_delay(self):
         snd = dsp.read('tests/sounds/guitar10s.wav')

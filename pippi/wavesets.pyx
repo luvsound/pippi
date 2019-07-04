@@ -9,7 +9,14 @@ from pippi.fx cimport _norm
 from pippi.dsp cimport _mag
 
 from libc.math cimport signbit
+from libc.stdlib cimport malloc, free
 import numpy as np
+
+cdef struct Wave:
+    unsigned int start
+    unsigned int end
+    int length
+    double mag
 
 cdef class Waveset:
     def __cinit__(
@@ -118,17 +125,34 @@ cdef class Waveset:
             self._slice(raw, end, length)
 
     cdef void _slice(Waveset self, double[:] raw, int start, int end):
+        cdef Wave* w = <Wave*>malloc(sizeof(Wave))
+        w.start = start
+        w.end = end
+        w.length = end-start
+
         cdef int waveset_length = end-start
         waveset = np.zeros(waveset_length, dtype='d')
         waveset = raw[start:end]
         self.wavesets += [ waveset ]
 
         self.max_length = max(self.max_length, waveset_length)
+        #self.max_length = max(self.max_length, w.length)
 
         if self.min_length == 0:
             self.min_length = waveset_length
+            #self.min_length = w.length
         else:
             self.min_length = min(self.min_length, waveset_length)
+            #self.min_length = min(self.min_length, w.length)
+
+
+    cpdef void interleave(Waveset self, Waveset source):
+        cdef int i = 0
+        cdef list interleaved = []
+        cdef int shortest = min(len(self), len(source))
+        for i in range(shortest):
+            interleaved += [ self.wavesets[i], source.wavesets[i] ]
+        self.wavesets = interleaved
 
     cpdef SoundBuffer stretch(Waveset self, object factor=2.0):
         cdef list out = []

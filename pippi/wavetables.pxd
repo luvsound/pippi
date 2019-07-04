@@ -35,6 +35,10 @@ cdef class Wavetable:
     cpdef void reverse(Wavetable self)
     cpdef Wavetable reversed(Wavetable self)
     cpdef Wavetable taper(Wavetable self, int length)
+    cpdef void scale(Wavetable self, double fromlow=*, double fromhigh=*, double tolow=*, double tohigh=*, bint log=*)
+    cpdef Wavetable scaled(Wavetable self, double fromlow=*, double fromhigh=*, double tolow=*, double tohigh=*, bint log=*)
+    cpdef void snap(Wavetable self, double mult=*, object pattern=*)
+    cpdef Wavetable snapped(Wavetable self, double mult=*, object pattern=*)
     cpdef void skew(Wavetable self, double tip)
     cpdef Wavetable skewed(Wavetable self, double tip)
     cpdef void normalize(Wavetable self, double amount=*)
@@ -68,6 +72,9 @@ cdef int HERMITE
 cdef int CONSTANT
 cdef int GOGINS
 cdef int SINC
+cdef int GAUSS
+cdef int GAUSSIN
+cdef int GAUSSOUT
 
 cdef int LEN_WINDOWS
 cdef int* ALL_WINDOWS

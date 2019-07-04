@@ -5,6 +5,7 @@ import numbers
 import random
 cimport cython
 from cython.parallel import prange
+import math
 from pippi.soundbuffer cimport SoundBuffer
 from pippi cimport wavetables
 from pippi.interpolation cimport _linear_point, _linear_pos
@@ -13,6 +14,124 @@ from pippi cimport soundpipe
 from cpython cimport bool
 
 cdef double MINDENSITY = 0.001
+
+cdef double[:,:] _crossfade(double[:,:] out, double[:,:] a, double[:,:] b, double[:] curve):
+    cdef unsigned int length = len(a)
+    cdef int channels = a.shape[1]
+    cdef double pos = 0
+    cdef double p = 0
+
+    for i in range(length):
+        pos = <double>i / <double>length
+        p = _linear_pos(curve, pos)
+        for c in range(channels):
+            out[i,c] = (a[i,c] * p) + (b[i,c] * (1-p))
+
+    return out
+
+cpdef SoundBuffer crossfade(SoundBuffer a, SoundBuffer b, object curve=None):
+    if len(a) != len(b):
+        raise TypeError('Lengths do not match')
+    if curve is None:
+        curve = 'saw'
+    cdef double[:] _curve = wavetables.Wavetable(curve, 0, 1).data
+    cdef double[:,:] out = np.zeros((len(a), a.channels), dtype='d')
+    return SoundBuffer(_crossfade(out, a.frames, b.frames, _curve), channels=a.channels, samplerate=a.samplerate)
+
+cpdef SoundBuffer crush(SoundBuffer snd, object bitdepth=None, object samplerate=None):
+    if bitdepth is None:
+        bitdepth = random.triangular(0, 16)
+    if samplerate is None:
+        samplerate = random.triangular(0, snd.samplerate)
+    cdef double[:,:] out = np.zeros((len(snd), snd.channels), dtype='d')
+    return SoundBuffer(soundpipe._bitcrush(snd.frames, out, <double>bitdepth, <double>samplerate, len(snd), snd.channels))
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef double[:,:] _distort(double[:,:] snd, double[:,:] out):
+    """ Non-linear distortion ported from supercollider """
+    cdef int i=0, c=0
+    cdef unsigned int framelength = len(snd)
+    cdef int channels = snd.shape[1]
+    cdef double s = 0
+
+    for i in range(framelength):
+        for c in range(channels):
+            s = snd[i,c]
+            if s > 0:
+                out[i,c] = s / (1.0 + abs(s))
+            else:
+                out[i,c] = s / (1.0 - s)
+
+    return out
+
+cpdef SoundBuffer distort(SoundBuffer snd):
+    """ Non-linear distortion ported from supercollider """
+    cdef double[:,:] out = np.zeros((len(snd), snd.channels), dtype='d')
+    return SoundBuffer(_distort(snd.frames, out))
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef double[:,:] _softclip(double[:,:] snd, double[:,:] out):
+    """ Soft clip ported from supercollider """
+    cdef int i=0, c=0
+    cdef unsigned int framelength = len(snd)
+    cdef int channels = snd.shape[1]
+    cdef double mags=0, s=0
+
+    for i in range(framelength):
+        for c in range(channels):
+            mags = abs(snd[i,c])
+            s = snd[i,c]
+            if mags <= 0.5:
+                out[i,c] = s
+            else:
+                out[i,c] = (mags - 0.25) / s
+
+    return out
+
+cpdef SoundBuffer softclip(SoundBuffer snd):
+    """ Soft clip ported from supercollider """
+    cdef double[:,:] out = np.zeros((len(snd), snd.channels), dtype='d')
+    return SoundBuffer(_softclip(snd.frames, out))
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef double[:,:] _crossover(double[:,:] snd, double[:,:] out, double[:] amount, double[:] smooth, double[:] fade):
+    """ Crossover distortion ported from the supercollider CrossoverDistortion ugen """
+    cdef int i=0, c=0
+    cdef unsigned int framelength = len(snd)
+    cdef int channels = snd.shape[1]
+    cdef double s=0, pos=0, a=0, f=0, m=0
+
+    for i in range(framelength):
+        pos = <double>i / <double>framelength
+        a = _linear_pos(amount, pos)
+        m = _linear_pos(smooth, pos)
+        f = _linear_pos(fade, pos)
+
+        for c in range(channels):
+            s = abs(snd[i,c]) - a
+            if s < 0:
+                s *= (1.0 + (s * f)) * m
+
+            if snd[i,c] < 0:
+                s *= -1
+
+            out[i,c] = s
+
+    return out
+
+cpdef SoundBuffer crossover(SoundBuffer snd, object amount, object smooth, object fade):
+    """ Crossover distortion ported from the supercollider CrossoverDistortion ugen """
+    cdef double[:] _amount = wavetables.to_window(amount)
+    cdef double[:] _smooth = wavetables.to_window(smooth)
+    cdef double[:] _fade = wavetables.to_window(fade)
+    cdef double[:,:] out = np.zeros((len(snd), snd.channels), dtype='d')
+    return SoundBuffer(_crossover(snd.frames, out, _amount, _smooth, _fade))
 
 @cython.boundscheck(False)
 @cython.wraparound(False)

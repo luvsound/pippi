@@ -8,3 +8,4 @@ from pippi.pulsar import Pulsar
 from pippi.pulsar2d import Pulsar2d
 from pippi.pluck import Pluck
 from pippi.alias import Alias
+from pippi.bar import Bar

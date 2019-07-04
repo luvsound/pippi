@@ -5,6 +5,11 @@ from Cython.Build import cythonize
 import numpy as np
 
 ext_modules = cythonize([
+        Extension('pippi.bar', ['pippi/bar.pyx'],
+            libraries=['soundpipe'], 
+            library_dirs=['/usr/local/lib'],
+            include_dirs=[np.get_include(), '/usr/local/include']
+        ),
         Extension('pippi.defaults', ['pippi/defaults.pyx']), 
         Extension('pippi.dsp', ['pippi/dsp.pyx']), 
         Extension('pippi.drummachine', ['pippi/drummachine.pyx']), 
@@ -20,6 +25,9 @@ ext_modules = cythonize([
             library_dirs=['/usr/local/lib'],
             include_dirs=['/usr/local/include']
         ),
+        Extension('pippi.lists', ['pippi/lists.pyx'],
+            include_dirs=[np.get_include()], 
+        ),
         Extension('pippi.sampler', ['pippi/sampler.pyx'],
             libraries=['soundpipe'], 
             library_dirs=['/usr/local/lib'],
@@ -27,7 +35,12 @@ ext_modules = cythonize([
         ),
         Extension('pippi.graph', ['pippi/graph.pyx']), 
         Extension('pippi.interpolation', ['pippi/interpolation.pyx']),
-
+        Extension('pippi.noise', ['pippi/noise.pyx'], 
+            include_dirs=[np.get_include()], 
+        ), 
+        Extension('pippi.shapes', ['pippi/shapes.pyx'], 
+            include_dirs=[np.get_include()], 
+        ), 
         Extension('pippi.oscs', ['pippi/oscs.pyx']), 
         Extension('pippi.dss', ['pippi/dss.pyx']), 
         Extension('pippi.fold', ['pippi/fold.pyx']), 

@@ -20,6 +20,37 @@ cdef double** memoryview2ftbls(double[:,:] snd):
 
     return tbls
 
+cdef double[:,:] _bitcrush(double[:,:] snd, double[:,:] out, double bitdepth, double samplerate, int length, int channels):
+    cdef sp_data* sp
+    cdef sp_bitcrush* bitcrush
+    cdef double sample = 0
+    cdef double crushed = 0
+    cdef int i=0, c=0
+
+    sp_create(&sp)
+
+    for c in range(channels):
+        sp_bitcrush_create(&bitcrush)
+        sp_bitcrush_init(sp, bitcrush)
+        bitcrush.bitdepth = bitdepth
+        bitcrush.srate = samplerate
+
+        for i in range(length):
+            sp_bitcrush_compute(sp, bitcrush, &snd[i,c], &crushed)
+            out[i,c] = crushed
+
+        sp_bitcrush_destroy(&bitcrush)
+
+    sp_destroy(&sp)
+
+    return out
+
+cpdef double[:,:] bitcrush(double[:,:] snd, double bitdepth, double samplerate):
+    cdef int length = <int>len(snd)
+    cdef int channels = <int>snd.shape[1]
+    cdef double[:,:] out = np.zeros((length, channels), dtype='d')
+    return _bitcrush(snd, out, bitdepth, samplerate, length, channels)
+
 cdef double[:,:] _butbp(double[:,:] snd, double[:,:] out, double[:] freq, int length, int channels):
     cdef sp_data* sp
     cdef sp_butbp* butbp
@@ -41,6 +72,7 @@ cdef double[:,:] _butbp(double[:,:] snd, double[:,:] out, double[:] freq, int le
 
         pos = 0
         for i in range(length):
+            pos = <double>i / <double>length
             butbp.freq = interpolation._linear_pos(freq, pos)
             sample = <double>snd[i,c]
             sp_butbp_compute(sp, butbp, &sample, &filtered)
@@ -373,5 +405,39 @@ cpdef double[:,:] paulstretch(double[:,:] snd, double windowsize, double stretch
     cdef int channels = <int>snd.shape[1]
     cdef double[:,:] out = np.zeros((outlength, channels), dtype='d')
     return _paulstretch(snd, out, windowsize, stretch, length, outlength, channels)
+
+cdef double[:,:] _bar(double[:,:] out, int length, double[:] amp, double stiffness, double decay, double leftclamp, double rightclamp, double scan, double barpos, double velocity, double width, double loss, int channels):
+    cdef sp_data* sp
+    cdef sp_bar* bar
+    cdef int i=0, c=0
+    cdef double t=1, output=0, pos=0, a=1
+
+    sp_create(&sp)
+
+    for c in range(channels):
+        sp_bar_create(&bar)
+        sp_bar_init(sp, bar, stiffness, loss)
+        bar.T30 = decay
+        bar.bcL = leftclamp
+        bar.bcR = rightclamp
+        bar.scan = scan
+        bar.pos = barpos
+        bar.vel = velocity
+        bar.wid = width
+
+        for i in range(length):
+            if i > 0:
+                t = 0 
+
+            sp_bar_compute(sp, bar, &t, &output)
+            pos = <double>i / <double>length
+            a = interpolation._linear_pos(amp, pos)
+            out[i,c] = output * a
+
+        sp_bar_destroy(&bar)
+
+    sp_destroy(&sp)
+
+    return out
 
 

@@ -17,6 +17,7 @@ from libc cimport math
 from pippi cimport interpolation, rand
 from pippi import graph
 from pippi.soundbuffer cimport SoundBuffer
+from pippi.lists cimport _scale, _snap_mult, _snap_pattern
 
 cdef int SINE = 0
 cdef int SINEIN = 17
@@ -39,6 +40,9 @@ cdef int RND = 11
 cdef int LINE = SAW
 cdef int PHASOR = SAW
 cdef int SINC = 23
+cdef int GAUSS = 24
+cdef int GAUSSIN = 25
+cdef int GAUSSOUT = 26
 
 cdef int LINEAR = 12
 cdef int TRUNC = 13
@@ -46,7 +50,7 @@ cdef int HERMITE = 14
 cdef int CONSTANT = 15
 cdef int GOGINS = 16
 
-cdef int LEN_WINDOWS = 14
+cdef int LEN_WINDOWS = 17
 cdef int* ALL_WINDOWS = [
             SINE, 
             SINEIN, 
@@ -61,7 +65,10 @@ cdef int* ALL_WINDOWS = [
             HAMM,
             BLACK,
             BART,
-            KAISER
+            KAISER,
+            GAUSS,
+            GAUSSIN,
+            GAUSSOUT,
         ]
 
 cdef int LEN_WAVETABLES = 6
@@ -106,9 +113,56 @@ cdef int to_flag(str value):
         'constant': CONSTANT, 
         'gogins': GOGINS, 
         'sinc': SINC,
+        'gauss': GAUSS,
+        'gaussin': GAUSSIN,
+        'gaussout': GAUSSOUT
     }
 
     return flags[value]
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef double[:] _gaussian(int length):
+    cdef double[:] out = np.zeros(length, dtype='d')
+    cdef int i=0
+    cdef double ax=0, nn=0
+
+    nn = 0.5 * (length-1)
+    for i in range(length):
+        ax = (i-nn) / 0.3 / nn
+        out[i] = math.exp(-0.5 * ax * ax)
+
+    return out
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef double[:] _gaussian_in(int length):
+    cdef double[:] out = np.zeros(length, dtype='d')
+    cdef int i=0
+    cdef double ax=0
+
+    for i in range(length):
+        ax = (<double>(length-i) / <double>length) * 4.0
+        out[i] = math.exp(-0.5 * ax * ax)
+
+    return out
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef double[:] _gaussian_out(int length):
+    cdef double[:] out = np.zeros(length, dtype='d')
+    cdef int i=0
+    cdef double ax=0
+
+    for i in range(length):
+        ax = (<double>i / <double>length) * 4.0
+        out[i] = math.exp(-0.5 * ax * ax)
+
+    return out
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -545,6 +599,46 @@ cdef class Wavetable:
     cpdef Wavetable taper(Wavetable self, int length):
         return self * _adsr(len(self), length, 0, 1, length)
 
+    cpdef void scale(Wavetable self, double fromlow=-1, double fromhigh=1, double tolow=0, double tohigh=1, bint log=False):
+        self.data = _scale(self.data, self.data, fromlow, fromhigh, tolow, tohigh, log)
+
+    cpdef Wavetable scaled(Wavetable self, double fromlow=-1, double fromhigh=1, double tolow=0, double tohigh=1, bint log=False):
+        cdef double[:] out = np.zeros(len(self.data), dtype='d')
+        return Wavetable(_scale(out, self.data, fromlow, fromhigh, tolow, tohigh, log))
+
+    cpdef void snap(Wavetable self, double mult=0, object pattern=None):
+        if mult <= 0 and pattern is None:
+            raise ValueError('Please provide a valid quantization multiple or pattern')
+
+        cdef unsigned int length = len(self.data)
+        cdef double[:] out = np.zeros(length, dtype='d')
+
+        if mult > 0:
+            self.data = _snap_mult(out, self.data, mult)
+            return
+
+        if pattern is None or (pattern is not None and len(pattern) == 0):
+            raise ValueError('Invalid (empty) pattern')
+
+        cdef double[:] _pattern = to_window(pattern)
+        self.data = _snap_pattern(out, self.data, _pattern)
+
+    cpdef Wavetable snapped(Wavetable self, double mult=0, object pattern=None):
+        if mult <= 0 and pattern is None:
+            raise ValueError('Please provide a valid quantization multiple or pattern')
+
+        cdef unsigned int length = len(self.data)
+        cdef double[:] out = np.zeros(length, dtype='d')
+
+        if mult > 0:
+            return Wavetable(_snap_mult(out, self.data, mult))
+
+        if pattern is None or (pattern is not None and len(pattern) == 0):
+            raise ValueError('Invalid (empty) pattern')
+
+        cdef double[:] _pattern = to_window(pattern)
+        return Wavetable(_snap_pattern(out, self.data, _pattern))
+
     cpdef void skew(Wavetable self, double tip):
         self.data = _seesaw(self.data, len(self.data), tip)
 
@@ -701,6 +795,15 @@ cdef double[:] _window(int window_type, int length):
     elif window_type == SINC:
         wt = np.sinc(np.linspace(-15, 15, length, dtype='d'))
 
+    elif window_type == GAUSS:
+        wt = _gaussian(length) 
+
+    elif window_type == GAUSSIN:
+        wt = _gaussian_in(length) 
+
+    elif window_type == GAUSSOUT:
+        wt = _gaussian_out(length) 
+
     else:
         wt = _window(SINE, length)
 
@@ -804,6 +907,9 @@ cpdef double[:] to_window(object w, int wtsize=4096):
     elif isinstance(w, SoundBuffer):
         wt = np.ravel(np.array(w.remix(1).frames, dtype='d'))
 
+    elif isinstance(w, list):
+        wt = np.array(w, dtype='d')
+
     else:
         wt = interpolation._linear(array('d', w), wtsize)
 
@@ -821,11 +927,14 @@ cpdef double[:] to_wavetable(object w, int wtsize=4096):
     elif isinstance(w, numbers.Real):
         wt = np.full(1, w, dtype='d')
 
+    elif isinstance(w, Wavetable):
+        wt = w.data
+
     elif isinstance(w, SoundBuffer):
         wt = np.ravel(np.array(w.remix(1).frames, dtype='d'))
 
-    elif isinstance(w, Wavetable):
-        wt = w.data
+    elif isinstance(w, list):
+        wt = np.array(w, dtype='d')
 
     else:
         wt = interpolation._linear(array('d', w), wtsize)

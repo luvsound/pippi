@@ -1,9 +1,10 @@
 import random
 from unittest import TestCase
 
-from pippi.oscs import Osc, Osc2d, Pulsar, Pulsar2d, Alias
+from pippi.oscs import Osc, Osc2d, Pulsar, Pulsar2d, Alias, Bar
 from pippi.soundbuffer import SoundBuffer
-from pippi import dsp
+from pippi.wavesets import Waveset
+from pippi import dsp, fx
 
 class TestOscs(TestCase):
     def test_create_sinewave(self):
@@ -117,6 +118,18 @@ class TestOscs(TestCase):
         out.write('tests/renders/osc_pulsar2d.wav')
         self.assertEqual(len(out), int(length * out.samplerate))
 
+    def test_waveset_pulsar2d(self):
+        rain = dsp.read('tests/sounds/rain.wav').cut(0, 10)
+        ws = Waveset(rain)
+        ws.normalize()
+        osc = Pulsar2d(ws,
+                windows=['sine'], 
+                freq=200.0, 
+                amp=0.2
+            )
+        out = osc.play(60)
+        out.write('tests/renders/osc_waveset_pulsar2d.wav')
+
     def test_create_alias(self):
         osc = Alias(freq=200.0)
         length = 1
@@ -124,4 +137,29 @@ class TestOscs(TestCase):
         out.write('tests/renders/osc_alias.wav')
         self.assertEqual(len(out), int(length * out.samplerate))
 
+    def test_create_bar(self):
+        length = 60
+        out = dsp.buffer(length=length)
+
+        params = [(0.21, 1, 0), (0.3, 0.9, 0.5), (0.22, 0.8, 1)]
+
+        for beat, inc, pan in params:
+            pos = 0
+            stiffness = 280
+            while pos < length:
+                duration = dsp.rand(1, 4)
+                decay = dsp.rand(0.1, 10)
+                velocity = dsp.rand(500, 2000)
+                barpos = dsp.rand(0.2, 0.8)
+                width = dsp.rand(0.1, 0.8)
+                stiffness = max(1, stiffness)
+
+                note = Bar(decay=decay, stiffness=stiffness, velocity=velocity, barpos=barpos, width=width).play(duration).env('hannout').pan(pan)
+                out.dub(note, pos)
+                pos += beat
+                stiffness -= inc
+
+        out = fx.norm(out, 1)
+
+        out.write('tests/renders/osc_bar.wav')
 

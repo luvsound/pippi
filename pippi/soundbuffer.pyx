@@ -864,8 +864,6 @@ cdef class SoundBuffer:
             if phase >= framelength:
                 break
 
-        phase -= phase_inc * speed
-
         return SoundBuffer(out[0:i], channels=self.channels, samplerate=self.samplerate)
 
     cpdef SoundBuffer stretch(SoundBuffer self, double length, object position=None, double amp=1.0):

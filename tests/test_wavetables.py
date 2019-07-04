@@ -85,6 +85,18 @@ class TestWavetables(TestCase):
         wt = dsp.wt('square')
         wt.graph('tests/renders/graph_square_wavetable.png', stroke=3)
 
+    def test_graph_gauss_window(self):
+        wt = dsp.win('gauss')
+        wt.graph('tests/renders/graph_gauss_window.png', stroke=3)
+
+    def test_graph_gaussin_window(self):
+        wt = dsp.win('gaussin')
+        wt.graph('tests/renders/graph_gaussin_window.png', stroke=3)
+
+    def test_graph_gaussout_window(self):
+        wt = dsp.win('gaussout')
+        wt.graph('tests/renders/graph_gaussout_window.png', stroke=3)
+
     def test_graph_sinein_window(self):
         wt = dsp.win('sinein')
         wt.graph('tests/renders/graph_sinein_window.png', stroke=3)

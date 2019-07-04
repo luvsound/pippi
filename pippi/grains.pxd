@@ -1,10 +1,9 @@
 #cython: language_level=3
 
 #from pippi.ugens.core cimport ugen_t
-from pippi.soundpipe cimport *
 
 cdef class Cloud:
-    cdef double** snd
+    cdef double[:,:] snd
     cdef unsigned int framelength
     cdef double length
     cdef unsigned int channels
@@ -20,15 +19,6 @@ cdef class Cloud:
     cdef double[:] jitter
     cdef double[:] grainlength
     cdef double[:] grid
-
-    cdef double[:] lpf
-    cdef bint has_lpf
-
-    cdef double[:] hpf
-    cdef bint has_hpf
-
-    cdef double[:] bpf
-    cdef bint has_bpf
 
     cdef int[:] mask
     cdef bint has_mask

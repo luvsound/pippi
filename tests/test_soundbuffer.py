@@ -59,6 +59,17 @@ class TestSoundBuffer(TestCase):
         self.assertTrue(len(snd) == 4096)
         self.assertTrue(snd[100][0] != 0)
 
+    def test_stack_soundbuffer(self):
+        snd1 = SoundBuffer(filename='tests/sounds/guitar1s.wav')
+        snd2 = SoundBuffer(filename='tests/sounds/LittleTikes-A1.wav')
+        channels = snd1.channels + snd2.channels
+        length = max(len(snd1), len(snd2))
+        out = dsp.stack([snd1, snd2])
+        self.assertTrue(channels == out.channels)
+        self.assertTrue(length == len(out))
+        self.assertTrue(snd1.samplerate == out.samplerate)
+        out.write('tests/renders/soundbuffer_stack.wav')
+
     def test_convolve_soundbuffer(self):
         sound = SoundBuffer(filename='tests/sounds/guitar1s.wav')
 

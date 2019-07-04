@@ -13,6 +13,7 @@ from pippi.soundbuffer cimport SoundBuffer
 from pippi.wavetables cimport Wavetable, _randline
 from pippi cimport rand as _rand
 from pippi import drummachine as dm
+from pippi cimport lists
 
 # Just a shorthand for MS in scripts. 
 # For example:
@@ -42,6 +43,14 @@ cdef double _mag(double[:,:] snd):
 cpdef double mag(SoundBuffer snd):
     return _mag(snd.frames)
 
+cpdef list scale(list source, double fromlow=-1, double fromhigh=1, double tolow=0, double tohigh=1, bint log=False):
+    cdef unsigned int length = len(source)
+    cdef double[:] out = np.zeros(length, dtype='d')
+    cdef double[:] _source = np.array(source, dtype='d')
+    return np.array(lists._scale(out, _source, fromlow, fromhigh, tolow, tohigh, log), dtype='d').tolist()
+
+cpdef list snap(list source, double mult=0, object pattern=None):
+    return lists.snap(source, mult, pattern)
 
 cpdef SoundBuffer mix(list sounds, align_end=False):
     """ Mix a list of sounds into a new sound
@@ -84,28 +93,23 @@ cpdef Wavetable win(object values,
 
 cpdef SoundBuffer stack(list sounds):
     cdef int channels = 0
-    cdef int copied_channels = 0
-    cdef int samplerate = sounds[0].samplerate
-    cdef double length = 0
-    cdef SoundBuffer sound
+    cdef unsigned int length = 0
 
+    cdef SoundBuffer sound
     for sound in sounds:
         channels += sound.channels
-        if sound.dur > length:
-            length = sound.dur
+        length = max(len(sound), length)
 
-    cdef SoundBuffer out = SoundBuffer(length=length, channels=channels, samplerate=samplerate)
+    cdef double[:,:] out = np.zeros((length, channels), dtype='d')
 
-    cdef int channel_to_copy = 0
-    cdef int current_sound_index = 0
-    cdef int source_channel_to_copy = 0
+    cdef int j=0, c=0
+    for sound in sounds:
+        for c in range(sound.channels):
+            for i in range(len(sound)):
+                out[i,j] = sound.frames[i,c]
+            j += 1
 
-    # TODO
-    while copied_channels < channels:
-        out.frames.base[:,channel_to_copy] = sounds[current_sound_index].frames.base[:,source_channel_to_copy]    
-        copied_channels += 1
-
-    return out
+    return SoundBuffer(out, channels=channels, samplerate=sounds[0].samplerate)
 
 def join(sounds, overlap=None, channels=None, samplerate=None):
     """ Concatenate a list of sounds into a new sound

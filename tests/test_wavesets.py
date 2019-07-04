@@ -26,6 +26,16 @@ class TestWavesets(TestCase):
         out.write('tests/renders/waveset_pulsar2d_wavetables-80hz.wav')
         self.assertEqual(len(out), int(length * out.samplerate))
 
+    def test_interleave(self):
+        sound1 = SoundBuffer(filename='tests/sounds/linux.wav')
+        sound2 = SoundBuffer(filename='tests/sounds/guitar10s.wav')
+        waveset1 = Waveset(sound1, limit=10, offset=1000)
+        waveset2 = Waveset(sound2, limit=10, offset=1000)
+
+        waveset1.interleave(waveset2)
+        out = waveset1.render()
+        out.write('tests/renders/waveset_interleave.wav')
+
     def test_stretch(self):
         sound = SoundBuffer(filename='tests/sounds/linux.wav')
         waveset = Waveset(sound)

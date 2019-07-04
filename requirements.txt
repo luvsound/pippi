@@ -1,11 +1,11 @@
 appdirs==1.4.3
 argh==0.26.2
 cffi==1.11.5
-Cython==0.29.5
-numpy==1.16.1
+Cython==0.29.6
+numpy==1.16.2
 packaging==19.0
 pathtools==0.1.2
-Pillow==5.4.1
+Pillow==6.0.0
 pycparser==2.19
 pyparsing==2.3.1
 PySoundFile==0.9.0.post1

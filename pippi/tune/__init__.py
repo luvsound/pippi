@@ -165,24 +165,24 @@ scales = {
 
 # Maps to chromatic ratio lists above
 notes = { 
-        'a': 0,
-        'a#': 1,
-        'bb': 1, 
-        'b': 2,
-        'c': 3, 
-        'c#': 4, 
-        'db': 4, 
-        'd': 5, 
-        'd#': 6, 
-        'eb': 6, 
-        'e': 7, 
-        'f': 8, 
-        'f#': 9, 
-        'gb': 9, 
-        'g': 10, 
-        'g#': 11, 
-        'ab': 11, 
-        }
+    'a': 0,
+    'a#': 1,
+    'bb': 1, 
+    'b': 2,
+    'c': 3, 
+    'c#': 4, 
+    'db': 4, 
+    'd': 5, 
+    'd#': 6, 
+    'eb': 6, 
+    'e': 7, 
+    'f': 8, 
+    'f#': 9, 
+    'gb': 9, 
+    'g': 10, 
+    'g#': 11, 
+    'ab': 11, 
+}
 
 midi_notes = {
     'a': 21,
@@ -351,7 +351,7 @@ def tofreqs(degrees=None, root=261.63, ratios=None, scale=None, scale_mask=None)
         scale = major
     
     if degrees is None:
-        degrees = list(range(len(scale)))
+        degrees = range(len(scale))
 
     if scale_mask is not None:
         scale = scale_mask_to_indexes(scale_mask)
