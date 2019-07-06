@@ -664,11 +664,24 @@ cdef class Wavetable:
 
         cdef int _method = to_flag(method)
         if _method == LINEAR:
-            return interpolation._linear_point(self.data, pos)
+            return interpolation._linear_pos(self.data, pos)
         elif _method == TRUNC:
-            return interpolation._trunc_point(self.data, pos)
+            return interpolation._trunc_pos(self.data, pos)
         else:
             raise ValueError('%s is not a valid interpolation method' % method)
+
+    cpdef list toonsets(Wavetable self, double length=10):
+        cdef list out = []
+        cdef double pos = 0
+        cdef double elapsed = 0
+
+        while elapsed < length:
+            pos = elapsed / length
+            o = self.interp(pos)
+            out += [ o + elapsed ]
+            elapsed += o
+
+        return out
 
 
 cdef tuple _parse_polyseg(str score, int length, int wtlength):
