@@ -45,6 +45,7 @@ cdef class Wavetable:
     cpdef void crush(Wavetable self, int steps)
     cpdef Wavetable crushed(Wavetable self, int steps)
     cpdef double interp(Wavetable self, double pos, str method=*)
+    cpdef list toonsets(Wavetable self, double length=*)
 
 cdef int SINE
 cdef int SINEIN 
