@@ -3,6 +3,7 @@
 from libc.stdlib cimport rand as _rand
 from libc.stdlib cimport RAND_MAX, srand
 from libc.time cimport time
+from libc.math cimport round
 
 cpdef void seed(object value=None):
     if value is None:
@@ -14,7 +15,7 @@ cpdef double rand(double low=0, double high=1):
     return (_rand()/<double>RAND_MAX) * (high-low) + low
 
 cpdef int randint(int low=0, int high=1):
-    return <int>rand(low, high)
+    return <int>round(rand(low, high))
 
 cpdef object choice(list choices):
     cdef int numchoices = <int>len(choices)
