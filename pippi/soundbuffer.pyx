@@ -11,6 +11,7 @@ cimport cython
 from libc cimport math
 
 from pippi.wavetables cimport Wavetable, PHASOR, CONSTANT, LINEAR, SINE, GOGINS, _window, _adsr, to_window, to_flag
+from pippi.dsp cimport _mag
 from pippi cimport interpolation
 from pippi cimport fx
 from pippi import graph
@@ -406,9 +407,9 @@ cdef class SoundBuffer:
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
 
-    ###############
-    # Lengthiness #
-    ###############
+    ###########################
+    # Lengthiness & sizeyness #
+    ###########################
     def __len__(self):
         """ Return the length of this SoundBuffer in frames.
             >>> sound = SoundBuffer(length=1, samplerate=44100, channels=2)
@@ -423,6 +424,20 @@ cdef class SoundBuffer:
         """
         return len(self) / <double>self.samplerate
 
+    @property
+    def mag(self):
+        """ Magnitude of the SoundBuffer as a float.
+            Multichannel SoundBuffers are not summed -- 
+            this returns the largest absolute value in any channel.
+        """
+        return _mag(self.frames)
+
+    @property
+    def avg(self):
+        """ Average value of the SoundBuffer as a float.
+            The average is taken across all channels.
+        """
+        return np.mean(self.frames, dtype='d')
 
     ###################################
     # (*) Multiplication operator (*) #
