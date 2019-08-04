@@ -434,10 +434,11 @@ cdef class SoundBuffer:
 
     @property
     def avg(self):
-        """ Average value of the SoundBuffer as a float.
-            The average is taken across all channels.
+        """ Average magnitude of the SoundBuffer as a float.
+            The average is taken from the absolute value 
+            (magnitude) of all channels.
         """
-        return np.mean(self.frames, dtype='d')
+        return np.mean(np.abs(self.frames), dtype='d')
 
     ###################################
     # (*) Multiplication operator (*) #
