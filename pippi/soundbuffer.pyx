@@ -14,6 +14,7 @@ from pippi.wavetables cimport Wavetable, PHASOR, CONSTANT, LINEAR, SINE, GOGINS,
 from pippi.dsp cimport _mag
 from pippi cimport interpolation
 from pippi cimport fx
+from pippi cimport fft
 from pippi import graph
 from pippi.defaults cimport DEFAULT_SAMPLERATE, DEFAULT_CHANNELS, DEFAULT_SOUNDFILE
 from pippi cimport grains
@@ -596,9 +597,31 @@ cdef class SoundBuffer:
         return SoundBuffer(np.clip(self.frames, minval, maxval), channels=self.channels, samplerate=self.samplerate)
         
     cpdef SoundBuffer convolve(SoundBuffer self, object impulse, bint norm=True):
-        cdef double[:] impulsewt = to_window(impulse)
-        cdef double[:,:] out = np.zeros((len(self)+len(impulsewt)-1, self.channels), dtype='d')
-        return SoundBuffer(fx._fir(self.frames, out, impulsewt, norm), channels=self.channels, samplerate=self.samplerate)
+        cdef double[:,:] _impulse
+        cdef double[:] _wt
+
+        if isinstance(impulse, str):
+            _wt = to_window(impulse)
+            _impulse = np.hstack([ _wt for _ in range(self.channels) ])
+
+        elif isinstance(impulse, Wavetable):
+            _impulse = np.hstack([ np.reshape(impulse.data, (-1, 1)) for _ in range(self.channels) ])
+
+        elif isinstance(impulse, SoundBuffer):
+            if impulse.channels != self.channels:
+                _impulse = impulse.remix(self.channels).frames
+            else:
+                _impulse = impulse.frames
+
+        else:
+            raise TypeError('Could not convolve impulse of type %s' % type(impulse))
+
+        cdef double[:,:] out = fft.conv(self.frames, _impulse)
+
+        if norm:
+            out = fx._norm(out, self.mag)
+
+        return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
     def cut(self, double start=0, double length=1):
         """ Copy a portion of this soundbuffer, returning 

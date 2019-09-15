@@ -31,25 +31,16 @@ beta phase of development is to deal with the lack of documentation for this pro
 
 ## Install from source
 
-To install the most recent development version, first install python deps:
+To install the most recent development version run:
 
-    pip install -r requirements.txt
+    make install
 
-(This is usually done inside a virtualenv via something like `python3 -m venv venv && source venv/bin/activate` but that's up to you.)
+Which will:
 
-Make sure you have the submodule for Paul Batchelor's `Soundpipe` library checked out:
-
-    git submodule init
-    git submodule update
-
-CD into the `Soundpipe` directory and install Soundpipe:
-
-    make
-    sudo make install
-
-CD back into the parent directory and build pippi's cython extensions:
-
-    make build
+- Install python deps, so make sure you're inside your venv if you want to be!
+- Init and update git submodules
+- Build and install Soundpipe
+- Build and install pippi
 
 Please let me know if you run into problems!
 
@@ -60,13 +51,24 @@ Please let me know if you run into problems!
 In many cases, this will produce a soundfile in the `tests/renders` directory for the corresponding test. (Ear-driven regression testing...)
 During the beta I like to keep failing tests in the main repo, so... most tests will be passing but if they *all* are passing, probably you are living in the future and are looking at the first stable release.
 
-## Clean build files
+There are also shortcuts to run only certain groups of tests, like `test-wavesets` -- check out the `Makefile` for a list of them all.
 
-If you're hacking on pippi itself, during development you will sometimes need to build the cython modules completely from scratch. 
-The normal `make build` command will by default only build the extensions whose source files have changed. That usually works fine, but 
-to clean all the build files first just run:
+## Hacking
 
-    make clean
+While hacking on pippi itself, running `make build` will recompile the cython extensions.
+
+If you need to build sources from a clean slate (sometimes updates to `pxd` files require this) then run `make clean build` instead.
+
+## Thanks
+
+[Project Nayuki](https://www.nayuki.io/page/free-small-fft-in-multiple-languages) for a compact FFT! (Used in `SoundBuffer.convolve()`)
+
+[Paul Batchelor](https://github.com/PaulBatchelor/Soundpipe) for all the goodness in Soundpipe that has made its way into Pippi. (See the `fx` and `bar` modules.)
+
+[Bernhard Schelling](https://zillalib.github.io/) for his TinySoundFont library used in the `soundfont` module.
+
+[Nando Florestan](http://dev.nando.audio/) for his small public domain GM soundfont used in the test suite.
+
 
 ## Release Notes
 

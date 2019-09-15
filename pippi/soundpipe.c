@@ -973,6 +973,7 @@ struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_snap;
 struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_snapped;
 struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_normalize;
 struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_interp;
+struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_toonsets;
 struct __pyx_opt_args_5pippi_10wavetables_to_window;
 struct __pyx_opt_args_5pippi_10wavetables_to_wavetable;
 struct __pyx_opt_args_5pippi_10wavetables_to_stack;
@@ -1283,15 +1284,27 @@ struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_normalize {
  *     cpdef void crush(Wavetable self, int steps)
  *     cpdef Wavetable crushed(Wavetable self, int steps)
  *     cpdef double interp(Wavetable self, double pos, str method=*)             # <<<<<<<<<<<<<<
+ *     cpdef list toonsets(Wavetable self, double length=*)
  * 
- * cdef int SINE
  */
 struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_interp {
   int __pyx_n;
   PyObject *method;
 };
 
-/* "pippi/wavetables.pxd":81
+/* "pippi/wavetables.pxd":48
+ *     cpdef Wavetable crushed(Wavetable self, int steps)
+ *     cpdef double interp(Wavetable self, double pos, str method=*)
+ *     cpdef list toonsets(Wavetable self, double length=*)             # <<<<<<<<<<<<<<
+ * 
+ * cdef int SINE
+ */
+struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_toonsets {
+  int __pyx_n;
+  double length;
+};
+
+/* "pippi/wavetables.pxd":85
  * cdef int* ALL_WAVETABLES
  * 
  * cpdef double[:] to_window(object w, int wtsize=?)             # <<<<<<<<<<<<<<
@@ -1303,7 +1316,7 @@ struct __pyx_opt_args_5pippi_10wavetables_to_window {
   int wtsize;
 };
 
-/* "pippi/wavetables.pxd":82
+/* "pippi/wavetables.pxd":86
  * 
  * cpdef double[:] to_window(object w, int wtsize=?)
  * cpdef double[:] to_wavetable(object w, int wtsize=?)             # <<<<<<<<<<<<<<
@@ -1315,7 +1328,7 @@ struct __pyx_opt_args_5pippi_10wavetables_to_wavetable {
   int wtsize;
 };
 
-/* "pippi/wavetables.pxd":83
+/* "pippi/wavetables.pxd":87
  * cpdef double[:] to_window(object w, int wtsize=?)
  * cpdef double[:] to_wavetable(object w, int wtsize=?)
  * cpdef list to_stack(list wavetables, int wtsize=?)             # <<<<<<<<<<<<<<
@@ -1327,7 +1340,7 @@ struct __pyx_opt_args_5pippi_10wavetables_to_stack {
   int wtsize;
 };
 
-/* "pippi/wavetables.pxd":85
+/* "pippi/wavetables.pxd":89
  * cpdef list to_stack(list wavetables, int wtsize=?)
  * cdef int to_flag(str value)
  * cpdef Wavetable _randline(int numpoints, double lowvalue=?, double highvalue=?, int wtsize=?)             # <<<<<<<<<<<<<<
@@ -1341,7 +1354,7 @@ struct __pyx_opt_args_5pippi_10wavetables__randline {
   int wtsize;
 };
 
-/* "pippi/wavetables.pxd":90
+/* "pippi/wavetables.pxd":94
  * cpdef double[:] adsr(int length, int attack, int decay, double sustain, int release)
  * cdef double[:] _wavetable(int wavetable_type, int length)
  * cpdef double[:] wavetable(int wavetable_type, int length, double[:] data=?)             # <<<<<<<<<<<<<<
@@ -1353,7 +1366,7 @@ struct __pyx_opt_args_5pippi_10wavetables_wavetable {
   __Pyx_memviewslice data;
 };
 
-/* "pippi/wavetables.pxd":91
+/* "pippi/wavetables.pxd":95
  * cdef double[:] _wavetable(int wavetable_type, int length)
  * cpdef double[:] wavetable(int wavetable_type, int length, double[:] data=?)
  * cdef double[:] _seesaw(double[:] wt, int length, double tip=*)             # <<<<<<<<<<<<<<
@@ -1364,7 +1377,7 @@ struct __pyx_opt_args_5pippi_10wavetables__seesaw {
   double tip;
 };
 
-/* "pippi/wavetables.pxd":92
+/* "pippi/wavetables.pxd":96
  * cpdef double[:] wavetable(int wavetable_type, int length, double[:] data=?)
  * cdef double[:] _seesaw(double[:] wt, int length, double tip=*)
  * cpdef Wavetable seesaw(object wt, int length, double tip=*)             # <<<<<<<<<<<<<<
@@ -1884,6 +1897,7 @@ struct __pyx_vtabstruct_5pippi_10wavetables_Wavetable {
   void (*crush)(struct __pyx_obj_5pippi_10wavetables_Wavetable *, int, int __pyx_skip_dispatch);
   struct __pyx_obj_5pippi_10wavetables_Wavetable *(*crushed)(struct __pyx_obj_5pippi_10wavetables_Wavetable *, int, int __pyx_skip_dispatch);
   double (*interp)(struct __pyx_obj_5pippi_10wavetables_Wavetable *, double, int __pyx_skip_dispatch, struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_interp *__pyx_optional_args);
+  PyObject *(*toonsets)(struct __pyx_obj_5pippi_10wavetables_Wavetable *, int __pyx_skip_dispatch, struct __pyx_opt_args_5pippi_10wavetables_9Wavetable_toonsets *__pyx_optional_args);
 };
 static struct __pyx_vtabstruct_5pippi_10wavetables_Wavetable *__pyx_vtabptr_5pippi_10wavetables_Wavetable;
 
@@ -2671,6 +2685,12 @@ static int *__pyx_vp_5pippi_10wavetables_GOGINS = 0;
 #define __pyx_v_5pippi_10wavetables_GOGINS (*__pyx_vp_5pippi_10wavetables_GOGINS)
 static int *__pyx_vp_5pippi_10wavetables_SINC = 0;
 #define __pyx_v_5pippi_10wavetables_SINC (*__pyx_vp_5pippi_10wavetables_SINC)
+static int *__pyx_vp_5pippi_10wavetables_GAUSS = 0;
+#define __pyx_v_5pippi_10wavetables_GAUSS (*__pyx_vp_5pippi_10wavetables_GAUSS)
+static int *__pyx_vp_5pippi_10wavetables_GAUSSIN = 0;
+#define __pyx_v_5pippi_10wavetables_GAUSSIN (*__pyx_vp_5pippi_10wavetables_GAUSSIN)
+static int *__pyx_vp_5pippi_10wavetables_GAUSSOUT = 0;
+#define __pyx_v_5pippi_10wavetables_GAUSSOUT (*__pyx_vp_5pippi_10wavetables_GAUSSOUT)
 static int *__pyx_vp_5pippi_10wavetables_LEN_WINDOWS = 0;
 #define __pyx_v_5pippi_10wavetables_LEN_WINDOWS (*__pyx_vp_5pippi_10wavetables_LEN_WINDOWS)
 static int **__pyx_vp_5pippi_10wavetables_ALL_WINDOWS = 0;
@@ -22793,6 +22813,9 @@ static int __Pyx_modinit_variable_import_code(void) {
   if (__Pyx_ImportVoidPtr(__pyx_t_2, "CONSTANT", (void **)&__pyx_vp_5pippi_10wavetables_CONSTANT, "int") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ImportVoidPtr(__pyx_t_2, "GOGINS", (void **)&__pyx_vp_5pippi_10wavetables_GOGINS, "int") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ImportVoidPtr(__pyx_t_2, "SINC", (void **)&__pyx_vp_5pippi_10wavetables_SINC, "int") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ImportVoidPtr(__pyx_t_2, "GAUSS", (void **)&__pyx_vp_5pippi_10wavetables_GAUSS, "int") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ImportVoidPtr(__pyx_t_2, "GAUSSIN", (void **)&__pyx_vp_5pippi_10wavetables_GAUSSIN, "int") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ImportVoidPtr(__pyx_t_2, "GAUSSOUT", (void **)&__pyx_vp_5pippi_10wavetables_GAUSSOUT, "int") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ImportVoidPtr(__pyx_t_2, "LEN_WINDOWS", (void **)&__pyx_vp_5pippi_10wavetables_LEN_WINDOWS, "int") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ImportVoidPtr(__pyx_t_2, "ALL_WINDOWS", (void **)&__pyx_vp_5pippi_10wavetables_ALL_WINDOWS, "int *") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ImportVoidPtr(__pyx_t_2, "LEN_WAVETABLES", (void **)&__pyx_vp_5pippi_10wavetables_LEN_WAVETABLES, "int") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
