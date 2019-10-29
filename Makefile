@@ -1,6 +1,11 @@
+TEST_RENDER_DIR ?= tests/renders
+
 .PHONY: test test-fft test-soundfont test-grains test-wavesets test-fx test-noise test-shapes test-oscs test-soundbuffer test-lists build
 
-test:
+$(TEST_RENDER_DIR):
+	mkdir -p $(TEST_RENDER_DIR)
+
+test: $(TEST_RENDER_DIR)
 	python -m unittest discover -s tests -p 'test_*.py' -v
 
 test-fft:
