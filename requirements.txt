@@ -5,7 +5,7 @@ Cython==0.29.6
 numpy==1.16.2
 packaging==19.0
 pathtools==0.1.2
-Pillow==6.2.0
+Pillow==6.2.1
 pycparser==2.19
 pyparsing==2.3.1
 PySoundFile==0.9.0.post1
