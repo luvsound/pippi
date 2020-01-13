@@ -23,6 +23,9 @@ ext_modules = cythonize([
             library_dirs=['/usr/local/lib'],
             include_dirs=['/usr/local/include']
         ),
+        Extension('pippi.ladspa', ['pippi/ladspa.pyx'], 
+            include_dirs=['modules/ladspa', np.get_include()], 
+        ),
         Extension('pippi.lists', ['pippi/lists.pyx'],
             include_dirs=[np.get_include()], 
         ),
