@@ -14,10 +14,11 @@ from cpython.array cimport array, clone
 from libc.stdlib cimport malloc, realloc, calloc, free
 from libc cimport math
 
+from pippi.defaults cimport DEFAULT_SAMPLERATE, DEFAULT_WTSIZE
 from pippi cimport interpolation, rand
 from pippi import graph
 from pippi.soundbuffer cimport SoundBuffer
-from pippi.lists cimport _scale, _snap_mult, _snap_pattern
+from pippi.lists cimport _scale, _scaleinplace, _snap_mult, _snap_pattern
 
 cdef int SINE = 0
 cdef int SINEIN = 17
@@ -43,6 +44,8 @@ cdef int SINC = 23
 cdef int GAUSS = 24
 cdef int GAUSSIN = 25
 cdef int GAUSSOUT = 26
+cdef int PLUCKIN = 27
+cdef int PLUCKOUT = 28
 
 cdef int LINEAR = 12
 cdef int TRUNC = 13
@@ -69,6 +72,8 @@ cdef int* ALL_WINDOWS = [
             GAUSS,
             GAUSSIN,
             GAUSSOUT,
+            PLUCKIN,
+            PLUCKOUT,
         ]
 
 cdef int LEN_WAVETABLES = 6
@@ -115,10 +120,42 @@ cdef int to_flag(str value):
         'sinc': SINC,
         'gauss': GAUSS,
         'gaussin': GAUSSIN,
-        'gaussout': GAUSSOUT
+        'gaussout': GAUSSOUT,
+        'pluckin': PLUCKIN,
+        'pluckout': PLUCKOUT,
     }
 
     return flags[value]
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef double[:] _imul1d(double[:] output, double[:] values):
+    cdef int i = 0
+    cdef int framelength = len(output)
+
+    if <int>len(values) != framelength:
+        values = interpolation._linear(values, framelength)
+
+    for i in range(framelength):
+        output[i] *= values[i]
+
+    return output
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef double[:] _mul1d(double[:] output, double[:] values):
+    cdef int i = 0
+    cdef int framelength = len(output)
+    cdef double[:] out = np.zeros(framelength, dtype='d')
+
+    if <int>len(values) != framelength:
+        values = interpolation._linear(values, framelength)
+
+    for i in range(framelength):
+        out[i] = output[i] * values[i]
+
+    return out
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -163,6 +200,39 @@ cdef double[:] _gaussian_out(int length):
 
     return out
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef double[:] _pluck_in(int length):
+    cdef double[:] out = np.zeros(length, dtype='d')
+    cdef double[:] mul = np.zeros(length, dtype='d')
+    cdef int i=0
+
+    out = _window(HANNIN, length)
+    out = _seesaw(out, length, rand.rand(0.97, 0.99))
+    mul = _window(HANNIN, length)
+
+    for i in range(length):
+        out[i] = out[i] * out[i] * mul[i]
+
+    return out
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+cdef double[:] _pluck_out(int length):
+    cdef double[:] out = np.zeros(length, dtype='d')
+    cdef double[:] mul = np.zeros(length, dtype='d')
+    cdef int i=0
+
+    out = _window(HANNOUT, length)
+    out = _seesaw(out, length, rand.rand(0.01, 0.03))
+    mul = _window(HANNOUT, length)
+
+    for i in range(length):
+        out[i] = out[i] * out[i] * mul[i]
+
+    return out
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -221,15 +291,15 @@ cdef class Wavetable:
     def __cinit__(self, object values, 
             object lowvalue=None, 
             object highvalue=None,
-            object wtsize=None, 
+            int wtsize=0, 
             bint window=False):
         cdef bint scaled = False
         cdef bint resized = False
 
         if window:
-            self.data = to_window(values)
+            self.data = to_window(values, wtsize)
         else:
-            self.data = to_wavetable(values)
+            self.data = to_wavetable(values, wtsize)
 
         if lowvalue is None:
             self.lowvalue = np.min(self.data)
@@ -243,42 +313,41 @@ cdef class Wavetable:
             scaled = True
             self.highvalue = <double>highvalue
 
+        self.length = len(self.data)
+
         if scaled:
-            self.data = np.interp(self.data, (np.min(self.data), np.max(self.data)), (self.lowvalue, self.highvalue))
+            self.data = _scaleinplace(self.data, np.min(self.data), np.max(self.data), self.lowvalue, self.highvalue, False)
 
-        if wtsize is not None and len(self.data) != wtsize:
-            self.length = wtsize
-            self.data = interpolation._linear(self.data, self.length)
-        else:
-            self.length = len(self.data)
 
-    #############################################
-    # (+) Addition & concatenation operator (+) #
-    #############################################
+    ##################################
+    # (+) Concatenation operator (+) #
+    ##################################
     def __add__(self, value):
-        cdef double[:] out = np.zeros(self.length)
+        cdef double[:] out
+
+        if not isinstance(self, Wavetable):
+            return NotImplemented
 
         if isinstance(value, numbers.Real):
-            out = np.add(self.data, value)
+            out = np.append(self.data, value)
         elif isinstance(value, Wavetable):
-            out = np.add(self.data, value.data)
+            out = np.hstack((self.data, value.data))
         else:
             try:
-                self.data = np.hstack((self.data, value))
+                out = np.hstack((self.data, np.array(value).flatten()))
             except TypeError as e:
                 return NotImplemented
 
         return Wavetable(out)
 
     def __iadd__(self, value):
-        """ In place add either adding number to every value without copy, or 
-            directly extending internal frame buffer.
-        """
         if isinstance(value, numbers.Real):
-            self.data = np.add(self.data, value)
+            self.data = np.append(self.data, value)
+        elif isinstance(value, Wavetable):
+            self.data = np.hstack(self.data, value.data)
         else:
             try:
-                self.data = np.hstack((self.data, value))
+                self.data = np.hstack((self.data, np.array(value).flatten()))
             except TypeError as e:
                 return NotImplemented
 
@@ -293,15 +362,50 @@ cdef class Wavetable:
     ########################
     def __and__(self, value):
         cdef double[:] out
+        cdef double[:] val
 
-        try:
-            out = np.add(self.data, value[:len(self.data)])
-            return Wavetable(out)
-        except TypeError as e:
+        if not isinstance(self, Wavetable):
             return NotImplemented
 
+        if isinstance(value, numbers.Real):
+            out = np.add(self.data, value)
+            return Wavetable(out)
+
+        elif isinstance(value, Wavetable):
+            val = value.data
+        else:
+            try:
+                val = np.array(value).flatten()
+            except TypeError as e:
+                return NotImplemented
+
+        if <int>len(val) != len(self.data):
+            val = interpolation._linear(val, len(self.data))
+
+        out = np.add(self.data, val)
+
+        return Wavetable(out)
+
     def __iand__(self, value):
-        self.data = np.add(self.data, value[:len(self.data)])
+        cdef double[:] val
+
+        if isinstance(value, numbers.Real):
+            self.data = np.add(self.data, value)
+            return self
+
+        elif isinstance(value, Wavetable):
+            val = value.data
+        else:
+            try:
+                val = np.array(value).flatten()
+            except TypeError as e:
+                return NotImplemented
+
+        if <int>len(val) != len(self.data):
+            val = interpolation._linear(val, len(self.data))
+
+        self.data = np.add(self.data, val)
+
         return self
 
     def __rand__(self, value):
@@ -322,26 +426,31 @@ cdef class Wavetable:
     def __len__(self):
         return 0 if self.data is None else len(self.data)
 
+    def __eq__(self, other):
+        try:
+            return len(self) == len(other) and all(a == b for a, b in zip(self, other))
+        except TypeError as e:
+            return NotImplemented
+
 
     ###################################
     # (*) Multiplication operator (*) #
     ###################################
     def __mul__(self, value):
-        cdef int length = len(self.data)
-        cdef double[:] out = np.zeros(length)
+        cdef double[:] out
+
+        if not isinstance(self, Wavetable):
+            return NotImplemented
 
         if isinstance(value, numbers.Real):
             out = np.multiply(self.data, value)
-
         elif isinstance(value, Wavetable):
-            out = np.multiply(self.data, value.data)
-
+            out = _mul1d(self.data, value.data)
         elif isinstance(value, list):
-            out = np.multiply(self.data, np.array(value))
-
+            out = _mul1d(self.data, np.array(value, dtype='d'))
         else:
             try:
-                out = np.multiply(self.data, np.array(value))
+                out = _mul1d(self.data, np.array(value, dtype='d'))
             except TypeError:
                 return NotImplemented
 
@@ -350,16 +459,13 @@ cdef class Wavetable:
     def __imul__(self, value):
         if isinstance(value, numbers.Real):
             self.data = np.multiply(self.data, value)
-
         elif isinstance(value, Wavetable):
-            self.data = np.multiply(self.data, value.data)
-
+            self.data = _imul1d(self.data, value.data)
         elif isinstance(value, list):
-            self.data = np.multiply(self.data, np.array(value))
-
+            self.data = _imul1d(self.data, np.array(value, dtype='d'))
         else:
             try:
-                self.data = np.multiply(self.data, np.array(value))
+                self.data = _imul1d(self.data, np.array(value, dtype='d'))
             except TypeError:
                 return NotImplemented
 
@@ -373,42 +479,71 @@ cdef class Wavetable:
     # (-) Subtraction operator (-) #
     ################################
     def __sub__(self, value):
-        cdef double[:,:] out
+        cdef double[:] out
+        cdef double[:] val
+
+        if not isinstance(self, Wavetable):
+            return NotImplemented
 
         if isinstance(value, numbers.Real):
             out = np.subtract(self.data, value)
-
-        if isinstance(value, Wavetable):
-            out = np.subtract(self.data, value.data)
+            return Wavetable(out)
+        elif isinstance(value, Wavetable):
+            val = value.data
         else:
             try:
-                out = np.subtract(self.frames, value[:,None])
+                val = np.array(value, dtype='d')
             except TypeError as e:
                 return NotImplemented
+
+        if <int>len(val) != len(self.data):
+            val = interpolation._linear(val, len(self.data))
+
+        out = np.subtract(self.data, val)
 
         return Wavetable(out)
 
     def __isub__(self, value):
+        cdef double[:] val
+
         if isinstance(value, numbers.Real):
             self.data = np.subtract(self.data, value)
-
-        if isinstance(value, Wavetable):
-            self.data = np.subtract(self.data, value.data)
+            return self
+        elif isinstance(value, Wavetable):
+            val = value.data
         else:
             try:
-                self.data = np.subtract(self.data, value)
+                val = np.array(value, dtype='d')
             except TypeError as e:
                 return NotImplemented
+
+        if <int>len(val) != len(self.data):
+            val = interpolation._linear(val, len(self.data))
+
+        self.data = np.subtract(self.data, val)
+
+        return self
 
     def __rsub__(self, value):
         return self - value
 
-
     def __repr__(self):
-        return 'Wavetable({})'.format(self.data)
+        return 'Wavetable({})'.format([ d for d in self.data])
 
     cpdef Wavetable clip(Wavetable self, double minval=-1, double maxval=1):
         return Wavetable(np.clip(self.data, minval, maxval))
+
+    cpdef Wavetable cut(Wavetable self, int start, int length):
+        start = min(max(0, start), len(self.data))
+        length = min(max(1, length), len(self.data)-start)
+        cdef double[:] out = np.zeros(length, dtype='d')
+        for i in range(length):
+            out[i] = self.data[i+start]
+        return Wavetable(out)
+
+    cpdef Wavetable rcut(Wavetable self, int length):
+        cdef int start = rand.randint(0, len(self.data)-length)
+        return self.cut(start, length)
 
     cpdef Wavetable convolve(Wavetable self, object impulse, bint norm=True):
         cdef double[:] _impulse = to_window(impulse)
@@ -683,6 +818,11 @@ cdef class Wavetable:
 
         return out
 
+    cpdef void write(Wavetable self, object path=None, int samplerate=DEFAULT_SAMPLERATE):
+        if path is None:
+            path = 'wavetable.wav'
+        soundfile.write(path, self.data, samplerate)
+
 
 cdef tuple _parse_polyseg(str score, int length, int wtlength):
     """ score = '1,tri .5,sine,0-.5 sine!.25 tri,.1-.2!.5'
@@ -817,6 +957,12 @@ cdef double[:] _window(int window_type, int length):
     elif window_type == GAUSSOUT:
         wt = _gaussian_out(length) 
 
+    elif window_type == PLUCKIN:
+        wt = _pluck_in(length)
+
+    elif window_type == PLUCKOUT:
+        wt = _pluck_out(length)
+
     else:
         wt = _window(SINE, length)
 
@@ -902,13 +1048,15 @@ cpdef double[:] fromfile(unicode filename, int length):
 
     return interpolation._linear(wt, length)
 
-cpdef double[:] to_window(object w, int wtsize=4096):
+cpdef double[:] to_window(object w, int wtsize=0):
     cdef double[:] wt
 
     if w is None:
         return None
 
     if isinstance(w, str):
+        if wtsize <= 0:
+            wtsize = DEFAULT_WTSIZE
         wt = _window(to_flag(w), wtsize)
 
     elif isinstance(w, numbers.Real):
@@ -923,18 +1071,26 @@ cpdef double[:] to_window(object w, int wtsize=4096):
     elif isinstance(w, list):
         wt = np.array(w, dtype='d')
 
+    elif isinstance(w, np.ndarray):
+        wt = w
+
     else:
-        wt = interpolation._linear(array('d', w), wtsize)
+        wt = array('d', w)
+
+    if wtsize > 0 and len(wt) != wtsize:
+        wt = interpolation._linear(wt, wtsize)
 
     return wt
 
-cpdef double[:] to_wavetable(object w, int wtsize=4096):
+cpdef double[:] to_wavetable(object w, int wtsize=0):
     cdef double[:] wt
 
     if w is None:
         return None
 
     if isinstance(w, str):
+        if wtsize <= 0:
+            wtsize = DEFAULT_WTSIZE
         wt = _wavetable(to_flag(w), wtsize)
 
     elif isinstance(w, numbers.Real):
@@ -949,8 +1105,14 @@ cpdef double[:] to_wavetable(object w, int wtsize=4096):
     elif isinstance(w, list):
         wt = np.array(w, dtype='d')
 
+    elif isinstance(w, np.ndarray):
+        wt = w
+
     else:
-        wt = interpolation._linear(array('d', w), wtsize)
+        wt = array('d', w)
+
+    if wtsize > 0 and len(wt) != wtsize:
+        wt = interpolation._linear(wt, wtsize)
 
     return wt
 

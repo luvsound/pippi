@@ -6,15 +6,13 @@
 /dist/
 /*.egg-info/
 
-docs/build/
+pippi.world
 
 pippi/*.so
 pippi/*.html
 
-examples/*.wav
-examples/*.mp3
-
 tests/renders/*.wav
+tests/renders/*.png
 
 pippi.log
 

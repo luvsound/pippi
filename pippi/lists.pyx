@@ -5,6 +5,8 @@ cimport numpy as np
 from pippi.wavetables cimport to_window
 from libc cimport math
 
+np.import_array()
+
 cdef double[:] _scale(double[:] out, double[:] source, double fromlow, double fromhigh, double tolow, double tohigh, bint log):
     cdef int i = 0
     cdef double v = 0
@@ -27,6 +29,30 @@ cdef double[:] _scale(double[:] out, double[:] source, double fromlow, double fr
             out[i] = ((source[i] - _fromlow) / fromdiff) * todiff + tolow
 
     return out
+
+cdef double[:] _scaleinplace(double[:] out, double fromlow, double fromhigh, double tolow, double tohigh, bint log):
+    cdef int i = 0
+    cdef double v = 0
+    cdef double _tolow = min(tolow, tohigh)
+    cdef double _tohigh = max(tolow, tohigh)
+    cdef double _fromlow = min(fromlow, fromhigh)
+    cdef double _fromhigh = max(fromlow, fromhigh)
+
+    cdef double todiff = _tohigh - _tolow
+    cdef double fromdiff = _fromhigh - _fromlow
+
+    if log:
+        for i in range(len(out)):
+            v = ((out[i] - _fromlow) / fromdiff)
+            v = math.log(v * (math.e-1) + 1)
+            out[i] = v * todiff + tolow
+
+    else:
+        for i in range(len(out)):
+            out[i] = ((out[i] - _fromlow) / fromdiff) * todiff + tolow
+
+    return out
+
 
 cpdef list scale(list source, double fromlow=-1, double fromhigh=1, double tolow=0, double tohigh=1, bint log=False):
     cdef unsigned int length = len(source)

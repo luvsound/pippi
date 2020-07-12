@@ -23,6 +23,15 @@ class TestSoundBuffer(TestCase):
         self.assertEqual(len(sound), 44100)
         self.assertTrue(sound)
 
+    def test_mix_operator(self):
+        snd1 = SoundBuffer(filename='tests/sounds/guitar1s.wav')
+        snd2 = SoundBuffer(filename='tests/sounds/LittleTikes-A1.wav')
+
+        snd1 &= snd2
+
+        self.assertEqual(snd1.dur, snd2.dur)
+
+
     def test_create_stereo_buffer_from_soundfile(self):
         sound = SoundBuffer(filename='tests/sounds/guitar1s.wav')
         self.assertEqual(len(sound), 44100)
@@ -264,5 +273,59 @@ class TestSoundBuffer(TestCase):
 
         self.assertEqual(len(sound), 44100)
         self.assertTrue(sound.samplerate == 44100)
+
+    def test_mul_soundbuffers(self):
+        snd = dsp.buffer([1,2,3])
+        self.assertEqual(len(snd), 3)
+        self.assertEqual(snd * 2, dsp.buffer([2,4,6]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        self.assertEqual(snd * dsp.buffer([1,3,5]), dsp.buffer([1,6,15]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        self.assertEqual(dsp.buffer([1,3,5]) * snd, dsp.buffer([1,6,15]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        snd *= 2
+        self.assertEqual(snd, dsp.buffer([2,4,6]))
+
+        snd = dsp.buffer([1,2,3])
+        mul = dsp.buffer([2,2,2])
+        snd *= mul
+        self.assertEqual(snd, dsp.buffer([2,4,6]))
+
+    def test_add_soundbuffers(self):
+        snd = dsp.buffer([1,2,3])
+        self.assertEqual(len(snd), 3)
+        self.assertEqual(snd + 2, dsp.buffer([3,4,5]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        self.assertEqual(snd + dsp.buffer([1,3,5]), dsp.buffer([1,2,3,1,3,5]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        self.assertEqual(dsp.buffer([1,3,5]) + snd, dsp.buffer([1,3,5,1,2,3]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        snd += 2
+        self.assertEqual(snd, dsp.buffer([3,4,5]))
+
+    def test_sub_soundbuffers(self):
+        snd = dsp.buffer([1,2,3])
+        self.assertEqual(len(snd), 3)
+
+        self.assertEqual(snd - 1.5, dsp.buffer([-0.5, 0.5, 1.5]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        self.assertEqual(snd - 2, dsp.buffer([-1,0,1]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        self.assertEqual(snd - dsp.buffer([1,3,5]), dsp.buffer([0,-1,-2]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        self.assertEqual(dsp.buffer([1,3,5]) - snd, dsp.buffer([0,1,2]))
+        self.assertEqual(snd, dsp.buffer([1,2,3]))
+
+        snd -= 2
+        self.assertEqual(snd, dsp.buffer([-1,0,1]))
 
 

@@ -10,7 +10,7 @@ cimport numpy as np
 cimport cython
 from libc cimport math
 
-from pippi.wavetables cimport Wavetable, PHASOR, CONSTANT, LINEAR, SINE, GOGINS, _window, _adsr, to_window, to_flag
+from pippi.wavetables cimport Wavetable, CONSTANT, LINEAR, SINE, GOGINS, _window, _adsr, to_window, to_flag
 from pippi.dsp cimport _mag
 from pippi cimport interpolation
 from pippi cimport fx
@@ -173,8 +173,43 @@ cdef double[:,:] _speed(double[:,:] frames,
 
 @cython.final
 cdef class SoundBuffer:
-    """ A sequence of audio frames 
-        representing a buffer of sound.
+    """ A sequence of audio frames representing a buffer of sound.
+
+        Data may be loaded into the SoundBuffer from these sources as keyword arguments, 
+        in decending order of precedence:
+
+        - `filename`: a unicode string relative path or a full path to load from a soundfile
+        - `buf`: a memoryview compatible 2D buffer of doubles <double[:,:]>
+        - `frames`: a 1D or 2D python iterable (eg a list) or a 1D numpy array/buffer
+
+        Data loaded via the `filename` keyword can load any soundfile type supported by libsndfile,
+        including old favorites like WAV, AIFF, FLAC, and OGG. But no, not MP3. (At least not yet: https://github.com/erikd/libsndfile/issues/258)
+        If the `length` param is given, only that amount will be read from the soundfile.
+        Use the `start` param to specify a position (seconds) in the soundfile to begin reading from.
+        No samplerate conversion is done (yet) so be careful to match the samplerate of the start param with that 
+        of the soundfile being read. (Or don't!)
+        Overflows (reading beyond the boundries of the file) are filled with silence so the length 
+        param is always respected and will return a SoundBuffer of the requested length. This is 
+        just a wrapper around pysndfile's soundfile.read method.
+
+        Data loaded via the `buf` keyword must be interpretable by cython as a memoryview on a 2D array 
+        of doubles. (A numpy ndarray for example.)
+
+        Single channel (1D) data loaded via the `frames` keyword will be copied into the given number of channels
+        specified by the `channels` param. (And if no value is given, a mono SoundBuffer will be created.) 
+        Handy for doing synthesis prototyping with python lists.
+
+        Multichannel (2D) data loaded via the `frames` keyword will ignore the `channels` 
+        param and adapt to what was given by attempting to read the data into a numpy array
+        and take the number of channels from its shape.
+        
+        The remaining sources (`filename`, `buf`) will use the number of channels found in the 
+        data and ignore the value passed to the SoundBuffer initializer.
+
+        If none of those sources are present, but a `length` param has been given, 
+        the SoundBuffer will be initialized with silence to the given length in seconds.
+        
+        Otherwise an empty SoundBuffer is created with a length of zero.
     """
 
     def __cinit__(SoundBuffer self, 
@@ -185,46 +220,11 @@ cdef class SoundBuffer:
            unicode filename=None, 
             double start=0, 
        double[:,:] buf=None):
-        """ Data may be loaded into the SoundBuffer from these sources as keyword arguments, 
-            in decending order of precedence:
-
-              - `filename`: a unicode string relative path or a full path to load from a soundfile
-              - `buf`: a memoryview compatible 2D buffer of doubles <double[:,:]>
-              - `frames`: a 1D or 2D python iterable (eg a list) or a 1D numpy array/buffer
-
-            Data loaded via the `filename` keyword can load any soundfile type supported by libsndfile,
-            including old favorites like WAV, AIFF, FLAC, and OGG. But no, not MP3. (At least not yet: https://github.com/erikd/libsndfile/issues/258)
-            If the `length` param is given, only that amount will be read from the soundfile.
-            Use the `start` param to specify a position (seconds) in the soundfile to begin reading from.
-            No samplerate conversion is done (yet) so be careful to match the samplerate of the start param with that 
-            of the soundfile being read. (Or don't!)
-            Overflows (reading beyond the boundries of the file) are filled with silence so the length 
-            param is always respected and will return a SoundBuffer of the requested length. This is 
-            just a wrapper around pysndfile's soundfile.read method.
-
-            Data loaded via the `buf` keyword must be interpretable by cython as a memoryview on a 2D array 
-            of doubles. (A numpy ndarray for example.)
-
-            Single channel (1D) data loaded via the `frames` keyword will be copied into the given number of channels
-            specified by the `channels` param. (And if no value is given, a mono SoundBuffer will be created.) 
-            Handy for doing synthesis prototyping with python lists.
-
-            Multichannel (2D) data loaded via the `frames` keyword will ignore the `channels` 
-            param and adapt to what was given by attempting to read the data into a numpy array
-            and take the number of channels from its shape.
-            
-            The remaining sources (`filename`, `buf`) will use the number of channels found in the 
-            data and ignore the value passed to the SoundBuffer initializer.
-
-            If none of those sources are present, but a `length` param has been given, 
-            the SoundBuffer will be initialized with silence to the given length in seconds.
-            
-            Otherwise an empty SoundBuffer is created with a length of zero.
-        """
         self.samplerate = samplerate
         self.channels = max(channels, 1)
         cdef int framestart = 0
         cdef int framelength = <int>(length * self.samplerate)
+        cdef double[:] tmplist
 
         if filename is not None:
             framestart = <int>(start * self.samplerate)
@@ -240,7 +240,8 @@ cdef class SoundBuffer:
                 self.frames = np.column_stack([ frames.data for _ in range(self.channels) ])
 
             elif isinstance(frames, list):
-                self.frames = np.column_stack([ frames for _ in range(self.channels) ])
+                tmplist = np.array(frames, dtype='d')
+                self.frames = np.column_stack([ tmplist for _ in range(self.channels) ])
 
             elif frames.shape == 1:
                 self.frames = np.column_stack([ frames for _ in range(self.channels) ])
@@ -363,7 +364,34 @@ cdef class SoundBuffer:
     def __iand__(SoundBuffer self, object value):
         """ Mix in place two SoundBuffers or two 2d arrays with compatible dimensions
         """
-        self.frames = np.add(self.frames, value[:len(self.frames)])
+        # TODO: avoid a copy for cases where internal buffer 
+        # is greater than or equal to the length of the value
+        cdef double[:,:] out
+        cdef double[:,:] a, b
+        cdef int i, c
+
+        if isinstance(value, SoundBuffer):
+            if len(self.frames) > len(value.frames):
+                a = self.frames
+                b = value.frames
+            else:
+                a = value.frames
+                b = self.frames
+
+        else:
+            if len(self.frames) > len(value):
+                a = self.frames
+                b = np.array(value, dtype='d')
+            else:
+                a = np.array(value, dtype='d')
+                b = self.frames
+
+        out = a.copy()
+        for i in range(len(b)):
+            for c in range(self.channels):
+                out[i,c] += b[i,c]
+
+        self.frames = out
         return self
 
     def __rand__(SoundBuffer self, object value):
@@ -375,6 +403,12 @@ cdef class SoundBuffer:
     ##############
     def __bool__(self):
         return bool(len(self))
+
+    def __eq__(self, other):
+        try:
+            return len(self) == len(other) and all(a == b for a, b in zip(self, other))
+        except TypeError as e:
+            return NotImplemented
 
 
     #############################
@@ -413,9 +447,10 @@ cdef class SoundBuffer:
     ###########################
     def __len__(self):
         """ Return the length of this SoundBuffer in frames.
-            >>> sound = SoundBuffer(length=1, samplerate=44100, channels=2)
-            >>> len(sound)
-            44100
+
+                >>> sound = SoundBuffer(length=1, samplerate=44100, channels=2)
+                >>> len(sound)
+                44100
         """
         return 0 if self.frames is None else len(self.frames)
 
@@ -447,20 +482,19 @@ cdef class SoundBuffer:
     def __mul__(self, value):
         """ Multiply a SoundBuffer by a number, iterable or SoundBuffer and return a new SoundBuffer
 
-            >>> sound = SoundBuffer(length=1, channels=2, samplerate=44100)
+                >>> sound = SoundBuffer(length=1, channels=2, samplerate=44100)
 
-            # Multiply every sample in `sound` by 0.5
-            >>> sound *= 0.5
+                # Multiply every sample in `sound` by 0.5
+                >>> sound *= 0.5
 
-            # Multiply every sample by an interpolated copy of `wavetable` 
-            # `wavetable` can be a 1d flat array/list/iterable, or a SoundBuffer
-            # This will modulate the amplitude of the SoundBuffer with the wavetable.
-            >>> wavetable = [0, 0.25, 0.5, 0.25, 0.75, 1]
-            >>> sound = sound * wavetable
+                # Multiply every sample by an interpolated copy of `wavetable` 
+                # `wavetable` can be a 1d flat array/list/iterable, or a SoundBuffer
+                # This will modulate the amplitude of the SoundBuffer with the wavetable.
+                >>> wavetable = [0, 0.25, 0.5, 0.25, 0.75, 1]
+                >>> sound = sound * wavetable
 
-            >>> sound2 = SoundBuffer(length=0.5, channels=2, samplerate=44100)
-            >>> sound = sound * sound2
-
+                >>> sound2 = SoundBuffer(length=0.5, channels=2, samplerate=44100)
+                >>> sound = sound * sound2
         """
         cdef int length = len(self.frames)
         cdef double[:,:] out
@@ -527,7 +561,7 @@ cdef class SoundBuffer:
 
         if isinstance(value, numbers.Real):
             out = np.subtract(self.frames, value)
-        if isinstance(value, SoundBuffer):
+        elif isinstance(value, SoundBuffer):
             out = np.subtract(self.frames, value.frames)
         else:
             try:
@@ -543,13 +577,15 @@ cdef class SoundBuffer:
         """
         if isinstance(value, numbers.Real):
             self.frames = np.subtract(self.frames, value)
-        if isinstance(value, SoundBuffer):
+        elif isinstance(value, SoundBuffer):
             self.frames = np.subtract(self.frames, value.frames)
         else:
             try:
                 self.frames = np.subtract(self.frames, value.frames)
             except TypeError as e:
                 return NotImplemented
+
+        return self
 
     def __rsub__(self, value):
         return self - value
@@ -566,7 +602,7 @@ cdef class SoundBuffer:
     def __repr__(self):
         """ Return a string representation of this SoundBuffer
         """
-        return 'SoundBuffer(samplerate={}, channels={}, frames={})'.format(self.samplerate, self.channels, self.frames)
+        return 'SoundBuffer(samplerate=%s, channels=%s, frames=%s, dur=%.2f)' % (self.samplerate, self.channels, len(self.frames), self.dur)
 
 
     ##########################
@@ -689,10 +725,12 @@ cdef class SoundBuffer:
     def dub(self, sounds, double pos=-1, int framepos=0):
         """ Dub a sound or iterable of sounds into this soundbuffer
             starting at the given position in fractional seconds.
-            >>> snd.dub(snd2, 3.2)
+
+                >>> snd.dub(snd2, 3.2)
 
             To dub starting at a specific frame position use:
-            >>> snd.dub(snd3, framepos=111)
+
+                >>> snd.dub(snd3, framepos=111)
         """
         cdef int numsounds
         cdef int sound_index
@@ -718,7 +756,7 @@ cdef class SoundBuffer:
             To modulate a sound with an arbitrary 
             iterable, simply do:
 
-            >>> snd * iterable
+                >>> snd * iterable
 
             Where iterable is a list, array, or SoundBuffer with 
             the same # of channels and of any length
@@ -815,28 +853,14 @@ cdef class SoundBuffer:
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
     def pan(self, double pos=0.5, str method=None, int start=0):
-        """ Pan a stereo sound from pos=0 (hard left) 
-            to pos=1 (hard right)
+        """ Pan a stereo sound from `pos=0` (hard left) to `pos=1` (hard right)
 
-            Different panning strategies can be chosen 
-            by passing a value to the `method` param.
+            Different panning strategies can be chosen by passing a value to the `method` param.
 
-            method='constant'
-                Constant (square) power panning.
-                This is the default.
-
-            method='linear'
-                Simple linear panning.
-
-            method='sine'
-                Variation on constant power panning 
-                using sin() and cos() to shape the pan.
-                Taken from the floss manuals csound manual.
-
-            method='gogins'
-                Also taken from the csound manual -- 
-                Michael Gogins' variation on the above 
-                which uses a different part of the sinewave.
+            - `method='constant'` Constant (square) power panning. This is the default.
+            - `method='linear'` Simple linear panning.
+            - `method='sine'` Variation on constant power panning using sin() and cos() to shape the pan. _Taken from the floss manuals csound manual._
+            - `method='gogins'` Michael Gogins' variation on the above which uses a different part of the sinewave. _Also taken from the floss csound manual!_
         """
         if method is None:
             method = 'constant'
@@ -910,7 +934,7 @@ cdef class SoundBuffer:
             Uses the csound `mincer` phase vocoder implementation from soundpipe.
         """
         if position is None:
-            position = Wavetable(PHASOR) * self.dur
+            position = Wavetable('phasor', window=True)
 
         cdef double[:] time_lfo = to_window(position)
         cdef double[:] pitch_lfo = to_window(1.0)
@@ -924,13 +948,12 @@ cdef class SoundBuffer:
     cpdef SoundBuffer transpose(SoundBuffer self, object speed, object length=None, object position=None, double amp=1.0):
         """ Change the pitch of the sound without changing the length.
             Uses the csound `mincer` phase vocoder implementation from soundpipe.
-            TODO accept: from/to hz, notes, midi notes, intervals
         """
         if length is None:
             length = self.dur
 
         if position is None:
-            position = Wavetable(PHASOR) * length
+            position = Wavetable('phasor', window=True)
 
         cdef double[:] time_lfo = to_window(position)
         cdef double[:] pitch_lfo = to_window(speed)

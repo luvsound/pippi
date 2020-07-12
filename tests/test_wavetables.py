@@ -29,22 +29,42 @@ class TestWavetables(TestCase):
         self.assertEqual(len(wt2), 4096)
         self.assertEqual(len(wt3), 1000)
 
-    """
-    def test_polyseg(self):
-        score = 'sine 1,tri,0-1 rand,0.3-0.8'
-        length = random.randint(100, 1000)
-        for segment in score.split(' '):
-            match = wavetables.SEGMENT_RE.match(segment)
+    def test_save_and_load_wt(self):
+        wt = dsp.wt('sine', wtsize=4096)
+        self.assertEqual(len(wt), 4096)
+        wt.write('tests/renders/wavetable_sine.wav')
+        wt.graph('tests/renders/wavetable_sine-original.png')
 
-     
-        wt = wavetables.polyseg(score, length)
+        wt = dsp.load('tests/renders/wavetable_sine.wav')
+        wt.graph('tests/renders/wavetable_sine-reloaded.png')
 
-        self.assertEqual(len(wt), length)
-    """
+    def test_cut(self):
+        wt = dsp.wt('sine', wtsize=4092)
+        wt.graph('tests/renders/wavetable_precut.png')
+        wt = wt.cut(10, 100)
+        wt.graph('tests/renders/wavetable_cut.png')
+        self.assertEqual(100, len(wt.data))
+
+    def test_rcut(self):
+        wt = dsp.wt('sine', wtsize=4092)
+        wt.graph('tests/renders/wavetable_prercut.png')
+        wt = wt.rcut(100)
+        wt.graph('tests/renders/wavetable_rcut.png')
+        self.assertEqual(100, len(wt))
+
+    def test_rcut_bad(self):
+        wt = dsp.wt('sine', wtsize=4092)
+        wt = wt.rcut(-100)
+        self.assertEqual(1, len(wt))
+
+    def test_cut_bad(self):
+        wt = dsp.wt('sine', wtsize=4092)
+        wt = wt.cut(-100, -100)
+        self.assertEqual(1, len(wt))
 
     def test_randline(self):
-        numpoints = random.randint(1, 10)
-        wtsize = random.randint(10, 1000)
+        numpoints = 3
+        wtsize = 10
 
         wt = dsp.randline(numpoints, wtsize=wtsize)
         self.assertEqual(len(wt), wtsize)
@@ -96,6 +116,14 @@ class TestWavetables(TestCase):
     def test_graph_gaussout_window(self):
         wt = dsp.win('gaussout')
         wt.graph('tests/renders/graph_gaussout_window.png', stroke=3)
+
+    def test_graph_pluckin_window(self):
+        wt = dsp.win('pluckin')
+        wt.graph('tests/renders/graph_pluckin_window.png', stroke=3)
+
+    def test_graph_pluckout_window(self):
+        wt = dsp.win('pluckout')
+        wt.graph('tests/renders/graph_pluckout_window.png', stroke=3)
 
     def test_graph_sinein_window(self):
         wt = dsp.win('sinein')
@@ -175,22 +203,65 @@ class TestWavetables(TestCase):
         wt = wavetables.seesaw('sine', 4096, 0.85)
         wt.graph('tests/renders/graph_seesaw_sine.png', stroke=3)
 
-    def test_insets(self):
-        wt1 = wavetables.seesaw('rnd', 4096, dsp.rand(0, 1))
-        wt1_graph = wt1.graph(stroke=10)
-
-        wt2 = wavetables.seesaw('rnd', 4096, dsp.rand(0, 1))
-        wt2_graph = wt2.graph(stroke=10)
-
-        wt3 = wavetables.seesaw('rnd', 4096, dsp.rand(0, 1))
-        wt3_graph = wt3.graph(stroke=10)
-
-        snd = dsp.read('tests/sounds/linux.wav')
-        snd.graph('tests/renders/graph_insets.png', insets=[wt1_graph, wt2_graph, wt3_graph], stroke=3, width=1200, height=500)
-
     def test_pong(self):
         win = dsp.win('hann', 0, 0.75).harmonics().skewed(0.08).rightpadded(0, mult=4)
-        win = win + dsp.win('hannout', 0, 0.25, len(win))
+        win = win + dsp.win('hannout', 0, 0.25, wtsize=len(win))
         win.graph('tests/renders/graph_pong.png', stroke=3)
 
+    def test_mix_wavetables(self):
+        win = dsp.win([1,2,3])
+        self.assertEqual(len(win), 3)
+        self.assertEqual(win & dsp.win([2,2,2]), dsp.win([3,4,5]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        self.assertEqual(win & dsp.win([1,3,5]), dsp.win([2,5,8]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+    def test_mul_wavetables(self):
+        win = dsp.win([1,2,3])
+        self.assertEqual(len(win), 3)
+        self.assertEqual(win * 2, dsp.win([2,4,6]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        self.assertEqual(win * dsp.win([1,3,5]), dsp.win([1,6,15]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        self.assertEqual(dsp.win([1,3,5]) * win, dsp.win([1,6,15]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        with self.assertRaises(TypeError):
+            2 * win
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+    def test_add_wavetables(self):
+        win = dsp.win([1,2,3])
+        self.assertEqual(len(win), 3)
+        self.assertEqual(win + 2, dsp.win([1,2,3,2]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        self.assertEqual(win + dsp.win([1,3,5]), dsp.win([1,2,3,1,3,5]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        self.assertEqual(dsp.win([1,3,5]) + win, dsp.win([1,3,5,1,2,3]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        with self.assertRaises(TypeError):
+            2 + win
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+    def test_sub_wavetables(self):
+        win = dsp.win([1,2,3])
+        self.assertEqual(len(win), 3)
+        self.assertEqual(win - 2, dsp.win([-1,0,1]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        self.assertEqual(win - dsp.win([1,3,5]), dsp.win([0,-1,-2]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        self.assertEqual(dsp.win([1,3,5]) - win, dsp.win([0,1,2]))
+        self.assertEqual(win, dsp.win([1,2,3]))
+
+        with self.assertRaises(TypeError):
+            2 - win
+        self.assertEqual(win, dsp.win([1,2,3]))
 

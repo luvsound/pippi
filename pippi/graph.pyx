@@ -1,25 +1,34 @@
 #cython: language_level=3
 
 import random
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from pippi cimport interpolation
 from pippi cimport dsp
+from pippi.defaults cimport MIN_FLOAT
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.wavetables cimport Wavetable
 import sys
 import numpy as np
 
+
+cdef int ycoord(double point, int canvas_height, double minval, double maxval):
+    y = (point - minval) * (1.0/(maxval - minval))
+    return <int>(((y - 1) * -1) * canvas_height)
+
 def write(object data, 
         object filename=None, 
-        int width=400, 
-        int height=300, 
-        double offset=1, 
-        double mult=0.5, 
+        int width=640, 
+        int height=360, 
         int stroke=2, 
         int upsample_mult=5, 
         bint show_axis=True,
         list insets=None, 
-        list notes=None):
+        object y=None, 
+        str label=None, 
+        int fontsize=40, 
+        str label_top=None,
+        str label_bottom=None,
+    ):
 
     cdef int i = 0
     cdef int channels
@@ -32,6 +41,8 @@ def write(object data,
     cdef list mapped_points
     cdef list x_axis
     cdef int x
+
+    cdef double ymin=-1, ymax=1
 
     if isinstance(data, SoundBuffer):
         channels = data.channels
@@ -49,52 +60,79 @@ def write(object data,
         channels = data.shape[1]
         _data = data
 
+    if y is not None:
+        ymin, ymax = y
+    else:
+        ymin = np.min(_data)
+        ymax = np.max(_data)
+
+    if ymax - ymin <= MIN_FLOAT:
+        raise ValueError('ymax and ymin are too close together')
+
     width *= upsample_mult
     height *= upsample_mult
     stroke *= upsample_mult
 
-    if filename is None:
-        filename = 'waveform.png'
-
     x_axis = list(range(width))
 
-    img = Image.new('RGBA', (width, height), (255, 255, 255, 255))
-    draw = ImageDraw.Draw(img)
+    with Image.new('RGBA', (width, height), (255, 255, 255, 255)) as img:
+        draw = ImageDraw.Draw(img)
 
-    for channel in range(channels):
-        color = tuple([random.randint(0, 200) for _ in range(3)] + [200])
+        for channel in range(channels):
+            color = tuple([random.randint(0, 200) for _ in range(3)] + [200])
 
-        points = ((np.array(_data[:,channel], dtype='d') - offset) * -1) * height * mult
+            points = np.array(_data[:,channel], dtype='d')
 
-        mapped_points = []
-        for x in x_axis:
-            pos = x / width
-            y = interpolation._linear_pos(points, pos)
-            mapped_points += [ (x, y) ]
+            mapped_points = []
+            for x in x_axis:
+                pos = x / width
+                y = interpolation._linear_pos(points, pos)
+                y = ycoord(y, height, ymin, ymax)
+                mapped_points += [ (x, y) ]
 
-        draw.line(mapped_points, fill=color, width=stroke, joint='curve')
+            draw.line(mapped_points, fill=color, width=stroke, joint='curve')
 
-    if show_axis:
-        draw.line((0, height/2, width, height/2), fill=(0,0,0,255), width=stroke//4)
+        if show_axis:
+            y = ycoord(0, height, ymin, ymax)
+            draw.line((0, y, width, y), fill=(0,0,0,255), width=stroke//4)
 
-    cdef int gutter = stroke
-    if insets is not None:
-        inset_width = width//len(insets) - gutter//2
-        inset_height = height//3 - gutter//2
-        new = Image.new('RGBA', (img.width, img.height + inset_height), (255,255,255,255))
-        new.paste(img, (0, inset_height))
-        for i, inset in enumerate(insets):
-            inset = inset.resize((inset_width, inset_height))
-            new.paste(inset, (inset_width*i + gutter//2, 0))
+        if label is not None:
+            label_bottom = label
 
-        img = new
+        if label_top is not None:
+            fontsize = fontsize * upsample_mult
+            font = ImageFont.truetype('modules/pixeldroid-console/pixeldroidConsoleRegular.ttf', fontsize)
+            fontwidth, fontheight = font.getsize(label_top)
+            fontx = width//2 - (fontwidth//2)
+            fonty = 10
+            draw.text((fontx, fonty), label_top, font=font, fill=(0, 0, 0, 200))
 
-    img.thumbnail((width//upsample_mult, height//upsample_mult))
+        if label_bottom is not None:
+            fontsize = fontsize * upsample_mult
+            font = ImageFont.truetype('modules/pixeldroid-console/pixeldroidConsoleRegular.ttf', fontsize)
+            fontwidth, fontheight = font.getsize(label_bottom)
+            fontx = width//2 - (fontwidth//2)
+            fonty = height - int(fontheight*2)
+            draw.text((fontx, fonty), label_bottom, font=font, fill=(0, 0, 0, 200))
 
-    if filename is not None:
-        img.save(filename)
+        if insets is not None:
+            inset_width = width//len(insets) - stroke//2
+            inset_height = height//3 - stroke//2
+            with Image.new('RGBA', (img.width, img.height + inset_height), (255,255,255,255)) as new:
+                new.paste(img, (0, inset_height))
+                for i, inset in enumerate(insets):
+                    inset_height = int(inset.height * (width/inset_width))
+                    inset = inset.resize((inset_width, inset_height))
+                    new.paste(inset, (inset_width*i + stroke//2, 0))
+                img = new
+
+        img.thumbnail((width//upsample_mult, height//upsample_mult))
+
+        if filename is not None:
+            img.save(filename)
 
     return img
+
 
 # FIXME use `write` interface everywhere
 cpdef void waveform(object sound, 

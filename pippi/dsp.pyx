@@ -7,12 +7,12 @@ import numpy as np
 import random
 
 cimport cython
+import soundfile
 
 from pippi.soundbuffer import SoundBuffer
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.wavetables cimport Wavetable, _randline
 from pippi cimport rand as _rand
-from pippi import drummachine as dm
 from pippi cimport lists
 
 # Just a shorthand for MS in scripts. 
@@ -80,14 +80,14 @@ cpdef Wavetable randline(int numpoints, double lowvalue=0, double highvalue=1, i
 cpdef Wavetable wt(object values, 
         object lowvalue=None, 
         object highvalue=None, 
-        object wtsize=None, 
+        int wtsize=0, 
     ):
     return Wavetable(values, lowvalue, highvalue, wtsize, False)
 
 cpdef Wavetable win(object values, 
         object lowvalue=None, 
         object highvalue=None, 
-        object wtsize=None, 
+        int wtsize=0, 
     ):
     return Wavetable(values, lowvalue, highvalue, wtsize, True)
 
@@ -139,6 +139,10 @@ def join(sounds, overlap=None, channels=None, samplerate=None):
 cpdef SoundBuffer buffer(object frames=None, double length=-1, int channels=2, int samplerate=44100):
     return SoundBuffer.__new__(SoundBuffer, frames=frames, length=length, channels=channels, samplerate=samplerate)
 
+cpdef Wavetable load(object filename):
+    frames, samplerate = soundfile.read(filename, dtype='float64', always_2d=False)
+    return Wavetable(frames)
+
 cpdef SoundBuffer read(object filename, double length=-1, double start=0):
     """ Read a soundfile from disk and return a `SoundBuffer` with its contents.
         May include a start position and length in seconds to read a segment from a large file.
@@ -159,9 +163,6 @@ cpdef object choice(list choices):
 
 cpdef void seed(object value=None):
     _rand.seed(value)
-
-def redrum(*args, **kwargs):
-    return dm.DrumMachine(*args, **kwargs)
 
 def find(pattern, channels=2, samplerate=44100):
     """ Glob for files matching a given pattern and return a generator 

@@ -129,6 +129,8 @@ cdef class Cloud:
                 grainpos = <double>i / (grainlength-1)
                 amp = <double>interpolation._linear_pos(self.amp, pos)
                 amp *= interpolation._linear_pos(self.window, grainpos) 
+                if read_pos + i > read_boundry:
+                    break
 
                 for c in range(self.channels):
                     panpos = pans[c % 2]

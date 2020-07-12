@@ -21,7 +21,9 @@ test_topositions = [
     ('x[.x]xx', 0.25, 1, [0, 0.375, 0.5, 0.75]), 
     ('x[.x][xx].', 0.25, 1, [0, 0.375, 0.5, 0.625]), 
     ('x[.x][xx]x', 0.25, 1, [0, 0.375, 0.5, 0.625, 0.75]), 
-    #('[xx][x[xx]]', 0.5, 1, [0, 0.25, 0.5, 0.75, 0.875]),  FIXME add nested beat divs
+
+    # FIXME add recursive beat divs
+    #('[xx][x[xx]]', 0.5, 1, [0, 0.25, 0.5, 0.75, 0.875]),
 ]
 
 class TestRhythm(TestCase):
@@ -32,7 +34,7 @@ class TestRhythm(TestCase):
 
     def test_topositions(self):
         for pattern, beat, length, result in test_topositions:
-            pattern = rhythm.topositions(pattern, beat, length)
+            pattern = rhythm.onsets(pattern, beat, length)
             self.assertEqual(pattern, result)
 
        

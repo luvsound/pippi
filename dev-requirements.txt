@@ -1,0 +1,2 @@
+portray==1.3.1
+Pweave==0.30.3

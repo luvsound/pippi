@@ -13,6 +13,47 @@ class TestFx(TestCase):
         snd = snd + g
         snd.write('tests/renders/fx_vspeed.wav')
 
+    def test_convolve(self):
+        sound = dsp.read('tests/sounds/guitar1s.wav')
+        impulse = dsp.read('tests/sounds/LittleTikes-A1.wav')
+
+        out = fx.convolve(sound, impulse)
+        out.write('tests/renders/fx_convolve_guitar_littletikes.wav')
+
+        impulse = dsp.win('sinc')
+        out = fx.convolve(sound, impulse)
+        out.write('tests/renders/fx_convolve_guitar_sinc.wav')
+
+    def test_tconvolve(self):
+        sound = dsp.read('tests/sounds/guitar1s.wav')
+        impulse = dsp.win('sinc')
+
+        out = fx.tconvolve(sound, impulse)
+        out.write('tests/renders/fx_tconvolve_guitar_sinc.wav')
+
+    def test_wconvolve(self):
+        sound = dsp.read('tests/sounds/guitar10s.wav')
+        impulse = dsp.read('tests/sounds/LittleTikes-A1.wav')
+
+        out = fx.wconvolve(sound, impulse)
+        out.write('tests/renders/fx_wconvolve_guitar_littletikes-0.02.wav')
+
+        """
+        # these operations are really slow, so disable them for most test runs
+        out = fx.wconvolve(sound, impulse, 'hann')
+        out.write('tests/renders/fx_wconvolve_guitar_littletikes-hann.wav')
+
+        out = fx.wconvolve(sound, impulse, 'sinc')
+        out.write('tests/renders/fx_wconvolve_guitar_littletikes-sinc.wav')
+
+        out = fx.wconvolve(sound, impulse, dsp.win('hann', 0.01, 0.5))
+        out.write('tests/renders/fx_wconvolve_guitar_littletikes-hann-0.01-0.5.wav')
+
+        out = fx.wconvolve(sound, impulse, grid='hann')
+        out.write('tests/renders/fx_wconvolve_guitar_littletikes-grid-hann.wav')
+        """
+
+
     def test_crossfade(self):
         snd1 = dsp.read('tests/sounds/linux.wav').cut(0, 3)
         snd2 = dsp.read('tests/sounds/guitar10s.wav').cut(0, 3)
@@ -41,9 +82,19 @@ class TestFx(TestCase):
         out = fx.crush(snd)
         out.write('tests/renders/fx_crush_linux.wav')
 
-        snd = dsp.read('tests/sounds/guitar1s.wav')
+        snd = dsp.read('tests/sounds/guitar10s.wav')
         out = fx.crush(snd)
         out.write('tests/renders/fx_crush_guitar.wav')
+
+        out = fx.crush(snd, dsp.win('sine', 2, 16), 44100)
+        out.write('tests/renders/fx_crush_guitar_vbitdepth.wav')
+
+        out = fx.crush(snd, 16, dsp.win('sine', 200, 44100))
+        out.write('tests/renders/fx_crush_guitar_vsamplerate.wav')
+
+        out = fx.crush(snd, dsp.win('hannin', 2, 16), dsp.win('sine', 200, 44100))
+        out.write('tests/renders/fx_crush_guitar_vboth.wav')
+
 
     def test_crossover(self):
         snd = dsp.read('tests/sounds/linux.wav')

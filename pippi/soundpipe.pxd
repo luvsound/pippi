@@ -191,8 +191,8 @@ cdef extern from "soundpipe.h":
     int sp_bal_compute(sp_data*, sp_bal*, double*, double*, double*)
 
 
-cdef double[:,:] _bitcrush(double[:,:] snd, double[:,:] out, double bitdepth, double samplerate, int length, int channels)
-cpdef double[:,:] bitcrush(double[:,:] snd, double bitdepth, double samplerate)
+cdef double[:,:] _bitcrush(double[:,:] snd, double[:,:] out, double[:] bitdepth, double[:] samplerate, int length, int channels)
+cpdef double[:,:] bitcrush(double[:,:] snd, double[:] bitdepth, double[:] samplerate)
 
 cdef double[:,:] _butbr(double[:,:] snd, double[:,:] out, double[:] freq, int length, int channels)
 cpdef double[:,:] butbr(double[:,:] snd, double[:] freq)
@@ -203,7 +203,7 @@ cpdef double[:,:] buthp(double[:,:] snd, double[:] freq)
 cdef double[:,:] _butlp(double[:,:] snd, double[:,:] out, double[:] freq, int length, int channels)
 cpdef double[:,:] butlp(double[:,:] snd, double[:] freq)
 
-cdef double[:,:] _mincer(double[:,:] snd, double[:,:] out, double sndlength, int sndframelength, int wtsize, int length, int channels, double[:] time, double amp, double[:] pitch)
+cdef double[:,:] _mincer(double[:,:] snd, double[:,:] out, double sndlength, int sndframelength, int wtsize, int length, int channels, int samplerate, double[:] time, double amp, double[:] pitch)
 cpdef double[:,:] mincer(double[:,:] snd, double length, double[:] time, double amp, double[:] pitch, int wtsize=?, int samplerate=?)
 
 cdef double[:,:] _saturator(double[:,:] snd, double[:,:] out, double drive, double dcoffset, int length, int channels, bint dcblock)

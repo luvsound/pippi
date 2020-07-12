@@ -14,7 +14,15 @@ class TestLists(TestCase):
 
     def test_log_scaled_list(self):
         source = [1,2,3,4,5,6]
-        target = [6,7,8,9,10,11]
+        target = [
+            6.0,
+            7.476972645601738,
+            8.615685818057926,
+            9.542565334311575,
+            10.324198625815951,
+            11.0
+        ]
+
         result = dsp.scale(source, 1, 6, 6, 11, log=True)
         self.assertEqual(result, target)
 

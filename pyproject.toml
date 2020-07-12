@@ -1,0 +1,23 @@
+[tool.portray]
+output_dir = "pippi.world"
+
+[tool.portray.mkdocs.theme]
+name = "material"
+logo = "pippi.svg"
+
+[[tool.portray.mkdocs.nav]]
+Home = "README.md"
+
+[[tool.portray.mkdocs.nav]]
+Changelog = "CHANGELOG.md"
+
+[[tool.portray.mkdocs.nav]]
+    [[tool.portray.mkdocs.nav.Tutorials]]
+    "0. Overview" = "docs/tutorials/README.md"
+
+    [[tool.portray.mkdocs.nav.Tutorials]]
+    "1. SoundBuffers and sampling" = "docs/tutorials/001-soundbuffers.md"
+
+    [[tool.portray.mkdocs.nav.Tutorials]]
+    "2. Basic rhythm and sequencing" = "docs/tutorials/002-sequencing.md"
+

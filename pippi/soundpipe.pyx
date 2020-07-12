@@ -20,22 +20,25 @@ cdef double** memoryview2ftbls(double[:,:] snd):
 
     return tbls
 
-cdef double[:,:] _bitcrush(double[:,:] snd, double[:,:] out, double bitdepth, double samplerate, int length, int channels):
+cdef double[:,:] _bitcrush(double[:,:] snd, double[:,:] out, double[:] bitdepth, double[:] samplerate, int length, int channels):
     cdef sp_data* sp
     cdef sp_bitcrush* bitcrush
     cdef double sample = 0
     cdef double crushed = 0
     cdef int i=0, c=0
+    cdef double pos = 0
 
     sp_create(&sp)
 
     for c in range(channels):
         sp_bitcrush_create(&bitcrush)
         sp_bitcrush_init(sp, bitcrush)
-        bitcrush.bitdepth = bitdepth
-        bitcrush.srate = samplerate
 
         for i in range(length):
+            pos = <double>i / <double>length
+            bitcrush.bitdepth = interpolation._linear_pos(bitdepth, pos)
+            bitcrush.srate = interpolation._linear_pos(samplerate, pos)
+
             sp_bitcrush_compute(sp, bitcrush, &snd[i,c], &crushed)
             out[i,c] = crushed
 
@@ -45,7 +48,7 @@ cdef double[:,:] _bitcrush(double[:,:] snd, double[:,:] out, double bitdepth, do
 
     return out
 
-cpdef double[:,:] bitcrush(double[:,:] snd, double bitdepth, double samplerate):
+cpdef double[:,:] bitcrush(double[:,:] snd, double[:] bitdepth, double[:] samplerate):
     cdef int length = <int>len(snd)
     cdef int channels = <int>snd.shape[1]
     cdef double[:,:] out = np.zeros((length, channels), dtype='d')
@@ -286,6 +289,7 @@ cdef double[:,:] _mincer(double[:,:] snd,
                          int wtsize, 
                          int length, 
                          int channels, 
+                         int samplerate,
                          double[:] time, 
                          double amp, 
                          double[:] pitch):
@@ -297,6 +301,7 @@ cdef double[:,:] _mincer(double[:,:] snd,
     cdef double** tbls = memoryview2ftbls(snd)
     cdef double pos = 0
     cdef sp_ftbl* tbl
+    cdef double sourcelength = <double>sndframelength / <double>samplerate
 
     sp_create(&sp)
 
@@ -309,7 +314,7 @@ cdef double[:,:] _mincer(double[:,:] snd,
 
         for i in range(length):
             pos = <double>i/<double>length
-            mincer.time = <double>interpolation._linear_pos(time, pos) * sndlength
+            mincer.time = <double>interpolation._linear_pos(time, pos) * sourcelength
             mincer.pitch = <double>interpolation._linear_pos(pitch, pos)
             sp_mincer_compute(sp, mincer, NULL, &output)
             out[i,c] = <double>output
@@ -327,7 +332,7 @@ cpdef double[:,:] mincer(double[:,:] snd, double length, double[:] time, double 
     cdef int framelength = <int>(samplerate * length)
     cdef int channels = <int>snd.shape[1]
     cdef double[:,:] out = np.zeros((framelength, channels), dtype='d')
-    return _mincer(snd, out, length, <int>len(snd), wtsize, framelength, channels, time, amp, pitch)
+    return _mincer(snd, out, length, <int>len(snd), wtsize, framelength, channels, samplerate, time, amp, pitch)
 
 cdef double[:,:] _saturator(double[:,:] snd, double[:,:] out, double drive, double dcoffset, int length, int channels, bint dcblock):
     cdef sp_data* sp
