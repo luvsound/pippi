@@ -534,6 +534,10 @@ cpdef SoundBuffer tconvolve(SoundBuffer snd, object impulse, bool normalize=True
 
     return SoundBuffer(out, channels=snd.channels, samplerate=snd.samplerate)
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 cpdef SoundBuffer wconvolve(SoundBuffer snd, SoundBuffer impulse, object wsize=None, object grid=None, bool normalize=True):
     if wsize is None:
         wsize = 0.02

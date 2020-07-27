@@ -842,13 +842,13 @@ cdef class SoundBuffer:
         cdef int framestart = <int>(start * self.samplerate)
         cdef int frameend = <int>(end * self.samplerate)
 
-        cdef double[:,:] out
+        cdef double[:,:] out = self.frames
 
         if framestart > 0:
-            out = np.vstack((np.zeros((framestart, self.channels)), self.frames))
+            out = np.vstack((np.zeros((framestart, self.channels)), out))
 
         if frameend > 0:
-            out = np.vstack((self.frames, np.zeros((frameend, self.channels))))
+            out = np.vstack((out, np.zeros((frameend, self.channels))))
  
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
@@ -959,6 +959,46 @@ cdef class SoundBuffer:
         cdef double[:] pitch_lfo = to_window(speed)
 
         return SoundBuffer(soundpipe.mincer(self.frames, length, time_lfo, amp, pitch_lfo, 4096, self.samplerate), channels=self.channels, samplerate=self.samplerate)
+
+    cpdef SoundBuffer trim(SoundBuffer self, bint start=False, bint end=True, double threshold=0, int window=4):
+        """ Trim silence below a given threshold from the end (and/or start) of the buffer
+        """
+        cdef int boundry = len(self)-1
+        cdef int trimend = boundry
+        cdef int trimstart = 0
+        cdef double current = 0
+        cdef int hits = 0
+
+        if end:
+            current = abs(sum(self.frames[trimend]))
+
+            while True:
+                if current > threshold:
+                    hits += 1
+
+                trimend -= 1
+
+                if trimend <= 0 or hits >= window:
+                    break
+
+                current = abs(sum(self.frames[trimend]))
+
+        if start:
+            hits = 0
+            current = abs(sum(self.frames[trimstart]))
+
+            while True:
+                if current > threshold:
+                    hits += 1
+
+                trimstart += 1
+
+                if trimstart >= boundry or hits >= window:
+                    break
+
+                current = abs(sum(self.frames[trimstart]))
+
+        return self[trimstart:trimend].copy()
 
     cpdef Wavetable toenv(SoundBuffer self, double window=0.015):
         return fx.envelope_follower(self, window)

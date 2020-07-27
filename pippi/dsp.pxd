@@ -1,6 +1,7 @@
 #cython: language_level=3
 
 from pippi.soundbuffer cimport SoundBuffer
+from pippi.wavesets cimport Waveset
 from pippi.wavetables cimport Wavetable
 
 cdef double _mag(double[:,:] snd)
@@ -10,6 +11,7 @@ cpdef list snap(list source, double mult=*, object pattern=*)
 cpdef SoundBuffer mix(list sounds, align_end=*)
 cpdef Wavetable randline(int numpoints, double lowvalue=*, double highvalue=*, int wtsize=*)
 cpdef Wavetable wt(object values, object lowvalue=*, object highvalue=*, int wtsize=*)
+cpdef Waveset ws(object values=*, int crossings=*, int offset=*, int limit=*, int modulo=*, int samplerate=*, list wavesets=*)
 cpdef Wavetable win(object values, object lowvalue=*, object highvalue=*, int wtsize=*)
 cpdef SoundBuffer stack(list sounds)
 cpdef SoundBuffer buffer(object frames=*, double length=*, int channels=*, int samplerate=*)

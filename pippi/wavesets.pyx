@@ -11,6 +11,9 @@ from pippi.dsp cimport _mag
 from libc.math cimport signbit
 from libc.stdlib cimport malloc, free
 import numpy as np
+cimport numpy as np
+
+np.import_array()
 
 cdef struct Wave:
     unsigned int start

@@ -12,6 +12,7 @@ import soundfile
 from pippi.soundbuffer import SoundBuffer
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.wavetables cimport Wavetable, _randline
+from pippi.wavesets cimport Waveset
 from pippi cimport rand as _rand
 from pippi cimport lists
 
@@ -83,6 +84,9 @@ cpdef Wavetable wt(object values,
         int wtsize=0, 
     ):
     return Wavetable(values, lowvalue, highvalue, wtsize, False)
+
+cpdef Waveset ws(object values=None, int crossings=3, int offset=-1, int limit=-1, int modulo=1, int samplerate=-1, list wavesets=None):
+    return Waveset(values, crossings, offset, limit, modulo, samplerate, wavesets)
 
 cpdef Wavetable win(object values, 
         object lowvalue=None, 
