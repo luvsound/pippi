@@ -82,6 +82,10 @@ cdef int GAUSS
 cdef int GAUSSIN
 cdef int GAUSSOUT
 
+cdef int LP
+cdef int HP
+cdef int BP
+
 cdef int LEN_WINDOWS
 cdef int* ALL_WINDOWS
 cdef int LEN_WAVETABLES

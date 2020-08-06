@@ -12,24 +12,19 @@ cpdef SoundBuffer widen(SoundBuffer snd, object width=*)
 cdef double[:,:] _softclip(double[:,:] out, double[:,:] snd) nogil
 cpdef SoundBuffer softclip(SoundBuffer snd)
 
-"""
-cdef class SVF:
-    cdef double[4] Az 
-    cdef double[2] Bz
-    cdef double[2] CLPz
-    cdef double[2] CBPz
-    cdef double[2] CHPz
-    cdef double DLPz
-    cdef double DBPz
-    cdef double DHPz
+ctypedef double (*svf_filter_t)(SVFData* data, double val) 
 
-    cdef double[2] X
+ctypedef struct SVFData:
+    double[4] Az 
+    double[2] Bz
+    double[2] X
 
-    cdef double lpOut
-    cdef double bpOut
-    cdef double hpOut
+    double a1
+    double a2
+    double a3
+    double g
+    double k
 
-    cdef void _setParams(SVF self, double freq, double res)
-    cdef double _process(SVF self, double val)
-    cpdef SoundBuffer process(SVF self, SoundBuffer snd, object freq=*, object res=*)
-"""
+cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)

@@ -53,6 +53,10 @@ cdef int HERMITE = 14
 cdef int CONSTANT = 15
 cdef int GOGINS = 16
 
+cdef int HP = 29
+cdef int LP = 30
+cdef int BP = 31
+
 cdef int LEN_WINDOWS = 17
 cdef int* ALL_WINDOWS = [
             SINE, 
@@ -123,6 +127,9 @@ cdef int to_flag(str value):
         'gaussout': GAUSSOUT,
         'pluckin': PLUCKIN,
         'pluckout': PLUCKOUT,
+        'lp': LP,
+        'hp': HP,
+        'bp': BP,
     }
 
     return flags[value]

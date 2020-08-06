@@ -19,6 +19,7 @@ from pippi.interpolation cimport _linear_point, _linear_pos
 from pippi.dsp cimport _mag
 from pippi cimport soundpipe
 from cpython cimport bool
+from libc.stdlib cimport malloc, free
 
 cdef double MINDENSITY = 0.001
 
@@ -664,98 +665,106 @@ cpdef SoundBuffer go(SoundBuffer snd,
 
     return out
 
-"""
-cdef class SVF:
-    def __cinit__(SVF self):
-        self.Az = [0, 0, 0, 0]
-        self.Bz = [0, 0]
-        self.CLPz = [0, 0]
-        self.CBPz = [0, 0]
-        self.CHPz = [0, 0]
-        self.DLPz = 0
-        self.DBPz = 0
-        self.DHPz = 0
 
-        self.X = [0, 0]
+cdef double _svf_hp(SVFData* data, double val):
+    cdef double C0 = -data.k * data.a1 - data.a2
+    cdef double C1 = data.k * data.a2 - (1. - data.a3)
+    cdef double D = 1. - data.k * data.a2 - data.a3
+    return val * D + data.X[0] * C0 + data.X[1] * C1
 
-        self.lpOut = 0
-        self.bpOut = 0
-        self.hpOut = 0
+cdef double _svf_lp(SVFData* data, double val):
+    cdef double C0 = data.a2
+    cdef double C1 = 1. - data.a3
+    cdef double D = data.a3
+    return val * D + data.X[0] * C0 + data.X[1] * C1
 
-    cdef void _updateCoeffs(SVF self, double freq, double res):
-        cdef double g = math.tan(PI * freq)
-        cdef double k = 2. - 2. * res
+cdef double _svf_bp(SVFData* data, double val):
+    cdef double C0 = data.a1
+    cdef double C1 = -data.a2
+    cdef double D = data.a2
+    return  val * D + data.X[0] * C0 + data.X[1] * C1
 
-        cdef double a1 = 1. / (1. + g * (g + k))
-        cdef double a2 = g * a1
-        cdef double a3 = g * a2
+cdef void _svf_update_coeff(SVFData* data, double freq, double res):
+    data.g = math.tan(PI * freq)
+    data.k = 2. - 2. * res
 
-        self.Az[0] = 2. * a1 - 1.
-        self.Az[1] = -2. * a2
-        self.Az[2] = 2. * a2
-        self.Az[3] = 1. - 2. * a3
+    data.a1 = 1. / (1. + data.g * (data.g + data.k))
+    data.a2 = data.g * data.a1
+    data.a3 = data.g * data.a2
 
-        self.Bz[0] = 2. * a2
-        self.Bz[1] = 2. * a3
+    data.Az[0] = 2. * data.a1 - 1.
+    data.Az[1] = -2. * data.a2
+    data.Az[2] = 2. * data.a2
+    data.Az[3] = 1. - 2. * data.a3
 
-        return a1, a2, a3, k
+    data.Bz[0] = 2. * data.a2
+    data.Bz[1] = 2. * data.a3
 
-    cdef double _outputHP(SVF self, double val, a1, a2, a3, k):
-        # highpass
-        cdef double C0 = -k * a1 - a2
-        cdef double C1 = k * a2 - (1. - a3)
-        cdef double D = 1. - k * a2 - a3
+cdef SoundBuffer _svf(svf_filter_t method, SoundBuffer snd, object freq, object res, bint norm):
+    if freq is None:
+        freq = 100
 
-        return val * D + self.X[0] * C0 + self.X[1] * C1
+    if res is None:
+        res = 0
 
-    cdef double _outputLP(SVF self, double val, a1, a2, a3, k):
-        # lowpass
-        self.CLPz[0] = a2
-        self.CLPz[1] = 1. - a3
-        self.DLPz = a3
-        return val * self.DLPz + self.X[0] * self.CLPz[0] + self.X[1] * self.CLPz[1]
+    cdef int channels = snd.channels
+    cdef int length = len(snd)
+    cdef int samplerate = snd.samplerate
+    cdef double[:,:] frames = snd.frames
 
-    cdef double _outputBP(SVF self, double val, a1, a2, a3, k):
-        # bandpass
-        self.CBPz[0] = a1
-        self.CBPz[1] = -a2
-        self.DBPz = a2
-        return  val * self.DBPz + self.X[0] * self.CBPz[0] + self.X[1] * self.CBPz[1]
+    cdef double[:] _freq = wavetables.to_window(freq)
+    cdef double[:] _res = wavetables.to_window(res)
+    cdef double[:,:] out = np.zeros((length, channels), dtype='d')
 
-    cdef double _updateState(SVF self, double val):
-        cdef double X0 = val * self.Bz[0] + self.X[0] * self.Az[0] + self.X[1] * self.Az[1]
-        cdef double X1 = val * self.Bz[1] + self.X[0] * self.Az[2] + self.X[1] * self.Az[3]
+    cdef int c = 0
+    cdef int i = 0
+    cdef double f
+    cdef double r
+    cdef double val
+    cdef double pos = 0
 
-        self.X[0] = X0
-        self.X[1] = X1
+    cdef SVFData* data = <SVFData*>malloc(sizeof(SVFData))
+    for c in range(channels):
+        data.Az = [0, 0, 0, 0]
+        data.Bz = [0, 0]
+        data.X = [0, 0]
 
-    cpdef SoundBuffer process(SVF self, SoundBuffer snd, object freq=None, object res=None):
-        cdef int length = len(snd)
+        data.a1 = 0
+        data.a2 = 0
+        data.a3 = 0
+        data.g = 0
+        data.k = 0
 
-        if freq is None:
-            freq = 0.1
+        for i in range(length):
+            pos = <double>i / length
+            f = min(_linear_pos(_freq, pos) / samplerate, 0.49)
+            r = min(_linear_pos(_res, pos), 0.99999999)
+            val = frames[i,c]
 
-        if res is None:
-            res = 0
+            _svf_update_coeff(data, f, r)
 
-        cdef double[:] _freq = wavetables.to_window(freq)
-        cdef double[:] _res = wavetables.to_window(res)
+            out[i,c] = method(data, val)
 
-        cdef int c = 0
-        cdef int i = 0
-        cdef double f
-        cdef double r
-        cdef double pos = 0
+            data.X[0] = val * data.Bz[0] + data.X[0] * data.Az[0] + data.X[1] * data.Az[1]
+            data.X[1] = val * data.Bz[1] + data.X[0] * data.Az[2] + data.X[1] * data.Az[3]
 
-        cdef double[:,:] out = np.zeros((length, snd.channels), dtype='d')
-        for c in range(snd.channels):
-            for i in range(length):
-                pos = <double>i / length
-                f = min(_linear_pos(_freq, pos) / snd.samplerate, 0.49)
-                r = min(_linear_pos(_res, pos), 0.99999999)
-                self._setParams(f, r)
+    if norm:
+        out = _norm(out, snd.mag)
 
-                out[i,c] = self._process(snd.frames[i,c])
+    free(data)
 
-        return SoundBuffer(out, channels=snd.channels, samplerate=snd.samplerate)
-"""
+    return SoundBuffer(out, channels=channels, samplerate=samplerate)   
+
+cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
+    cdef svf_filter_t method = _svf_hp
+    return _svf(method, snd, freq, res, norm)
+
+cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
+    cdef svf_filter_t method = _svf_lp
+    return _svf(method, snd, freq, res, norm)
+
+cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
+    cdef svf_filter_t method = _svf_bp
+    return _svf(method, snd, freq, res, norm)
+
+
