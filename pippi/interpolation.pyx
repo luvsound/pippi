@@ -151,3 +151,104 @@ cpdef double linear_pos(double[:] data, double pos):
     return _linear_pos(data, pos)
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef class Bandlimit:
+
+    def __cinit__(
+            self, 
+            object wavetable=None,   
+            int quality=6,
+            bint loop=True 
+        ):
+
+        self.quality = quality
+        self.samples_per_0x = 512
+        self.filter_length = quality * 512
+        self.table = to_wavetable(wavetable)
+        self.table_length = len(self.table) - 1
+
+        self._make_filter()
+
+    cdef void _make_filter(self):
+        sinc_domain = np.linspace(0, self.quality, self.filter_length)
+        sinc_sample = np.sinc(sinc_domain)
+        window = np.kaiser(self.filter_length * 2, 5)[self.filter_length:]
+        sinc_sample *= window
+        self.filter_table = np.append(sinc_sample, [0])
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef double _get_filter_coeff(self, double phase) nogil:
+
+        # scale 0 - num_zero_crossings to 0 - num_samples in table
+        cdef double expanded_phase = phase * self.samples_per_0x
+        # get the nearest FIR sample and do linear interpolation
+        cdef int left_index = <int> expanded_phase
+        cdef int right_index = left_index + 1
+        cdef double fractional_part = expanded_phase - left_index
+        return self.filter_table[left_index] * (1 - fractional_part) + self.filter_table[right_index] * fractional_part
+
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cdef double _process_loop(self, double phase, double resampling_factor) nogil:
+        cdef double expanded_phase = phase * self.table_length
+        cdef int left_index = <int>expanded_phase
+        cdef int right_index = (left_index + 1)
+        cdef double fractional_part = expanded_phase - left_index
+
+        # start the accumulation
+        cdef double sample = 0
+
+        # apply the left hand side of the filter on "past wavetable samples"
+
+        # tricky, the first lookup in the filter is the fractional part scaled down by the resampling factor
+        cdef double filter_phasor = fractional_part * resampling_factor
+
+        # first sample on the chopping block is the left neighbor
+        cdef int read_index = left_index
+
+        cdef double coeff = 0
+
+        while filter_phasor < self.quality:
+            # # get the interpolated coefficient
+            coeff = self._get_filter_coeff(filter_phasor)
+
+            # increment through the filter indices by the resampling factor
+            filter_phasor += resampling_factor
+            # for each stop in the filter table, burn a new sample value
+            sample += coeff * self.table[read_index]
+            # next sample on the chopping block is the previous one
+            read_index -= 1
+            if read_index < 0:
+                read_index += self.table_length
+
+        # apply the right hand side of the filter on "future wavetable samples"
+
+        # tricky, the first lookup in the filter is 1 - the fractional part scaled down by the resampling factor
+        filter_phasor = (1 - fractional_part) * resampling_factor
+
+        # pretty much same as the other wing but we move forward through the wavetable at each new coefficient
+        read_index = right_index
+
+        while filter_phasor < self.quality:
+
+            coeff = self._get_filter_coeff(filter_phasor)
+            filter_phasor += resampling_factor
+
+            sample += coeff * self.table[read_index]
+
+            read_index += 1
+            if read_index > self.table_length:
+                read_index -= self.table_length
+
+        # return left_index
+
+        return sample * resampling_factor
+
+    cpdef double process(self, double phase, double resampling_factor):
+        return self._process_loop(phase=phase, resampling_factor=resampling_factor)
+
+
+
+
