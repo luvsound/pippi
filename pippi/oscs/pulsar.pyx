@@ -101,8 +101,8 @@ cdef class Pulsar:
             wt_boundry_p = <int>max((ipulsewidth * wt_length)-1, 1)
             win_boundry_p = <int>max((ipulsewidth * win_length)-1, 1)
 
-            sample = interpolation._linear_point(self.wavetable, self.wt_phase, pulsewidth)
-            sample *= interpolation._linear_point(self.window, self.win_phase, pulsewidth)
+            sample = interpolation._linear_point_pw(self.wavetable, self.wt_phase, pulsewidth)
+            sample *= interpolation._linear_point_pw(self.window, self.win_phase, pulsewidth)
             sample *= amp * burst * mask
 
             self.freq_phase += freq_phase_inc

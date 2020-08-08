@@ -1659,45 +1659,46 @@ struct __pyx_opt_args_5pippi_11soundbuffer_11SoundBuffer_toenv {
   int __pyx_n;
   double window;
 };
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point;
-struct __pyx_opt_args_5pippi_13interpolation__linear_point;
 struct __pyx_opt_args_5pippi_13interpolation_linear_point;
 
-/* "interpolation.pxd":4
- * 
- * cdef double _hermite_pos(double[:] data, double pos) nogil
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "interpolation.pxd":6
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)
- * cdef double _linear_pos(double[:] data, double pos) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__linear_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "interpolation.pxd":7
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
+/* "interpolation.pxd":10
+ * cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil
+ * cdef double _linear_point(double[:] data, double phase) nogil
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)             # <<<<<<<<<<<<<<
+ * 
  * cdef double _linear_pos(double[:] data, double pos) nogil
- * cpdef double linear_pos(double[:] data, double pos)
  */
 struct __pyx_opt_args_5pippi_13interpolation_linear_point {
   int __pyx_n;
   double pulsewidth;
 };
+
+/* "interpolation.pxd":26
+ * # Use these for function pointers in critical loops
+ * # when interpolation scheme can be set at runtime
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_t)(__Pyx_memviewslice, double);
+
+/* "interpolation.pxd":27
+ * # when interpolation scheme can be set at runtime
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
+ * 
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_pw_t)(__Pyx_memviewslice, double, double);
+
+/* "interpolation.pxd":28
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil             # <<<<<<<<<<<<<<
+ * 
+ * cdef interp_point_t get_point_interpolator(str flag)
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_pos_t)(__Pyx_memviewslice, double);
 
 /* "pippi/wavetables.pxd":11
  * cdef double[:] _window(int, int)
@@ -3797,7 +3798,7 @@ static PyTypeObject *__pyx_ptype_5pippi_11soundbuffer_SoundBuffer = 0;
 /* Module declarations from "pippi.interpolation" */
 #if !CYTHON_COMPILING_IN_LIMITED_API
 #endif
-static double (*__pyx_f_5pippi_13interpolation__linear_point)(__Pyx_memviewslice, double, struct __pyx_opt_args_5pippi_13interpolation__linear_point *__pyx_optional_args); /*proto*/
+static double (*__pyx_f_5pippi_13interpolation__linear_point)(__Pyx_memviewslice, double); /*proto*/
 
 /* Module declarations from "cython.view" */
 #if !CYTHON_COMPILING_IN_LIMITED_API
@@ -4730,8 +4731,8 @@ static PyObject *__pyx_f_5pippi_3osc_3Osc__play(struct __pyx_obj_5pippi_3osc_Osc
   double __pyx_v_sample;
   double __pyx_v_freq;
   double __pyx_v_amp;
-  CYTHON_UNUSED double __pyx_v_pm;
-  CYTHON_UNUSED double __pyx_v_lastpm;
+  double __pyx_v_pm;
+  double __pyx_v_lastpm;
   double __pyx_v_ilength;
   int __pyx_v_freq_boundry;
   int __pyx_v_amp_boundry;
@@ -4971,7 +4972,7 @@ static PyObject *__pyx_f_5pippi_3osc_3Osc__play(struct __pyx_obj_5pippi_3osc_Osc
  *             pm = interpolation._linear_point(self.pm, self.pm_phase)
  */
     if (unlikely(!__pyx_v_self->freq.memview)) {PyErr_SetString(PyExc_AttributeError,"Memoryview is not initialized");__PYX_ERR(0, 68, __pyx_L1_error)}
-    __pyx_v_freq = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_self->freq, __pyx_v_self->freq_phase, NULL);
+    __pyx_v_freq = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_self->freq, __pyx_v_self->freq_phase);
 
     /* "pippi/oscs/osc.pyx":69
  *         for i in range(length):
@@ -4981,7 +4982,7 @@ static PyObject *__pyx_f_5pippi_3osc_3Osc__play(struct __pyx_obj_5pippi_3osc_Osc
  *             sample = interpolation._linear_point(self.wavetable, self.wt_phase) * amp
  */
     if (unlikely(!__pyx_v_self->amp.memview)) {PyErr_SetString(PyExc_AttributeError,"Memoryview is not initialized");__PYX_ERR(0, 69, __pyx_L1_error)}
-    __pyx_v_amp = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_self->amp, __pyx_v_self->amp_phase, NULL);
+    __pyx_v_amp = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_self->amp, __pyx_v_self->amp_phase);
 
     /* "pippi/oscs/osc.pyx":70
  *             freq = interpolation._linear_point(self.freq, self.freq_phase)
@@ -4991,7 +4992,7 @@ static PyObject *__pyx_f_5pippi_3osc_3Osc__play(struct __pyx_obj_5pippi_3osc_Osc
  * 
  */
     if (unlikely(!__pyx_v_self->pm.memview)) {PyErr_SetString(PyExc_AttributeError,"Memoryview is not initialized");__PYX_ERR(0, 70, __pyx_L1_error)}
-    __pyx_v_pm = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_self->pm, __pyx_v_self->pm_phase, NULL);
+    __pyx_v_pm = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_self->pm, __pyx_v_self->pm_phase);
 
     /* "pippi/oscs/osc.pyx":71
  *             amp = interpolation._linear_point(self.amp, self.amp_phase)
@@ -5001,7 +5002,7 @@ static PyObject *__pyx_f_5pippi_3osc_3Osc__play(struct __pyx_obj_5pippi_3osc_Osc
  *             self.freq_phase += freq_phase_inc
  */
     if (unlikely(!__pyx_v_self->wavetable.memview)) {PyErr_SetString(PyExc_AttributeError,"Memoryview is not initialized");__PYX_ERR(0, 71, __pyx_L1_error)}
-    __pyx_v_sample = (__pyx_f_5pippi_13interpolation__linear_point(__pyx_v_self->wavetable, __pyx_v_self->wt_phase, NULL) * __pyx_v_amp);
+    __pyx_v_sample = (__pyx_f_5pippi_13interpolation__linear_point(__pyx_v_self->wavetable, __pyx_v_self->wt_phase) * __pyx_v_amp);
 
     /* "pippi/oscs/osc.pyx":73
  *             sample = interpolation._linear_point(self.wavetable, self.wt_phase) * amp
@@ -5026,7 +5027,7 @@ static PyObject *__pyx_f_5pippi_3osc_3Osc__play(struct __pyx_obj_5pippi_3osc_Osc
  *             self.amp_phase += amp_phase_inc
  *             self.pm_phase += pm_phase_inc             # <<<<<<<<<<<<<<
  *             self.wt_phase += freq * wt_phase_inc
- *             #self.wt_phase += pm - lastpm
+ *             self.wt_phase += (pm - lastpm) * wt_boundry * .5
  */
     __pyx_v_self->pm_phase = (__pyx_v_self->pm_phase + __pyx_v_pm_phase_inc);
 
@@ -5034,13 +5035,31 @@ static PyObject *__pyx_f_5pippi_3osc_3Osc__play(struct __pyx_obj_5pippi_3osc_Osc
  *             self.amp_phase += amp_phase_inc
  *             self.pm_phase += pm_phase_inc
  *             self.wt_phase += freq * wt_phase_inc             # <<<<<<<<<<<<<<
- *             #self.wt_phase += pm - lastpm
- *             #lastpm = pm
+ *             self.wt_phase += (pm - lastpm) * wt_boundry * .5
+ *             lastpm = pm
  */
     __pyx_v_self->wt_phase = (__pyx_v_self->wt_phase + (__pyx_v_freq * __pyx_v_wt_phase_inc));
 
+    /* "pippi/oscs/osc.pyx":77
+ *             self.pm_phase += pm_phase_inc
+ *             self.wt_phase += freq * wt_phase_inc
+ *             self.wt_phase += (pm - lastpm) * wt_boundry * .5             # <<<<<<<<<<<<<<
+ *             lastpm = pm
+ * 
+ */
+    __pyx_v_self->wt_phase = (__pyx_v_self->wt_phase + (((__pyx_v_pm - __pyx_v_lastpm) * __pyx_v_wt_boundry) * .5));
+
+    /* "pippi/oscs/osc.pyx":78
+ *             self.wt_phase += freq * wt_phase_inc
+ *             self.wt_phase += (pm - lastpm) * wt_boundry * .5
+ *             lastpm = pm             # <<<<<<<<<<<<<<
+ * 
+ *             if self.wt_phase < 0:
+ */
+    __pyx_v_lastpm = __pyx_v_pm;
+
     /* "pippi/oscs/osc.pyx":80
- *             #lastpm = pm
+ *             lastpm = pm
  * 
  *             if self.wt_phase < 0:             # <<<<<<<<<<<<<<
  *                 self.wt_phase += wt_boundry
@@ -5059,7 +5078,7 @@ static PyObject *__pyx_f_5pippi_3osc_3Osc__play(struct __pyx_obj_5pippi_3osc_Osc
       __pyx_v_self->wt_phase = (__pyx_v_self->wt_phase + __pyx_v_wt_boundry);
 
       /* "pippi/oscs/osc.pyx":80
- *             #lastpm = pm
+ *             lastpm = pm
  * 
  *             if self.wt_phase < 0:             # <<<<<<<<<<<<<<
  *                 self.wt_phase += wt_boundry
@@ -21176,7 +21195,7 @@ static int __Pyx_modinit_function_import_code(void) {
   if (__Pyx_ImportFunction(__pyx_t_1, "to_wavetable", (void (**)(void))&__pyx_f_5pippi_10wavetables_to_wavetable, "__Pyx_memviewslice (PyObject *, int __pyx_skip_dispatch, struct __pyx_opt_args_5pippi_10wavetables_to_wavetable *__pyx_optional_args)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   Py_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_2 = PyImport_ImportModule("pippi.interpolation"); if (!__pyx_t_2) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportFunction(__pyx_t_2, "_linear_point", (void (**)(void))&__pyx_f_5pippi_13interpolation__linear_point, "double (__Pyx_memviewslice, double, struct __pyx_opt_args_5pippi_13interpolation__linear_point *__pyx_optional_args)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ImportFunction(__pyx_t_2, "_linear_point", (void (**)(void))&__pyx_f_5pippi_13interpolation__linear_point, "double (__Pyx_memviewslice, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   Py_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __Pyx_RefNannyFinishContext();
   return 0;

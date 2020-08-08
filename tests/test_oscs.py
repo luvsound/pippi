@@ -195,6 +195,15 @@ class TestOscs(TestCase):
         out = osc.play(10)
         out.write('tests/renders/osc_waveset_pulsar2d.wav')
 
+    def test_freq_interpolation_pulsar2d(self):
+        freqs = tune.fromdegrees([1,3,5,9,2,4,6,5,1], octave=3, root='a') * 10
+        out = Pulsar2d(['sine', 'tri', 'square', 'hann'], ['hann'], 
+            freq=freqs, 
+            freq_interpolator='trunc',
+            amp=0.2
+        ).play(10)
+        out.write('tests/renders/osc_pulsar2d_freq_trunc.wav')
+
     def test_create_alias(self):
         osc = Alias(freq=200.0)
         length = 10

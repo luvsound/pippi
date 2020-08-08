@@ -1132,45 +1132,46 @@ struct __pyx_array_obj;
 struct __pyx_MemviewEnum_obj;
 struct __pyx_memoryview_obj;
 struct __pyx_memoryviewslice_obj;
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point;
-struct __pyx_opt_args_5pippi_13interpolation__linear_point;
 struct __pyx_opt_args_5pippi_13interpolation_linear_point;
 
-/* "interpolation.pxd":4
- * 
- * cdef double _hermite_pos(double[:] data, double pos) nogil
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "interpolation.pxd":6
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)
- * cdef double _linear_pos(double[:] data, double pos) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__linear_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "interpolation.pxd":7
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
+/* "interpolation.pxd":10
+ * cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil
+ * cdef double _linear_point(double[:] data, double phase) nogil
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)             # <<<<<<<<<<<<<<
+ * 
  * cdef double _linear_pos(double[:] data, double pos) nogil
- * cpdef double linear_pos(double[:] data, double pos)
  */
 struct __pyx_opt_args_5pippi_13interpolation_linear_point {
   int __pyx_n;
   double pulsewidth;
 };
+
+/* "interpolation.pxd":26
+ * # Use these for function pointers in critical loops
+ * # when interpolation scheme can be set at runtime
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_t)(__Pyx_memviewslice, double);
+
+/* "interpolation.pxd":27
+ * # when interpolation scheme can be set at runtime
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
+ * 
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_pw_t)(__Pyx_memviewslice, double, double);
+
+/* "interpolation.pxd":28
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil             # <<<<<<<<<<<<<<
+ * 
+ * cdef interp_point_t get_point_interpolator(str flag)
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_pos_t)(__Pyx_memviewslice, double);
 struct __pyx_opt_args_5pippi_9soundpipe_mincer;
 struct __pyx_opt_args_5pippi_9soundpipe_paulstretch;
 

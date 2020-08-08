@@ -1569,99 +1569,46 @@ struct __pyx_opt_args_5pippi_10wavetables_seesaw {
   int __pyx_n;
   double tip;
 };
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point;
-struct __pyx_opt_args_5pippi_13interpolation__linear_point;
 struct __pyx_opt_args_5pippi_13interpolation_linear_point;
 
-/* "pippi/interpolation.pxd":4
- * 
- * cdef double _hermite_pos(double[:] data, double pos) nogil
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "pippi/interpolation.pxd":6
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)
- * cdef double _linear_pos(double[:] data, double pos) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__linear_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "pippi/interpolation.pxd":7
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
+/* "pippi/interpolation.pxd":10
+ * cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil
+ * cdef double _linear_point(double[:] data, double phase) nogil
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)             # <<<<<<<<<<<<<<
+ * 
  * cdef double _linear_pos(double[:] data, double pos) nogil
- * cpdef double linear_pos(double[:] data, double pos)
  */
 struct __pyx_opt_args_5pippi_13interpolation_linear_point {
   int __pyx_n;
   double pulsewidth;
 };
 
-/* "pippi/interpolation.pyx":10
+/* "pippi/interpolation.pxd":26
  * # Use these for function pointers in critical loops
  * # when interpolation scheme can be set at runtime
- * ctypedef double (*hermite_point_t)(double[:] data, double phase, double pulsewidth)             # <<<<<<<<<<<<<<
- * ctypedef double (*linear_point_t)(double[:] data, double phase, double pulsewidth)
- * ctypedef double (*trunc_point_t)(double[:] data, double phase, double pulsewidth)
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
  */
-typedef double (*__pyx_t_5pippi_13interpolation_hermite_point_t)(__Pyx_memviewslice, double, double);
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_t)(__Pyx_memviewslice, double);
 
-/* "pippi/interpolation.pyx":11
+/* "pippi/interpolation.pxd":27
  * # when interpolation scheme can be set at runtime
- * ctypedef double (*hermite_point_t)(double[:] data, double phase, double pulsewidth)
- * ctypedef double (*linear_point_t)(double[:] data, double phase, double pulsewidth)             # <<<<<<<<<<<<<<
- * ctypedef double (*trunc_point_t)(double[:] data, double phase, double pulsewidth)
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
  * 
  */
-typedef double (*__pyx_t_5pippi_13interpolation_linear_point_t)(__Pyx_memviewslice, double, double);
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_pw_t)(__Pyx_memviewslice, double, double);
 
-/* "pippi/interpolation.pyx":12
- * ctypedef double (*hermite_point_t)(double[:] data, double phase, double pulsewidth)
- * ctypedef double (*linear_point_t)(double[:] data, double phase, double pulsewidth)
- * ctypedef double (*trunc_point_t)(double[:] data, double phase, double pulsewidth)             # <<<<<<<<<<<<<<
+/* "pippi/interpolation.pxd":28
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil             # <<<<<<<<<<<<<<
  * 
- * ctypedef double (*hermite_pos_t)(double[:] data, double pos)
+ * cdef interp_point_t get_point_interpolator(str flag)
  */
-typedef double (*__pyx_t_5pippi_13interpolation_trunc_point_t)(__Pyx_memviewslice, double, double);
-
-/* "pippi/interpolation.pyx":14
- * ctypedef double (*trunc_point_t)(double[:] data, double phase, double pulsewidth)
- * 
- * ctypedef double (*hermite_pos_t)(double[:] data, double pos)             # <<<<<<<<<<<<<<
- * ctypedef double (*linear_pos_t)(double[:] data, double pos)
- * ctypedef double (*trunc_pos_t)(double[:] data, double pos)
- */
-typedef double (*__pyx_t_5pippi_13interpolation_hermite_pos_t)(__Pyx_memviewslice, double);
-
-/* "pippi/interpolation.pyx":15
- * 
- * ctypedef double (*hermite_pos_t)(double[:] data, double pos)
- * ctypedef double (*linear_pos_t)(double[:] data, double pos)             # <<<<<<<<<<<<<<
- * ctypedef double (*trunc_pos_t)(double[:] data, double pos)
- * 
- */
-typedef double (*__pyx_t_5pippi_13interpolation_linear_pos_t)(__Pyx_memviewslice, double);
-
-/* "pippi/interpolation.pyx":16
- * ctypedef double (*hermite_pos_t)(double[:] data, double pos)
- * ctypedef double (*linear_pos_t)(double[:] data, double pos)
- * ctypedef double (*trunc_pos_t)(double[:] data, double pos)             # <<<<<<<<<<<<<<
- * 
- * 
- */
-typedef double (*__pyx_t_5pippi_13interpolation_trunc_pos_t)(__Pyx_memviewslice, double);
+typedef double (*__pyx_t_5pippi_13interpolation_interp_pos_t)(__Pyx_memviewslice, double);
 
 /* "pippi/wavetables.pxd":11
  * cdef double[:] _window(int, int)
@@ -3647,6 +3594,7 @@ static int *__pyx_vp_5pippi_10wavetables_LEN_WAVETABLES = 0;
 static int **__pyx_vp_5pippi_10wavetables_ALL_WAVETABLES = 0;
 #define __pyx_v_5pippi_10wavetables_ALL_WAVETABLES (*__pyx_vp_5pippi_10wavetables_ALL_WAVETABLES)
 static __Pyx_memviewslice (*__pyx_f_5pippi_10wavetables_to_wavetable)(PyObject *, int __pyx_skip_dispatch, struct __pyx_opt_args_5pippi_10wavetables_to_wavetable *__pyx_optional_args); /*proto*/
+static int (*__pyx_f_5pippi_10wavetables_to_flag)(PyObject *); /*proto*/
 
 /* Module declarations from "pippi.interpolation" */
 #if !CYTHON_COMPILING_IN_LIMITED_API
@@ -3662,8 +3610,11 @@ static PyObject *contiguous = 0;
 static PyObject *indirect_contiguous = 0;
 static int __pyx_memoryview_thread_locks_used;
 static PyThread_type_lock __pyx_memoryview_thread_locks[8];
-static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice, double, struct __pyx_opt_args_5pippi_13interpolation__hermite_point *__pyx_optional_args); /*proto*/
-static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice, double, struct __pyx_opt_args_5pippi_13interpolation__linear_point *__pyx_optional_args); /*proto*/
+static double __pyx_f_5pippi_13interpolation__hermite_pos(__Pyx_memviewslice, double); /*proto*/
+static double __pyx_f_5pippi_13interpolation__hermite_point_pw(__Pyx_memviewslice, double, double); /*proto*/
+static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice, double); /*proto*/
+static double __pyx_f_5pippi_13interpolation__linear_point_pw(__Pyx_memviewslice, double, double); /*proto*/
+static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice, double); /*proto*/
 static double __pyx_f_5pippi_13interpolation_linear_point(__Pyx_memviewslice, double, int __pyx_skip_dispatch, struct __pyx_opt_args_5pippi_13interpolation_linear_point *__pyx_optional_args); /*proto*/
 static double __pyx_f_5pippi_13interpolation__linear_pos(__Pyx_memviewslice, double); /*proto*/
 static double __pyx_f_5pippi_13interpolation_linear_pos(__Pyx_memviewslice, double, int __pyx_skip_dispatch); /*proto*/
@@ -4109,7 +4060,7 @@ static PyObject *__pyx_codeobj__62;
 #endif
 /* Late includes */
 
-/* "pippi/interpolation.pyx":21
+/* "pippi/interpolation.pyx":11
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * cdef double _hermite_pos(double[:] data, double pos) nogil:             # <<<<<<<<<<<<<<
@@ -4121,7 +4072,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_pos(__Pyx_memviewslice __p
   double __pyx_r;
   Py_ssize_t __pyx_t_1;
 
-  /* "pippi/interpolation.pyx":22
+  /* "pippi/interpolation.pyx":12
  * @cython.wraparound(False)
  * cdef double _hermite_pos(double[:] data, double pos) nogil:
  *     return _hermite_point(data, pos * <double>(len(data)-1))             # <<<<<<<<<<<<<<
@@ -4129,10 +4080,10 @@ static double __pyx_f_5pippi_13interpolation__hermite_pos(__Pyx_memviewslice __p
  * @cython.boundscheck(False)
  */
   __pyx_t_1 = __Pyx_MemoryView_Len(__pyx_v_data); 
-  __pyx_r = __pyx_f_5pippi_13interpolation__hermite_point(__pyx_v_data, (__pyx_v_pos * ((double)(__pyx_t_1 - 1))), NULL);
+  __pyx_r = __pyx_f_5pippi_13interpolation__hermite_point(__pyx_v_data, (__pyx_v_pos * ((double)(__pyx_t_1 - 1))));
   goto __pyx_L0;
 
-  /* "pippi/interpolation.pyx":21
+  /* "pippi/interpolation.pyx":11
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
  * cdef double _hermite_pos(double[:] data, double pos) nogil:             # <<<<<<<<<<<<<<
@@ -4145,16 +4096,15 @@ static double __pyx_f_5pippi_13interpolation__hermite_pos(__Pyx_memviewslice __p
   return __pyx_r;
 }
 
-/* "pippi/interpolation.pyx":26
+/* "pippi/interpolation.pyx":16
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=1) nogil:             # <<<<<<<<<<<<<<
+ * cdef double _hermite_point_pw(double[:] data, double phase, double pulsewidth) nogil:             # <<<<<<<<<<<<<<
  *     cdef int dlength = <int>len(data)
  *     cdef int boundry = dlength - 1
  */
 
-static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice __pyx_v_data, double __pyx_v_phase, struct __pyx_opt_args_5pippi_13interpolation__hermite_point *__pyx_optional_args) {
-  double __pyx_v_pulsewidth = ((double)1.0);
+static double __pyx_f_5pippi_13interpolation__hermite_point_pw(__Pyx_memviewslice __pyx_v_data, double __pyx_v_phase, double __pyx_v_pulsewidth) {
   int __pyx_v_dlength;
   int __pyx_v_boundry;
   double __pyx_v_frac;
@@ -4175,15 +4125,10 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
   int __pyx_t_2;
   Py_ssize_t __pyx_t_3;
   int __pyx_t_4;
-  if (__pyx_optional_args) {
-    if (__pyx_optional_args->__pyx_n > 0) {
-      __pyx_v_pulsewidth = __pyx_optional_args->pulsewidth;
-    }
-  }
 
-  /* "pippi/interpolation.pyx":27
+  /* "pippi/interpolation.pyx":17
  * @cython.wraparound(False)
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=1) nogil:
+ * cdef double _hermite_point_pw(double[:] data, double phase, double pulsewidth) nogil:
  *     cdef int dlength = <int>len(data)             # <<<<<<<<<<<<<<
  *     cdef int boundry = dlength - 1
  * 
@@ -4191,8 +4136,8 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
   __pyx_t_1 = __Pyx_MemoryView_Len(__pyx_v_data); 
   __pyx_v_dlength = ((int)__pyx_t_1);
 
-  /* "pippi/interpolation.pyx":28
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=1) nogil:
+  /* "pippi/interpolation.pyx":18
+ * cdef double _hermite_point_pw(double[:] data, double phase, double pulsewidth) nogil:
  *     cdef int dlength = <int>len(data)
  *     cdef int boundry = dlength - 1             # <<<<<<<<<<<<<<
  * 
@@ -4200,7 +4145,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_boundry = (__pyx_v_dlength - 1);
 
-  /* "pippi/interpolation.pyx":30
+  /* "pippi/interpolation.pyx":20
  *     cdef int boundry = dlength - 1
  * 
  *     if dlength == 1:             # <<<<<<<<<<<<<<
@@ -4210,7 +4155,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
   __pyx_t_2 = ((__pyx_v_dlength == 1) != 0);
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":31
+    /* "pippi/interpolation.pyx":21
  * 
  *     if dlength == 1:
  *         return data[0]             # <<<<<<<<<<<<<<
@@ -4221,7 +4166,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
     __pyx_r = (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_3 * __pyx_v_data.strides[0]) )));
     goto __pyx_L0;
 
-    /* "pippi/interpolation.pyx":30
+    /* "pippi/interpolation.pyx":20
  *     cdef int boundry = dlength - 1
  * 
  *     if dlength == 1:             # <<<<<<<<<<<<<<
@@ -4230,7 +4175,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   }
 
-  /* "pippi/interpolation.pyx":33
+  /* "pippi/interpolation.pyx":23
  *         return data[0]
  * 
  *     elif dlength < 1 or pulsewidth == 0:             # <<<<<<<<<<<<<<
@@ -4248,7 +4193,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":34
+    /* "pippi/interpolation.pyx":24
  * 
  *     elif dlength < 1 or pulsewidth == 0:
  *         return 0             # <<<<<<<<<<<<<<
@@ -4258,7 +4203,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
     __pyx_r = 0.0;
     goto __pyx_L0;
 
-    /* "pippi/interpolation.pyx":33
+    /* "pippi/interpolation.pyx":23
  *         return data[0]
  * 
  *     elif dlength < 1 or pulsewidth == 0:             # <<<<<<<<<<<<<<
@@ -4267,7 +4212,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   }
 
-  /* "pippi/interpolation.pyx":36
+  /* "pippi/interpolation.pyx":26
  *         return 0
  * 
  *     phase *= 1.0/pulsewidth             # <<<<<<<<<<<<<<
@@ -4282,11 +4227,11 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
     #ifdef WITH_THREAD
     __Pyx_PyGILState_Release(__pyx_gilstate_save);
     #endif
-    __PYX_ERR(0, 36, __pyx_L1_error)
+    __PYX_ERR(0, 26, __pyx_L1_error)
   }
   __pyx_v_phase = (__pyx_v_phase * (1.0 / __pyx_v_pulsewidth));
 
-  /* "pippi/interpolation.pyx":38
+  /* "pippi/interpolation.pyx":28
  *     phase *= 1.0/pulsewidth
  * 
  *     cdef double frac = phase - <int>phase             # <<<<<<<<<<<<<<
@@ -4295,7 +4240,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_frac = (__pyx_v_phase - ((int)__pyx_v_phase));
 
-  /* "pippi/interpolation.pyx":39
+  /* "pippi/interpolation.pyx":29
  * 
  *     cdef double frac = phase - <int>phase
  *     cdef int i1 = <int>phase             # <<<<<<<<<<<<<<
@@ -4304,7 +4249,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_i1 = ((int)__pyx_v_phase);
 
-  /* "pippi/interpolation.pyx":40
+  /* "pippi/interpolation.pyx":30
  *     cdef double frac = phase - <int>phase
  *     cdef int i1 = <int>phase
  *     cdef int i2 = i1 + 1             # <<<<<<<<<<<<<<
@@ -4313,7 +4258,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_i2 = (__pyx_v_i1 + 1);
 
-  /* "pippi/interpolation.pyx":41
+  /* "pippi/interpolation.pyx":31
  *     cdef int i1 = <int>phase
  *     cdef int i2 = i1 + 1
  *     cdef int i3 = i2 + 1             # <<<<<<<<<<<<<<
@@ -4322,7 +4267,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_i3 = (__pyx_v_i2 + 1);
 
-  /* "pippi/interpolation.pyx":42
+  /* "pippi/interpolation.pyx":32
  *     cdef int i2 = i1 + 1
  *     cdef int i3 = i2 + 1
  *     cdef int i0 = i1 - 1             # <<<<<<<<<<<<<<
@@ -4331,7 +4276,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_i0 = (__pyx_v_i1 - 1);
 
-  /* "pippi/interpolation.pyx":44
+  /* "pippi/interpolation.pyx":34
  *     cdef int i0 = i1 - 1
  * 
  *     cdef double y0 = 0             # <<<<<<<<<<<<<<
@@ -4340,7 +4285,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_y0 = 0.0;
 
-  /* "pippi/interpolation.pyx":45
+  /* "pippi/interpolation.pyx":35
  * 
  *     cdef double y0 = 0
  *     cdef double y1 = 0             # <<<<<<<<<<<<<<
@@ -4349,7 +4294,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_y1 = 0.0;
 
-  /* "pippi/interpolation.pyx":46
+  /* "pippi/interpolation.pyx":36
  *     cdef double y0 = 0
  *     cdef double y1 = 0
  *     cdef double y2 = 0             # <<<<<<<<<<<<<<
@@ -4358,7 +4303,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_y2 = 0.0;
 
-  /* "pippi/interpolation.pyx":47
+  /* "pippi/interpolation.pyx":37
  *     cdef double y1 = 0
  *     cdef double y2 = 0
  *     cdef double y3 = 0             # <<<<<<<<<<<<<<
@@ -4367,7 +4312,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_y3 = 0.0;
 
-  /* "pippi/interpolation.pyx":49
+  /* "pippi/interpolation.pyx":39
  *     cdef double y3 = 0
  * 
  *     if i0 >= 0:             # <<<<<<<<<<<<<<
@@ -4377,7 +4322,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
   __pyx_t_2 = ((__pyx_v_i0 >= 0) != 0);
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":50
+    /* "pippi/interpolation.pyx":40
  * 
  *     if i0 >= 0:
  *         y0 = data[i0]             # <<<<<<<<<<<<<<
@@ -4387,7 +4332,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
     __pyx_t_3 = __pyx_v_i0;
     __pyx_v_y0 = (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_3 * __pyx_v_data.strides[0]) )));
 
-    /* "pippi/interpolation.pyx":49
+    /* "pippi/interpolation.pyx":39
  *     cdef double y3 = 0
  * 
  *     if i0 >= 0:             # <<<<<<<<<<<<<<
@@ -4396,7 +4341,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   }
 
-  /* "pippi/interpolation.pyx":52
+  /* "pippi/interpolation.pyx":42
  *         y0 = data[i0]
  * 
  *     if i1 <= boundry:             # <<<<<<<<<<<<<<
@@ -4406,7 +4351,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
   __pyx_t_2 = ((__pyx_v_i1 <= __pyx_v_boundry) != 0);
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":53
+    /* "pippi/interpolation.pyx":43
  * 
  *     if i1 <= boundry:
  *         y1 = data[i1]             # <<<<<<<<<<<<<<
@@ -4416,7 +4361,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
     __pyx_t_3 = __pyx_v_i1;
     __pyx_v_y1 = (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_3 * __pyx_v_data.strides[0]) )));
 
-    /* "pippi/interpolation.pyx":52
+    /* "pippi/interpolation.pyx":42
  *         y0 = data[i0]
  * 
  *     if i1 <= boundry:             # <<<<<<<<<<<<<<
@@ -4425,7 +4370,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   }
 
-  /* "pippi/interpolation.pyx":55
+  /* "pippi/interpolation.pyx":45
  *         y1 = data[i1]
  * 
  *     if i2 <= boundry:             # <<<<<<<<<<<<<<
@@ -4435,7 +4380,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
   __pyx_t_2 = ((__pyx_v_i2 <= __pyx_v_boundry) != 0);
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":56
+    /* "pippi/interpolation.pyx":46
  * 
  *     if i2 <= boundry:
  *         y2 = data[i2]             # <<<<<<<<<<<<<<
@@ -4445,7 +4390,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
     __pyx_t_3 = __pyx_v_i2;
     __pyx_v_y2 = (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_3 * __pyx_v_data.strides[0]) )));
 
-    /* "pippi/interpolation.pyx":55
+    /* "pippi/interpolation.pyx":45
  *         y1 = data[i1]
  * 
  *     if i2 <= boundry:             # <<<<<<<<<<<<<<
@@ -4454,7 +4399,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   }
 
-  /* "pippi/interpolation.pyx":58
+  /* "pippi/interpolation.pyx":48
  *         y2 = data[i2]
  * 
  *     if i3 <= boundry:             # <<<<<<<<<<<<<<
@@ -4464,7 +4409,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
   __pyx_t_2 = ((__pyx_v_i3 <= __pyx_v_boundry) != 0);
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":59
+    /* "pippi/interpolation.pyx":49
  * 
  *     if i3 <= boundry:
  *         y3 = data[i3]             # <<<<<<<<<<<<<<
@@ -4474,7 +4419,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
     __pyx_t_3 = __pyx_v_i3;
     __pyx_v_y3 = (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_3 * __pyx_v_data.strides[0]) )));
 
-    /* "pippi/interpolation.pyx":58
+    /* "pippi/interpolation.pyx":48
  *         y2 = data[i2]
  * 
  *     if i3 <= boundry:             # <<<<<<<<<<<<<<
@@ -4483,7 +4428,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   }
 
-  /* "pippi/interpolation.pyx":63
+  /* "pippi/interpolation.pyx":53
  *     # This part taken from version #2 by James McCartney
  *     # https://www.musicdsp.org/en/latest/Other/93-hermite-interpollation.html
  *     cdef double c0 = y1             # <<<<<<<<<<<<<<
@@ -4492,7 +4437,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_c0 = __pyx_v_y1;
 
-  /* "pippi/interpolation.pyx":64
+  /* "pippi/interpolation.pyx":54
  *     # https://www.musicdsp.org/en/latest/Other/93-hermite-interpollation.html
  *     cdef double c0 = y1
  *     cdef double c1 = 0.5 * (y2 - y0)             # <<<<<<<<<<<<<<
@@ -4501,7 +4446,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_c1 = (0.5 * (__pyx_v_y2 - __pyx_v_y0));
 
-  /* "pippi/interpolation.pyx":65
+  /* "pippi/interpolation.pyx":55
  *     cdef double c0 = y1
  *     cdef double c1 = 0.5 * (y2 - y0)
  *     cdef double c3 = 1.5 * (y1 - y2) + 0.5 * (y3 - y0)             # <<<<<<<<<<<<<<
@@ -4510,7 +4455,7 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_c3 = ((1.5 * (__pyx_v_y1 - __pyx_v_y2)) + (0.5 * (__pyx_v_y3 - __pyx_v_y0)));
 
-  /* "pippi/interpolation.pyx":66
+  /* "pippi/interpolation.pyx":56
  *     cdef double c1 = 0.5 * (y2 - y0)
  *     cdef double c3 = 1.5 * (y1 - y2) + 0.5 * (y3 - y0)
  *     cdef double c2 = y0 - y1 + c1 - c3             # <<<<<<<<<<<<<<
@@ -4519,42 +4464,75 @@ static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice _
  */
   __pyx_v_c2 = (((__pyx_v_y0 - __pyx_v_y1) + __pyx_v_c1) - __pyx_v_c3);
 
-  /* "pippi/interpolation.pyx":67
+  /* "pippi/interpolation.pyx":57
  *     cdef double c3 = 1.5 * (y1 - y2) + 0.5 * (y3 - y0)
  *     cdef double c2 = y0 - y1 + c1 - c3
  *     return ((c3 * frac + c2) * frac + c1) * frac + c0             # <<<<<<<<<<<<<<
  * 
- * 
+ * @cython.boundscheck(False)
  */
   __pyx_r = ((((((__pyx_v_c3 * __pyx_v_frac) + __pyx_v_c2) * __pyx_v_frac) + __pyx_v_c1) * __pyx_v_frac) + __pyx_v_c0);
   goto __pyx_L0;
 
-  /* "pippi/interpolation.pyx":26
+  /* "pippi/interpolation.pyx":16
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=1) nogil:             # <<<<<<<<<<<<<<
+ * cdef double _hermite_point_pw(double[:] data, double phase, double pulsewidth) nogil:             # <<<<<<<<<<<<<<
  *     cdef int dlength = <int>len(data)
  *     cdef int boundry = dlength - 1
  */
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_WriteUnraisable("pippi.interpolation._hermite_point", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 1);
+  __Pyx_WriteUnraisable("pippi.interpolation._hermite_point_pw", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 1);
   __pyx_r = 0;
   __pyx_L0:;
   return __pyx_r;
 }
 
-/* "pippi/interpolation.pyx":72
+/* "pippi/interpolation.pyx":61
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=1) nogil:             # <<<<<<<<<<<<<<
+ * cdef double _hermite_point(double[:] data, double phase) nogil:             # <<<<<<<<<<<<<<
+ *     return _hermite_point_pw(data, phase, 1)
+ * 
+ */
+
+static double __pyx_f_5pippi_13interpolation__hermite_point(__Pyx_memviewslice __pyx_v_data, double __pyx_v_phase) {
+  double __pyx_r;
+
+  /* "pippi/interpolation.pyx":62
+ * @cython.wraparound(False)
+ * cdef double _hermite_point(double[:] data, double phase) nogil:
+ *     return _hermite_point_pw(data, phase, 1)             # <<<<<<<<<<<<<<
+ * 
+ * 
+ */
+  __pyx_r = __pyx_f_5pippi_13interpolation__hermite_point_pw(__pyx_v_data, __pyx_v_phase, 1.0);
+  goto __pyx_L0;
+
+  /* "pippi/interpolation.pyx":61
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * cdef double _hermite_point(double[:] data, double phase) nogil:             # <<<<<<<<<<<<<<
+ *     return _hermite_point_pw(data, phase, 1)
+ * 
+ */
+
+  /* function exit code */
+  __pyx_L0:;
+  return __pyx_r;
+}
+
+/* "pippi/interpolation.pyx":67
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil:             # <<<<<<<<<<<<<<
  *     cdef int dlength = <int>len(data)
  * 
  */
 
-static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __pyx_v_data, double __pyx_v_phase, struct __pyx_opt_args_5pippi_13interpolation__linear_point *__pyx_optional_args) {
-  double __pyx_v_pulsewidth = ((double)1.0);
+static double __pyx_f_5pippi_13interpolation__linear_point_pw(__Pyx_memviewslice __pyx_v_data, double __pyx_v_phase, double __pyx_v_pulsewidth) {
   int __pyx_v_dlength;
   double __pyx_v_frac;
   long __pyx_v_i;
@@ -4565,15 +4543,10 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
   int __pyx_t_2;
   Py_ssize_t __pyx_t_3;
   int __pyx_t_4;
-  if (__pyx_optional_args) {
-    if (__pyx_optional_args->__pyx_n > 0) {
-      __pyx_v_pulsewidth = __pyx_optional_args->pulsewidth;
-    }
-  }
 
-  /* "pippi/interpolation.pyx":73
+  /* "pippi/interpolation.pyx":68
  * @cython.wraparound(False)
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=1) nogil:
+ * cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil:
  *     cdef int dlength = <int>len(data)             # <<<<<<<<<<<<<<
  * 
  *     if dlength == 1:
@@ -4581,7 +4554,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
   __pyx_t_1 = __Pyx_MemoryView_Len(__pyx_v_data); 
   __pyx_v_dlength = ((int)__pyx_t_1);
 
-  /* "pippi/interpolation.pyx":75
+  /* "pippi/interpolation.pyx":70
  *     cdef int dlength = <int>len(data)
  * 
  *     if dlength == 1:             # <<<<<<<<<<<<<<
@@ -4591,7 +4564,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
   __pyx_t_2 = ((__pyx_v_dlength == 1) != 0);
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":76
+    /* "pippi/interpolation.pyx":71
  * 
  *     if dlength == 1:
  *         return data[0]             # <<<<<<<<<<<<<<
@@ -4602,7 +4575,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
     __pyx_r = (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_3 * __pyx_v_data.strides[0]) )));
     goto __pyx_L0;
 
-    /* "pippi/interpolation.pyx":75
+    /* "pippi/interpolation.pyx":70
  *     cdef int dlength = <int>len(data)
  * 
  *     if dlength == 1:             # <<<<<<<<<<<<<<
@@ -4611,7 +4584,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
  */
   }
 
-  /* "pippi/interpolation.pyx":78
+  /* "pippi/interpolation.pyx":73
  *         return data[0]
  * 
  *     elif dlength < 1 or pulsewidth == 0:             # <<<<<<<<<<<<<<
@@ -4629,7 +4602,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
   __pyx_L4_bool_binop_done:;
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":79
+    /* "pippi/interpolation.pyx":74
  * 
  *     elif dlength < 1 or pulsewidth == 0:
  *         return 0             # <<<<<<<<<<<<<<
@@ -4639,7 +4612,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
     __pyx_r = 0.0;
     goto __pyx_L0;
 
-    /* "pippi/interpolation.pyx":78
+    /* "pippi/interpolation.pyx":73
  *         return data[0]
  * 
  *     elif dlength < 1 or pulsewidth == 0:             # <<<<<<<<<<<<<<
@@ -4648,7 +4621,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
  */
   }
 
-  /* "pippi/interpolation.pyx":81
+  /* "pippi/interpolation.pyx":76
  *         return 0
  * 
  *     phase *= 1.0/pulsewidth             # <<<<<<<<<<<<<<
@@ -4663,11 +4636,11 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
     #ifdef WITH_THREAD
     __Pyx_PyGILState_Release(__pyx_gilstate_save);
     #endif
-    __PYX_ERR(0, 81, __pyx_L1_error)
+    __PYX_ERR(0, 76, __pyx_L1_error)
   }
   __pyx_v_phase = (__pyx_v_phase * (1.0 / __pyx_v_pulsewidth));
 
-  /* "pippi/interpolation.pyx":83
+  /* "pippi/interpolation.pyx":78
  *     phase *= 1.0/pulsewidth
  * 
  *     cdef double frac = phase - <long>phase             # <<<<<<<<<<<<<<
@@ -4676,7 +4649,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
  */
   __pyx_v_frac = (__pyx_v_phase - ((long)__pyx_v_phase));
 
-  /* "pippi/interpolation.pyx":84
+  /* "pippi/interpolation.pyx":79
  * 
  *     cdef double frac = phase - <long>phase
  *     cdef long i = <long>phase             # <<<<<<<<<<<<<<
@@ -4685,7 +4658,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
  */
   __pyx_v_i = ((long)__pyx_v_phase);
 
-  /* "pippi/interpolation.pyx":87
+  /* "pippi/interpolation.pyx":82
  *     cdef double a, b
  * 
  *     if i >= dlength-1:             # <<<<<<<<<<<<<<
@@ -4695,7 +4668,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
   __pyx_t_2 = ((__pyx_v_i >= (__pyx_v_dlength - 1)) != 0);
   if (__pyx_t_2) {
 
-    /* "pippi/interpolation.pyx":88
+    /* "pippi/interpolation.pyx":83
  * 
  *     if i >= dlength-1:
  *         return 0             # <<<<<<<<<<<<<<
@@ -4705,7 +4678,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
     __pyx_r = 0.0;
     goto __pyx_L0;
 
-    /* "pippi/interpolation.pyx":87
+    /* "pippi/interpolation.pyx":82
  *     cdef double a, b
  * 
  *     if i >= dlength-1:             # <<<<<<<<<<<<<<
@@ -4714,7 +4687,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
  */
   }
 
-  /* "pippi/interpolation.pyx":90
+  /* "pippi/interpolation.pyx":85
  *         return 0
  * 
  *     a = data[i]             # <<<<<<<<<<<<<<
@@ -4724,7 +4697,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
   __pyx_t_3 = __pyx_v_i;
   __pyx_v_a = (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_3 * __pyx_v_data.strides[0]) )));
 
-  /* "pippi/interpolation.pyx":91
+  /* "pippi/interpolation.pyx":86
  * 
  *     a = data[i]
  *     b = data[i+1]             # <<<<<<<<<<<<<<
@@ -4734,7 +4707,7 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
   __pyx_t_3 = (__pyx_v_i + 1);
   __pyx_v_b = (*((double *) ( /* dim=0 */ (__pyx_v_data.data + __pyx_t_3 * __pyx_v_data.strides[0]) )));
 
-  /* "pippi/interpolation.pyx":93
+  /* "pippi/interpolation.pyx":88
  *     b = data[i+1]
  * 
  *     return (1.0 - frac) * a + (frac * b)             # <<<<<<<<<<<<<<
@@ -4744,18 +4717,52 @@ static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __
   __pyx_r = (((1.0 - __pyx_v_frac) * __pyx_v_a) + (__pyx_v_frac * __pyx_v_b));
   goto __pyx_L0;
 
-  /* "pippi/interpolation.pyx":72
+  /* "pippi/interpolation.pyx":67
  * @cython.boundscheck(False)
  * @cython.wraparound(False)
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=1) nogil:             # <<<<<<<<<<<<<<
+ * cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil:             # <<<<<<<<<<<<<<
  *     cdef int dlength = <int>len(data)
  * 
  */
 
   /* function exit code */
   __pyx_L1_error:;
-  __Pyx_WriteUnraisable("pippi.interpolation._linear_point", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 1);
+  __Pyx_WriteUnraisable("pippi.interpolation._linear_point_pw", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 1);
   __pyx_r = 0;
+  __pyx_L0:;
+  return __pyx_r;
+}
+
+/* "pippi/interpolation.pyx":92
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * cdef double _linear_point(double[:] data, double phase) nogil:             # <<<<<<<<<<<<<<
+ *     return _linear_point_pw(data, phase, 1)
+ * 
+ */
+
+static double __pyx_f_5pippi_13interpolation__linear_point(__Pyx_memviewslice __pyx_v_data, double __pyx_v_phase) {
+  double __pyx_r;
+
+  /* "pippi/interpolation.pyx":93
+ * @cython.wraparound(False)
+ * cdef double _linear_point(double[:] data, double phase) nogil:
+ *     return _linear_point_pw(data, phase, 1)             # <<<<<<<<<<<<<<
+ * 
+ * @cython.boundscheck(False)
+ */
+  __pyx_r = __pyx_f_5pippi_13interpolation__linear_point_pw(__pyx_v_data, __pyx_v_phase, 1.0);
+  goto __pyx_L0;
+
+  /* "pippi/interpolation.pyx":92
+ * @cython.boundscheck(False)
+ * @cython.wraparound(False)
+ * cdef double _linear_point(double[:] data, double phase) nogil:             # <<<<<<<<<<<<<<
+ *     return _linear_point_pw(data, phase, 1)
+ * 
+ */
+
+  /* function exit code */
   __pyx_L0:;
   return __pyx_r;
 }
@@ -4780,7 +4787,7 @@ static double __pyx_f_5pippi_13interpolation__linear_pos(__Pyx_memviewslice __py
  * @cython.boundscheck(False)
  */
   __pyx_t_1 = __Pyx_MemoryView_Len(__pyx_v_data); 
-  __pyx_r = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_data, (__pyx_v_pos * ((double)(__pyx_t_1 - 1))), NULL);
+  __pyx_r = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_data, (__pyx_v_pos * ((double)(__pyx_t_1 - 1))));
   goto __pyx_L0;
 
   /* "pippi/interpolation.pyx":97
@@ -5840,7 +5847,7 @@ static PyObject *__pyx_pf_5pippi_13interpolation_6trunc_pos(CYTHON_UNUSED PyObje
  *     return _trunc_pos(data, pos)
  * 
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=1):             # <<<<<<<<<<<<<<
- *     return _linear_point(data, phase, pulsewidth)
+ *     return _linear_point_pw(data, phase, pulsewidth)
  * 
  */
 
@@ -5855,8 +5862,6 @@ static double __pyx_f_5pippi_13interpolation_linear_point(__Pyx_memviewslice __p
   double __pyx_v_pulsewidth = ((double)1.0);
   double __pyx_r;
   __Pyx_RefNannyDeclarations
-  double __pyx_t_1;
-  struct __pyx_opt_args_5pippi_13interpolation__linear_point __pyx_t_2;
   __Pyx_RefNannySetupContext("linear_point", 0);
   if (__pyx_optional_args) {
     if (__pyx_optional_args->__pyx_n > 0) {
@@ -5867,21 +5872,18 @@ static double __pyx_f_5pippi_13interpolation_linear_point(__Pyx_memviewslice __p
   /* "pippi/interpolation.pyx":148
  * 
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=1):
- *     return _linear_point(data, phase, pulsewidth)             # <<<<<<<<<<<<<<
+ *     return _linear_point_pw(data, phase, pulsewidth)             # <<<<<<<<<<<<<<
  * 
  * cpdef double linear_pos(double[:] data, double pos):
  */
-  __pyx_t_2.__pyx_n = 1;
-  __pyx_t_2.pulsewidth = __pyx_v_pulsewidth;
-  __pyx_t_1 = __pyx_f_5pippi_13interpolation__linear_point(__pyx_v_data, __pyx_v_phase, &__pyx_t_2); 
-  __pyx_r = __pyx_t_1;
+  __pyx_r = __pyx_f_5pippi_13interpolation__linear_point_pw(__pyx_v_data, __pyx_v_phase, __pyx_v_pulsewidth);
   goto __pyx_L0;
 
   /* "pippi/interpolation.pyx":147
  *     return _trunc_pos(data, pos)
  * 
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=1):             # <<<<<<<<<<<<<<
- *     return _linear_point(data, phase, pulsewidth)
+ *     return _linear_point_pw(data, phase, pulsewidth)
  * 
  */
 
@@ -6025,7 +6027,7 @@ static PyObject *__pyx_pf_5pippi_13interpolation_8linear_point(CYTHON_UNUSED PyO
 }
 
 /* "pippi/interpolation.pyx":150
- *     return _linear_point(data, phase, pulsewidth)
+ *     return _linear_point_pw(data, phase, pulsewidth)
  * 
  * cpdef double linear_pos(double[:] data, double pos):             # <<<<<<<<<<<<<<
  *     return _linear_pos(data, pos)
@@ -6049,13 +6051,13 @@ static double __pyx_f_5pippi_13interpolation_linear_pos(__Pyx_memviewslice __pyx
  * cpdef double linear_pos(double[:] data, double pos):
  *     return _linear_pos(data, pos)             # <<<<<<<<<<<<<<
  * 
- * 
+ * cdef interp_point_t get_point_interpolator(str flag):
  */
   __pyx_r = __pyx_f_5pippi_13interpolation__linear_pos(__pyx_v_data, __pyx_v_pos);
   goto __pyx_L0;
 
   /* "pippi/interpolation.pyx":150
- *     return _linear_point(data, phase, pulsewidth)
+ *     return _linear_point_pw(data, phase, pulsewidth)
  * 
  * cpdef double linear_pos(double[:] data, double pos):             # <<<<<<<<<<<<<<
  *     return _linear_pos(data, pos)
@@ -6173,6 +6175,300 @@ static PyObject *__pyx_pf_5pippi_13interpolation_10linear_pos(CYTHON_UNUSED PyOb
   __pyx_L0:;
   __PYX_XDEC_MEMVIEW(&__pyx_v_data, 1);
   __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pippi/interpolation.pyx":153
+ *     return _linear_pos(data, pos)
+ * 
+ * cdef interp_point_t get_point_interpolator(str flag):             # <<<<<<<<<<<<<<
+ *     cdef int _flag = to_flag(flag)
+ *     cdef interp_point_t interpolator
+ */
+
+static __pyx_t_5pippi_13interpolation_interp_point_t __pyx_f_5pippi_13interpolation_get_point_interpolator(PyObject *__pyx_v_flag) {
+  int __pyx_v__flag;
+  __pyx_t_5pippi_13interpolation_interp_point_t __pyx_v_interpolator;
+  __pyx_t_5pippi_13interpolation_interp_point_t __pyx_r;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  __Pyx_RefNannySetupContext("get_point_interpolator", 0);
+
+  /* "pippi/interpolation.pyx":154
+ * 
+ * cdef interp_point_t get_point_interpolator(str flag):
+ *     cdef int _flag = to_flag(flag)             # <<<<<<<<<<<<<<
+ *     cdef interp_point_t interpolator
+ * 
+ */
+  __pyx_v__flag = __pyx_f_5pippi_10wavetables_to_flag(__pyx_v_flag);
+
+  /* "pippi/interpolation.pyx":157
+ *     cdef interp_point_t interpolator
+ * 
+ *     if _flag == LINEAR:             # <<<<<<<<<<<<<<
+ *         interpolator = _linear_point
+ *     elif _flag == HERMITE:
+ */
+  __pyx_t_1 = ((__pyx_v__flag == __pyx_v_5pippi_10wavetables_LINEAR) != 0);
+  if (__pyx_t_1) {
+
+    /* "pippi/interpolation.pyx":158
+ * 
+ *     if _flag == LINEAR:
+ *         interpolator = _linear_point             # <<<<<<<<<<<<<<
+ *     elif _flag == HERMITE:
+ *         interpolator = _hermite_point
+ */
+    __pyx_v_interpolator = __pyx_f_5pippi_13interpolation__linear_point;
+
+    /* "pippi/interpolation.pyx":157
+ *     cdef interp_point_t interpolator
+ * 
+ *     if _flag == LINEAR:             # <<<<<<<<<<<<<<
+ *         interpolator = _linear_point
+ *     elif _flag == HERMITE:
+ */
+    goto __pyx_L3;
+  }
+
+  /* "pippi/interpolation.pyx":159
+ *     if _flag == LINEAR:
+ *         interpolator = _linear_point
+ *     elif _flag == HERMITE:             # <<<<<<<<<<<<<<
+ *         interpolator = _hermite_point
+ *     elif _flag == TRUNC:
+ */
+  __pyx_t_1 = ((__pyx_v__flag == __pyx_v_5pippi_10wavetables_HERMITE) != 0);
+  if (__pyx_t_1) {
+
+    /* "pippi/interpolation.pyx":160
+ *         interpolator = _linear_point
+ *     elif _flag == HERMITE:
+ *         interpolator = _hermite_point             # <<<<<<<<<<<<<<
+ *     elif _flag == TRUNC:
+ *         interpolator = _trunc_point
+ */
+    __pyx_v_interpolator = __pyx_f_5pippi_13interpolation__hermite_point;
+
+    /* "pippi/interpolation.pyx":159
+ *     if _flag == LINEAR:
+ *         interpolator = _linear_point
+ *     elif _flag == HERMITE:             # <<<<<<<<<<<<<<
+ *         interpolator = _hermite_point
+ *     elif _flag == TRUNC:
+ */
+    goto __pyx_L3;
+  }
+
+  /* "pippi/interpolation.pyx":161
+ *     elif _flag == HERMITE:
+ *         interpolator = _hermite_point
+ *     elif _flag == TRUNC:             # <<<<<<<<<<<<<<
+ *         interpolator = _trunc_point
+ *     else:
+ */
+  __pyx_t_1 = ((__pyx_v__flag == __pyx_v_5pippi_10wavetables_TRUNC) != 0);
+  if (__pyx_t_1) {
+
+    /* "pippi/interpolation.pyx":162
+ *         interpolator = _hermite_point
+ *     elif _flag == TRUNC:
+ *         interpolator = _trunc_point             # <<<<<<<<<<<<<<
+ *     else:
+ *         interpolator = _linear_point
+ */
+    __pyx_v_interpolator = __pyx_f_5pippi_13interpolation__trunc_point;
+
+    /* "pippi/interpolation.pyx":161
+ *     elif _flag == HERMITE:
+ *         interpolator = _hermite_point
+ *     elif _flag == TRUNC:             # <<<<<<<<<<<<<<
+ *         interpolator = _trunc_point
+ *     else:
+ */
+    goto __pyx_L3;
+  }
+
+  /* "pippi/interpolation.pyx":164
+ *         interpolator = _trunc_point
+ *     else:
+ *         interpolator = _linear_point             # <<<<<<<<<<<<<<
+ * 
+ *     return interpolator
+ */
+  /*else*/ {
+    __pyx_v_interpolator = __pyx_f_5pippi_13interpolation__linear_point;
+  }
+  __pyx_L3:;
+
+  /* "pippi/interpolation.pyx":166
+ *         interpolator = _linear_point
+ * 
+ *     return interpolator             # <<<<<<<<<<<<<<
+ * 
+ * cdef interp_pos_t get_pos_interpolator(str flag):
+ */
+  __pyx_r = __pyx_v_interpolator;
+  goto __pyx_L0;
+
+  /* "pippi/interpolation.pyx":153
+ *     return _linear_pos(data, pos)
+ * 
+ * cdef interp_point_t get_point_interpolator(str flag):             # <<<<<<<<<<<<<<
+ *     cdef int _flag = to_flag(flag)
+ *     cdef interp_point_t interpolator
+ */
+
+  /* function exit code */
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "pippi/interpolation.pyx":168
+ *     return interpolator
+ * 
+ * cdef interp_pos_t get_pos_interpolator(str flag):             # <<<<<<<<<<<<<<
+ *     cdef int _flag = to_flag(flag)
+ *     cdef interp_pos_t interpolator
+ */
+
+static __pyx_t_5pippi_13interpolation_interp_pos_t __pyx_f_5pippi_13interpolation_get_pos_interpolator(PyObject *__pyx_v_flag) {
+  int __pyx_v__flag;
+  __pyx_t_5pippi_13interpolation_interp_pos_t __pyx_v_interpolator;
+  __pyx_t_5pippi_13interpolation_interp_pos_t __pyx_r;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  __Pyx_RefNannySetupContext("get_pos_interpolator", 0);
+
+  /* "pippi/interpolation.pyx":169
+ * 
+ * cdef interp_pos_t get_pos_interpolator(str flag):
+ *     cdef int _flag = to_flag(flag)             # <<<<<<<<<<<<<<
+ *     cdef interp_pos_t interpolator
+ * 
+ */
+  __pyx_v__flag = __pyx_f_5pippi_10wavetables_to_flag(__pyx_v_flag);
+
+  /* "pippi/interpolation.pyx":172
+ *     cdef interp_pos_t interpolator
+ * 
+ *     if _flag == LINEAR:             # <<<<<<<<<<<<<<
+ *         interpolator = _linear_pos
+ *     elif _flag == HERMITE:
+ */
+  __pyx_t_1 = ((__pyx_v__flag == __pyx_v_5pippi_10wavetables_LINEAR) != 0);
+  if (__pyx_t_1) {
+
+    /* "pippi/interpolation.pyx":173
+ * 
+ *     if _flag == LINEAR:
+ *         interpolator = _linear_pos             # <<<<<<<<<<<<<<
+ *     elif _flag == HERMITE:
+ *         interpolator = _hermite_pos
+ */
+    __pyx_v_interpolator = __pyx_f_5pippi_13interpolation__linear_pos;
+
+    /* "pippi/interpolation.pyx":172
+ *     cdef interp_pos_t interpolator
+ * 
+ *     if _flag == LINEAR:             # <<<<<<<<<<<<<<
+ *         interpolator = _linear_pos
+ *     elif _flag == HERMITE:
+ */
+    goto __pyx_L3;
+  }
+
+  /* "pippi/interpolation.pyx":174
+ *     if _flag == LINEAR:
+ *         interpolator = _linear_pos
+ *     elif _flag == HERMITE:             # <<<<<<<<<<<<<<
+ *         interpolator = _hermite_pos
+ *     elif _flag == TRUNC:
+ */
+  __pyx_t_1 = ((__pyx_v__flag == __pyx_v_5pippi_10wavetables_HERMITE) != 0);
+  if (__pyx_t_1) {
+
+    /* "pippi/interpolation.pyx":175
+ *         interpolator = _linear_pos
+ *     elif _flag == HERMITE:
+ *         interpolator = _hermite_pos             # <<<<<<<<<<<<<<
+ *     elif _flag == TRUNC:
+ *         interpolator = _trunc_pos
+ */
+    __pyx_v_interpolator = __pyx_f_5pippi_13interpolation__hermite_pos;
+
+    /* "pippi/interpolation.pyx":174
+ *     if _flag == LINEAR:
+ *         interpolator = _linear_pos
+ *     elif _flag == HERMITE:             # <<<<<<<<<<<<<<
+ *         interpolator = _hermite_pos
+ *     elif _flag == TRUNC:
+ */
+    goto __pyx_L3;
+  }
+
+  /* "pippi/interpolation.pyx":176
+ *     elif _flag == HERMITE:
+ *         interpolator = _hermite_pos
+ *     elif _flag == TRUNC:             # <<<<<<<<<<<<<<
+ *         interpolator = _trunc_pos
+ *     else:
+ */
+  __pyx_t_1 = ((__pyx_v__flag == __pyx_v_5pippi_10wavetables_TRUNC) != 0);
+  if (__pyx_t_1) {
+
+    /* "pippi/interpolation.pyx":177
+ *         interpolator = _hermite_pos
+ *     elif _flag == TRUNC:
+ *         interpolator = _trunc_pos             # <<<<<<<<<<<<<<
+ *     else:
+ *         interpolator = _linear_pos
+ */
+    __pyx_v_interpolator = __pyx_f_5pippi_13interpolation__trunc_pos;
+
+    /* "pippi/interpolation.pyx":176
+ *     elif _flag == HERMITE:
+ *         interpolator = _hermite_pos
+ *     elif _flag == TRUNC:             # <<<<<<<<<<<<<<
+ *         interpolator = _trunc_pos
+ *     else:
+ */
+    goto __pyx_L3;
+  }
+
+  /* "pippi/interpolation.pyx":179
+ *         interpolator = _trunc_pos
+ *     else:
+ *         interpolator = _linear_pos             # <<<<<<<<<<<<<<
+ * 
+ *     return interpolator
+ */
+  /*else*/ {
+    __pyx_v_interpolator = __pyx_f_5pippi_13interpolation__linear_pos;
+  }
+  __pyx_L3:;
+
+  /* "pippi/interpolation.pyx":181
+ *         interpolator = _linear_pos
+ * 
+ *     return interpolator             # <<<<<<<<<<<<<<
+ */
+  __pyx_r = __pyx_v_interpolator;
+  goto __pyx_L0;
+
+  /* "pippi/interpolation.pyx":168
+ *     return interpolator
+ * 
+ * cdef interp_pos_t get_pos_interpolator(str flag):             # <<<<<<<<<<<<<<
+ *     cdef int _flag = to_flag(flag)
+ *     cdef interp_pos_t interpolator
+ */
+
+  /* function exit code */
+  __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
@@ -20509,7 +20805,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  *     return _trunc_pos(data, pos)
  * 
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=1):             # <<<<<<<<<<<<<<
- *     return _linear_point(data, phase, pulsewidth)
+ *     return _linear_point_pw(data, phase, pulsewidth)
  * 
  */
   __pyx_tuple__28 = PyTuple_Pack(3, __pyx_n_s_data, __pyx_n_s_phase, __pyx_n_s_pulsewidth); if (unlikely(!__pyx_tuple__28)) __PYX_ERR(0, 147, __pyx_L1_error)
@@ -20518,7 +20814,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __pyx_codeobj__29 = (PyObject*)__Pyx_PyCode_New(3, 0, 0, 3, 0, CO_OPTIMIZED|CO_NEWLOCALS, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__28, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_pippi_interpolation_pyx, __pyx_n_s_linear_point, 147, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__29)) __PYX_ERR(0, 147, __pyx_L1_error)
 
   /* "pippi/interpolation.pyx":150
- *     return _linear_point(data, phase, pulsewidth)
+ *     return _linear_point_pw(data, phase, pulsewidth)
  * 
  * cpdef double linear_pos(double[:] data, double pos):             # <<<<<<<<<<<<<<
  *     return _linear_pos(data, pos)
@@ -20913,8 +21209,10 @@ static int __Pyx_modinit_function_export_code(void) {
   __Pyx_RefNannySetupContext("__Pyx_modinit_function_export_code", 0);
   /*--- Function export code ---*/
   if (__Pyx_ExportFunction("_hermite_pos", (void (*)(void))__pyx_f_5pippi_13interpolation__hermite_pos, "double (__Pyx_memviewslice, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportFunction("_hermite_point", (void (*)(void))__pyx_f_5pippi_13interpolation__hermite_point, "double (__Pyx_memviewslice, double, struct __pyx_opt_args_5pippi_13interpolation__hermite_point *__pyx_optional_args)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ExportFunction("_linear_point", (void (*)(void))__pyx_f_5pippi_13interpolation__linear_point, "double (__Pyx_memviewslice, double, struct __pyx_opt_args_5pippi_13interpolation__linear_point *__pyx_optional_args)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("_hermite_point_pw", (void (*)(void))__pyx_f_5pippi_13interpolation__hermite_point_pw, "double (__Pyx_memviewslice, double, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("_hermite_point", (void (*)(void))__pyx_f_5pippi_13interpolation__hermite_point, "double (__Pyx_memviewslice, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("_linear_point_pw", (void (*)(void))__pyx_f_5pippi_13interpolation__linear_point_pw, "double (__Pyx_memviewslice, double, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("_linear_point", (void (*)(void))__pyx_f_5pippi_13interpolation__linear_point, "double (__Pyx_memviewslice, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ExportFunction("linear_point", (void (*)(void))__pyx_f_5pippi_13interpolation_linear_point, "double (__Pyx_memviewslice, double, int __pyx_skip_dispatch, struct __pyx_opt_args_5pippi_13interpolation_linear_point *__pyx_optional_args)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ExportFunction("_linear_pos", (void (*)(void))__pyx_f_5pippi_13interpolation__linear_pos, "double (__Pyx_memviewslice, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ExportFunction("linear_pos", (void (*)(void))__pyx_f_5pippi_13interpolation_linear_pos, "double (__Pyx_memviewslice, double, int __pyx_skip_dispatch)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -20926,6 +21224,8 @@ static int __Pyx_modinit_function_export_code(void) {
   if (__Pyx_ExportFunction("trunc_pos", (void (*)(void))__pyx_f_5pippi_13interpolation_trunc_pos, "double (__Pyx_memviewslice, double, int __pyx_skip_dispatch)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ExportFunction("_trunc", (void (*)(void))__pyx_f_5pippi_13interpolation__trunc, "__Pyx_memviewslice (__Pyx_memviewslice, int)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ExportFunction("trunc", (void (*)(void))__pyx_f_5pippi_13interpolation_trunc, "__Pyx_memviewslice (PyObject *, int, int __pyx_skip_dispatch)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("get_point_interpolator", (void (*)(void))__pyx_f_5pippi_13interpolation_get_point_interpolator, "__pyx_t_5pippi_13interpolation_interp_point_t (PyObject *)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ExportFunction("get_pos_interpolator", (void (*)(void))__pyx_f_5pippi_13interpolation_get_pos_interpolator, "__pyx_t_5pippi_13interpolation_interp_pos_t (PyObject *)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_RefNannyFinishContext();
   return 0;
   __pyx_L1_error:;
@@ -21135,6 +21435,7 @@ static int __Pyx_modinit_function_import_code(void) {
   /*--- Function import code ---*/
   __pyx_t_1 = PyImport_ImportModule("pippi.wavetables"); if (!__pyx_t_1) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ImportFunction(__pyx_t_1, "to_wavetable", (void (**)(void))&__pyx_f_5pippi_10wavetables_to_wavetable, "__Pyx_memviewslice (PyObject *, int __pyx_skip_dispatch, struct __pyx_opt_args_5pippi_10wavetables_to_wavetable *__pyx_optional_args)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ImportFunction(__pyx_t_1, "to_flag", (void (**)(void))&__pyx_f_5pippi_10wavetables_to_flag, "int (PyObject *)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   Py_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_RefNannyFinishContext();
   return 0;
@@ -21480,7 +21781,7 @@ if (!__Pyx_RefNanny) {
  *     return _trunc_pos(data, pos)
  * 
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=1):             # <<<<<<<<<<<<<<
- *     return _linear_point(data, phase, pulsewidth)
+ *     return _linear_point_pw(data, phase, pulsewidth)
  * 
  */
     #if CYTHON_COMPILING_IN_LIMITED_API
@@ -21501,7 +21802,7 @@ if (!__Pyx_RefNanny) {
     }
 
     /* "pippi/interpolation.pyx":150
- *     return _linear_point(data, phase, pulsewidth)
+ *     return _linear_point_pw(data, phase, pulsewidth)
  * 
  * cpdef double linear_pos(double[:] data, double pos):             # <<<<<<<<<<<<<<
  *     return _linear_pos(data, pos)

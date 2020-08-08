@@ -3,17 +3,7 @@
 import numpy as np
 cimport cython
 from libc cimport math
-from pippi.wavetables cimport to_wavetable
-
-# Use these for function pointers in critical loops 
-# when interpolation scheme can be set at runtime
-ctypedef double (*hermite_point_t)(double[:] data, double phase, double pulsewidth)
-ctypedef double (*linear_point_t)(double[:] data, double phase, double pulsewidth)
-ctypedef double (*trunc_point_t)(double[:] data, double phase, double pulsewidth)
-
-ctypedef double (*hermite_pos_t)(double[:] data, double pos)
-ctypedef double (*linear_pos_t)(double[:] data, double pos)
-ctypedef double (*trunc_pos_t)(double[:] data, double pos)
+from pippi.wavetables cimport to_wavetable, to_flag, LINEAR, HERMITE, TRUNC
 
 
 @cython.boundscheck(False)
@@ -23,7 +13,7 @@ cdef double _hermite_pos(double[:] data, double pos) nogil:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef double _hermite_point(double[:] data, double phase, double pulsewidth=1) nogil:
+cdef double _hermite_point_pw(double[:] data, double phase, double pulsewidth) nogil:
     cdef int dlength = <int>len(data)
     cdef int boundry = dlength - 1
 
@@ -66,10 +56,15 @@ cdef double _hermite_point(double[:] data, double phase, double pulsewidth=1) no
     cdef double c2 = y0 - y1 + c1 - c3
     return ((c3 * frac + c2) * frac + c1) * frac + c0
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef double _hermite_point(double[:] data, double phase) nogil:
+    return _hermite_point_pw(data, phase, 1)
+
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef double _linear_point(double[:] data, double phase, double pulsewidth=1) nogil:
+cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil:
     cdef int dlength = <int>len(data)
 
     if dlength == 1:
@@ -91,6 +86,11 @@ cdef double _linear_point(double[:] data, double phase, double pulsewidth=1) nog
     b = data[i+1]
 
     return (1.0 - frac) * a + (frac * b)
+
+@cython.boundscheck(False)
+@cython.wraparound(False)
+cdef double _linear_point(double[:] data, double phase) nogil:
+    return _linear_point_pw(data, phase, 1)
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -145,11 +145,40 @@ cpdef double trunc_pos(double[:] data, double pos):
     return _trunc_pos(data, pos)
 
 cpdef double linear_point(double[:] data, double phase, double pulsewidth=1):
-    return _linear_point(data, phase, pulsewidth)
+    return _linear_point_pw(data, phase, pulsewidth)
 
 cpdef double linear_pos(double[:] data, double pos):
     return _linear_pos(data, pos)
 
+cdef interp_point_t get_point_interpolator(str flag):
+    cdef int _flag = to_flag(flag)
+    cdef interp_point_t interpolator
+
+    if _flag == LINEAR:
+        interpolator = _linear_point
+    elif _flag == HERMITE:
+        interpolator = _hermite_point
+    elif _flag == TRUNC:
+        interpolator = _trunc_point
+    else:
+        interpolator = _linear_point
+
+    return interpolator
+
+cdef interp_pos_t get_pos_interpolator(str flag):
+    cdef int _flag = to_flag(flag)
+    cdef interp_pos_t interpolator
+
+    if _flag == LINEAR:
+        interpolator = _linear_pos
+    elif _flag == HERMITE:
+        interpolator = _hermite_pos
+    elif _flag == TRUNC:
+        interpolator = _trunc_pos
+    else:
+        interpolator = _linear_pos
+
+    return interpolator
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -248,7 +277,3 @@ cdef class Bandlimit:
 
     cpdef double process(self, double phase, double resampling_factor):
         return self._process_loop(phase=phase, resampling_factor=resampling_factor)
-
-
-
-

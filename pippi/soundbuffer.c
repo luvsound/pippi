@@ -2109,54 +2109,55 @@ struct __pyx_opt_args_5pippi_3dsp_seed {
   int __pyx_n;
   PyObject *value;
 };
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point;
-struct __pyx_opt_args_5pippi_13interpolation__linear_point;
 struct __pyx_opt_args_5pippi_13interpolation_linear_point;
 
-/* "interpolation.pxd":4
- * 
- * cdef double _hermite_pos(double[:] data, double pos) nogil
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "interpolation.pxd":6
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)
- * cdef double _linear_pos(double[:] data, double pos) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__linear_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "interpolation.pxd":7
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
+/* "interpolation.pxd":10
+ * cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil
+ * cdef double _linear_point(double[:] data, double phase) nogil
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)             # <<<<<<<<<<<<<<
+ * 
  * cdef double _linear_pos(double[:] data, double pos) nogil
- * cpdef double linear_pos(double[:] data, double pos)
  */
 struct __pyx_opt_args_5pippi_13interpolation_linear_point {
   int __pyx_n;
   double pulsewidth;
 };
+
+/* "interpolation.pxd":26
+ * # Use these for function pointers in critical loops
+ * # when interpolation scheme can be set at runtime
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_t)(__Pyx_memviewslice, double);
+
+/* "interpolation.pxd":27
+ * # when interpolation scheme can be set at runtime
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
+ * 
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_pw_t)(__Pyx_memviewslice, double, double);
+
+/* "interpolation.pxd":28
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil             # <<<<<<<<<<<<<<
+ * 
+ * cdef interp_point_t get_point_interpolator(str flag)
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_pos_t)(__Pyx_memviewslice, double);
 struct __pyx_opt_args_5pippi_2fx__fir;
 struct __pyx_opt_args_5pippi_2fx_fir;
 struct __pyx_opt_args_5pippi_2fx_envelope_follower;
 struct __pyx_opt_args_5pippi_2fx_widen;
 struct __pyx_t_5pippi_2fx_SVFData;
 typedef struct __pyx_t_5pippi_2fx_SVFData __pyx_t_5pippi_2fx_SVFData;
-struct __pyx_opt_args_5pippi_2fx_svf_hp;
-struct __pyx_opt_args_5pippi_2fx_svf_lp;
-struct __pyx_opt_args_5pippi_2fx_svf_bp;
+struct __pyx_opt_args_5pippi_2fx_hpf;
+struct __pyx_opt_args_5pippi_2fx_lpf;
+struct __pyx_opt_args_5pippi_2fx_bpf;
 
 /* "fx.pxd":7
  * 
@@ -2236,11 +2237,11 @@ struct __pyx_t_5pippi_2fx_SVFData {
 /* "fx.pxd":28
  *     double k
  * 
- * cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
- * cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
- * cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
+ * cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer bpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
  */
-struct __pyx_opt_args_5pippi_2fx_svf_hp {
+struct __pyx_opt_args_5pippi_2fx_hpf {
   int __pyx_n;
   PyObject *freq;
   PyObject *res;
@@ -2249,11 +2250,12 @@ struct __pyx_opt_args_5pippi_2fx_svf_hp {
 
 /* "fx.pxd":29
  * 
- * cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
- * cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
- * cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
+ * cpdef SoundBuffer bpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * 
  */
-struct __pyx_opt_args_5pippi_2fx_svf_lp {
+struct __pyx_opt_args_5pippi_2fx_lpf {
   int __pyx_n;
   PyObject *freq;
   PyObject *res;
@@ -2261,11 +2263,13 @@ struct __pyx_opt_args_5pippi_2fx_svf_lp {
 };
 
 /* "fx.pxd":30
- * cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
- * cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
- * cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
+ * cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer bpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
+ * 
+ * cpdef SoundBuffer buttlpf(SoundBuffer snd, object freq)
  */
-struct __pyx_opt_args_5pippi_2fx_svf_bp {
+struct __pyx_opt_args_5pippi_2fx_bpf {
   int __pyx_n;
   PyObject *freq;
   PyObject *res;
@@ -6048,7 +6052,7 @@ static double (*__pyx_f_5pippi_3dsp__mag)(__Pyx_memviewslice); /*proto*/
 /* Module declarations from "pippi.interpolation" */
 #if !CYTHON_COMPILING_IN_LIMITED_API
 #endif
-static double (*__pyx_f_5pippi_13interpolation__linear_point)(__Pyx_memviewslice, double, struct __pyx_opt_args_5pippi_13interpolation__linear_point *__pyx_optional_args); /*proto*/
+static double (*__pyx_f_5pippi_13interpolation__linear_point)(__Pyx_memviewslice, double); /*proto*/
 static double (*__pyx_f_5pippi_13interpolation__linear_pos)(__Pyx_memviewslice, double); /*proto*/
 static __Pyx_memviewslice (*__pyx_f_5pippi_13interpolation__linear)(__Pyx_memviewslice, int); /*proto*/
 
@@ -21469,7 +21473,7 @@ static struct __pyx_obj_5pippi_11soundbuffer_SoundBuffer *__pyx_f_5pippi_11sound
         __Pyx_RaiseBufferIndexError(__pyx_t_18);
         __PYX_ERR(0, 926, __pyx_L1_error)
       }
-      *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_out.data + __pyx_t_16 * __pyx_v_out.strides[0]) ) + __pyx_t_17 * __pyx_v_out.strides[1]) )) = __pyx_f_5pippi_13interpolation__linear_point(__pyx_t_1, __pyx_v_phase, NULL);
+      *((double *) ( /* dim=1 */ (( /* dim=0 */ (__pyx_v_out.data + __pyx_t_16 * __pyx_v_out.strides[0]) ) + __pyx_t_17 * __pyx_v_out.strides[1]) )) = __pyx_f_5pippi_13interpolation__linear_point(__pyx_t_1, __pyx_v_phase);
       __PYX_XDEC_MEMVIEW(&__pyx_t_1, 1);
       __pyx_t_1.memview = NULL; __pyx_t_1.data = NULL;
     }
@@ -43478,7 +43482,7 @@ static int __Pyx_modinit_function_import_code(void) {
   if (__Pyx_ImportFunction(__pyx_t_2, "_mag", (void (**)(void))&__pyx_f_5pippi_3dsp__mag, "double (__Pyx_memviewslice)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   Py_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_3 = PyImport_ImportModule("pippi.interpolation"); if (!__pyx_t_3) __PYX_ERR(0, 1, __pyx_L1_error)
-  if (__Pyx_ImportFunction(__pyx_t_3, "_linear_point", (void (**)(void))&__pyx_f_5pippi_13interpolation__linear_point, "double (__Pyx_memviewslice, double, struct __pyx_opt_args_5pippi_13interpolation__linear_point *__pyx_optional_args)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
+  if (__Pyx_ImportFunction(__pyx_t_3, "_linear_point", (void (**)(void))&__pyx_f_5pippi_13interpolation__linear_point, "double (__Pyx_memviewslice, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ImportFunction(__pyx_t_3, "_linear_pos", (void (**)(void))&__pyx_f_5pippi_13interpolation__linear_pos, "double (__Pyx_memviewslice, double)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   if (__Pyx_ImportFunction(__pyx_t_3, "_linear", (void (**)(void))&__pyx_f_5pippi_13interpolation__linear, "__Pyx_memviewslice (__Pyx_memviewslice, int)") < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   Py_DECREF(__pyx_t_3); __pyx_t_3 = 0;

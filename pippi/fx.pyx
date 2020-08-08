@@ -483,22 +483,25 @@ cpdef Wavetable envelope_follower(SoundBuffer snd, double window=0.015):
 
     return Wavetable(env)
 
-cpdef SoundBuffer lpf(SoundBuffer snd, object freq):
+# Soundpipe butterworth filters
+cpdef SoundBuffer buttlpf(SoundBuffer snd, object freq):
     cdef double[:] _freq = wavetables.to_window(freq)
     return SoundBuffer(soundpipe.butlp(snd.frames, _freq), channels=snd.channels, samplerate=snd.samplerate)
 
-cpdef SoundBuffer hpf(SoundBuffer snd, object freq):
+cpdef SoundBuffer butthpf(SoundBuffer snd, object freq):
     cdef double[:] _freq = wavetables.to_window(freq)
     return SoundBuffer(soundpipe.buthp(snd.frames, _freq), channels=snd.channels, samplerate=snd.samplerate)
 
-cpdef SoundBuffer bpf(SoundBuffer snd, object freq):
+cpdef SoundBuffer buttbpf(SoundBuffer snd, object freq):
     cdef double[:] _freq = wavetables.to_window(freq)
     return SoundBuffer(soundpipe.butbp(snd.frames, _freq), channels=snd.channels, samplerate=snd.samplerate)
 
 cpdef SoundBuffer brf(SoundBuffer snd, object freq):
+    # TODO: rename to buttbrf after adding SVF band reject filter
     cdef double[:] _freq = wavetables.to_window(freq)
     return SoundBuffer(soundpipe.butbr(snd.frames, _freq), channels=snd.channels, samplerate=snd.samplerate)
 
+# More Soundpipe FX
 cpdef SoundBuffer compressor(SoundBuffer snd, double ratio=4, double threshold=-30, double attack=0.2, double release=0.2):
     return SoundBuffer(soundpipe.compressor(snd.frames, ratio, threshold, attack, release), channels=snd.channels, samplerate=snd.samplerate)
 
@@ -513,6 +516,7 @@ cpdef SoundBuffer mincer(SoundBuffer snd, double length, object position, object
     cdef double[:] pitch_lfo = wavetables.to_window(pitch)
     return SoundBuffer(soundpipe.mincer(snd.frames, length, time_lfo, amp, pitch_lfo, wtsize, snd.samplerate), channels=snd.channels, samplerate=snd.samplerate)
 
+# Convolutions
 cdef double[:,:] _to_impulse(object impulse, int channels):
     cdef double[:,:] _impulse
     cdef double[:] _wt
@@ -665,7 +669,8 @@ cpdef SoundBuffer go(SoundBuffer snd,
 
     return out
 
-
+# 2nd order state variable filters adapted from google ipython notebook by Starling Labs
+# https://github.com/google/music-synthesizer-for-android/blob/master/lab/Second%20order%20sections%20in%20matrix%20form.ipynb
 cdef double _svf_hp(SVFData* data, double val):
     cdef double C0 = -data.k * data.a1 - data.a2
     cdef double C1 = data.k * data.a2 - (1. - data.a3)
@@ -755,15 +760,15 @@ cdef SoundBuffer _svf(svf_filter_t method, SoundBuffer snd, object freq, object 
 
     return SoundBuffer(out, channels=channels, samplerate=samplerate)   
 
-cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
+cpdef SoundBuffer hpf(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
     cdef svf_filter_t method = _svf_hp
     return _svf(method, snd, freq, res, norm)
 
-cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
+cpdef SoundBuffer lpf(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
     cdef svf_filter_t method = _svf_lp
     return _svf(method, snd, freq, res, norm)
 
-cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
+cpdef SoundBuffer bpf(SoundBuffer snd, object freq=None, object res=None, bint norm=True):
     cdef svf_filter_t method = _svf_bp
     return _svf(method, snd, freq, res, norm)
 

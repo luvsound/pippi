@@ -1906,45 +1906,46 @@ struct __pyx_opt_args_5pippi_11soundbuffer_11SoundBuffer_toenv {
   int __pyx_n;
   double window;
 };
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point;
-struct __pyx_opt_args_5pippi_13interpolation__linear_point;
 struct __pyx_opt_args_5pippi_13interpolation_linear_point;
 
-/* "interpolation.pxd":4
- * 
- * cdef double _hermite_pos(double[:] data, double pos) nogil
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__hermite_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "interpolation.pxd":6
- * cdef double _hermite_point(double[:] data, double phase, double pulsewidth=*) nogil
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil             # <<<<<<<<<<<<<<
- * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)
- * cdef double _linear_pos(double[:] data, double pos) nogil
- */
-struct __pyx_opt_args_5pippi_13interpolation__linear_point {
-  int __pyx_n;
-  double pulsewidth;
-};
-
-/* "interpolation.pxd":7
- * 
- * cdef double _linear_point(double[:] data, double phase, double pulsewidth=*) nogil
+/* "interpolation.pxd":10
+ * cdef double _linear_point_pw(double[:] data, double phase, double pulsewidth) nogil
+ * cdef double _linear_point(double[:] data, double phase) nogil
  * cpdef double linear_point(double[:] data, double phase, double pulsewidth=*)             # <<<<<<<<<<<<<<
+ * 
  * cdef double _linear_pos(double[:] data, double pos) nogil
- * cpdef double linear_pos(double[:] data, double pos)
  */
 struct __pyx_opt_args_5pippi_13interpolation_linear_point {
   int __pyx_n;
   double pulsewidth;
 };
+
+/* "interpolation.pxd":26
+ * # Use these for function pointers in critical loops
+ * # when interpolation scheme can be set at runtime
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_t)(__Pyx_memviewslice, double);
+
+/* "interpolation.pxd":27
+ * # when interpolation scheme can be set at runtime
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil             # <<<<<<<<<<<<<<
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
+ * 
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_point_pw_t)(__Pyx_memviewslice, double, double);
+
+/* "interpolation.pxd":28
+ * ctypedef double (*interp_point_t)(double[:] data, double phase) nogil
+ * ctypedef double (*interp_point_pw_t)(double[:] data, double phase, double pulsewidth) nogil
+ * ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil             # <<<<<<<<<<<<<<
+ * 
+ * cdef interp_point_t get_point_interpolator(str flag)
+ */
+typedef double (*__pyx_t_5pippi_13interpolation_interp_pos_t)(__Pyx_memviewslice, double);
 struct __pyx_opt_args_5pippi_4rand_seed;
 struct __pyx_opt_args_5pippi_4rand_rand;
 struct __pyx_opt_args_5pippi_4rand_randint;
@@ -1992,9 +1993,9 @@ struct __pyx_opt_args_5pippi_2fx_envelope_follower;
 struct __pyx_opt_args_5pippi_2fx_widen;
 struct __pyx_t_5pippi_2fx_SVFData;
 typedef struct __pyx_t_5pippi_2fx_SVFData __pyx_t_5pippi_2fx_SVFData;
-struct __pyx_opt_args_5pippi_2fx_svf_hp;
-struct __pyx_opt_args_5pippi_2fx_svf_lp;
-struct __pyx_opt_args_5pippi_2fx_svf_bp;
+struct __pyx_opt_args_5pippi_2fx_hpf;
+struct __pyx_opt_args_5pippi_2fx_lpf;
+struct __pyx_opt_args_5pippi_2fx_bpf;
 
 /* "pippi/fx.pxd":7
  * 
@@ -2074,11 +2075,11 @@ struct __pyx_t_5pippi_2fx_SVFData {
 /* "pippi/fx.pxd":28
  *     double k
  * 
- * cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
- * cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
- * cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
+ * cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer bpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
  */
-struct __pyx_opt_args_5pippi_2fx_svf_hp {
+struct __pyx_opt_args_5pippi_2fx_hpf {
   int __pyx_n;
   PyObject *freq;
   PyObject *res;
@@ -2087,11 +2088,12 @@ struct __pyx_opt_args_5pippi_2fx_svf_hp {
 
 /* "pippi/fx.pxd":29
  * 
- * cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
- * cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
- * cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
+ * cpdef SoundBuffer bpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * 
  */
-struct __pyx_opt_args_5pippi_2fx_svf_lp {
+struct __pyx_opt_args_5pippi_2fx_lpf {
   int __pyx_n;
   PyObject *freq;
   PyObject *res;
@@ -2099,11 +2101,13 @@ struct __pyx_opt_args_5pippi_2fx_svf_lp {
 };
 
 /* "pippi/fx.pxd":30
- * cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
- * cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
- * cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
+ * cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+ * cpdef SoundBuffer bpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)             # <<<<<<<<<<<<<<
+ * 
+ * cpdef SoundBuffer buttlpf(SoundBuffer snd, object freq)
  */
-struct __pyx_opt_args_5pippi_2fx_svf_bp {
+struct __pyx_opt_args_5pippi_2fx_bpf {
   int __pyx_n;
   PyObject *freq;
   PyObject *res;

@@ -25,6 +25,11 @@ ctypedef struct SVFData:
     double g
     double k
 
-cpdef SoundBuffer svf_hp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
-cpdef SoundBuffer svf_lp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
-cpdef SoundBuffer svf_bp(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+cpdef SoundBuffer bpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+
+cpdef SoundBuffer buttlpf(SoundBuffer snd, object freq)
+cpdef SoundBuffer butthpf(SoundBuffer snd, object freq)
+cpdef SoundBuffer buttbpf(SoundBuffer snd, object freq)
+cpdef SoundBuffer brf(SoundBuffer snd, object freq)

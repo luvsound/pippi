@@ -175,33 +175,33 @@ class TestFx(TestCase):
         out = fx.saturator(snd, drive, dcoffset, dcblock)
         out.write('tests/renders/fx_saturator_dc.wav')
 
-    def test_butlp(self):
+    def test_buttlp(self):
         snd = dsp.read('tests/sounds/guitar1s.wav')
         freq = 100
 
-        out = fx.lpf(snd, freq)
-        out.write('tests/renders/fx_lpf.wav')
+        out = fx.buttlpf(snd, freq)
+        out.write('tests/renders/fx_buttlpf.wav')
 
-    def test_buthp(self):
+    def test_butthp(self):
         snd = dsp.read('tests/sounds/guitar1s.wav')
         freq = 1000
 
-        out = fx.hpf(snd, freq)
-        out.write('tests/renders/fx_hpf.wav')
+        out = fx.butthpf(snd, freq)
+        out.write('tests/renders/fx_butthpf.wav')
 
-    def test_butbp(self):
+    def test_buttbp(self):
         snd = dsp.read('tests/sounds/guitar1s.wav')
         freq = 500
 
-        out = fx.bpf(snd, freq)
-        out.write('tests/renders/fx_bpf.wav')
+        out = fx.buttbpf(snd, freq)
+        out.write('tests/renders/fx_buttbpf.wav')
 
-    def test_butbr(self):
+    def test_buttbr(self):
         snd = dsp.read('tests/sounds/guitar1s.wav')
         freq = 500
 
         out = fx.brf(snd, freq)
-        out.write('tests/renders/fx_brf.wav')
+        out.write('tests/renders/fx_buttbrf.wav')
 
     def test_softclip(self):
         out = oscs.SineOsc(freq=[30, 10000], amp=10).play(1).softclip()
@@ -211,35 +211,35 @@ class TestFx(TestCase):
         snd = dsp.read('tests/sounds/whitenoise10s.wav')
         freq = [20, 10000]
         res = 0
-        out = fx.svf_lp(snd, freq, res)
+        out = fx.lpf(snd, freq, res)
         out.write('tests/renders/fx_svf_lp-r0.wav')
 
         freq = [20, 10000]
         res = 1
-        out = fx.svf_lp(snd, freq, res)
+        out = fx.lpf(snd, freq, res)
         out.write('tests/renders/fx_svf_lp-r1.wav')
 
     def test_svf_hp(self):
         snd = dsp.read('tests/sounds/whitenoise10s.wav')
         freq = [20, 10000]
         res = 0
-        out = fx.svf_hp(snd, freq, res)
+        out = fx.hpf(snd, freq, res)
         out.write('tests/renders/fx_svf_hp-r0.wav')
 
         freq = [20, 10000]
         res = 1
-        out = fx.svf_hp(snd, freq, res)
+        out = fx.hpf(snd, freq, res)
         out.write('tests/renders/fx_svf_hp-r1.wav')
 
     def test_svf_bp(self):
         snd = dsp.read('tests/sounds/whitenoise10s.wav')
         freq = [20, 10000]
         res = 0
-        out = fx.svf_bp(snd, freq, res)
+        out = fx.bpf(snd, freq, res)
         out.write('tests/renders/fx_svf_bp-r0.wav')
 
         freq = [20, 10000]
         res = 1
-        out = fx.svf_bp(snd, freq, res)
+        out = fx.bpf(snd, freq, res)
         out.write('tests/renders/fx_svf_bp-r1.wav')
 
