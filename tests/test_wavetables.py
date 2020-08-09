@@ -4,7 +4,10 @@ import re
 
 from unittest import TestCase
 from pippi import wavetables, dsp
+from pippi.soundbuffer import SoundBuffer
+from pippi.wavetables import Wavetable
 from pippi.oscs import Osc
+import numpy as np
 
 class TestWavetables(TestCase):
     def test_random_window(self):
@@ -264,4 +267,44 @@ class TestWavetables(TestCase):
         with self.assertRaises(TypeError):
             2 - win
         self.assertEqual(win, dsp.win([1,2,3]))
+
+    wt_size = 4096
+
+    def test_bandlimiting(self):
+        wt_size = 4096
+        square = Wavetable(wavetables.to_wavetable('square'), wtsize=wt_size, bl_quality = 6)
+        
+        sr = 96000
+        time = 4
+        length = sr * time
+        render1 = np.zeros((length, 2), dtype='d')
+        render2 = np.zeros((length, 2), dtype='d')
+        
+        sweep = np.logspace(0, 9, length, base = 2) * 30
+        sweep /= sr
+        phase = 0
+
+        for i in range(0, length):
+            inc = sweep[i]
+            sample = square.interp(phase, method='linear')
+            render1[i][0] = sample
+            render1[i][1] = sample
+            phase += inc
+            if phase >= 1:
+                phase -= 1
+
+        out = SoundBuffer(render1, samplerate=sr)
+
+        for i in range(0, length):
+            inc = sweep[i]
+            phase += inc
+            if phase >= 1:
+                phase -= 1
+            sample = square.bli_pos(phase, inc)
+            render2[i][0] = sample
+            render2[i][1] = sample
+
+        out += SoundBuffer(render2, samplerate=sr)
+
+        out.write('tests/renders/wavetables_bl_sweep.wav')
 

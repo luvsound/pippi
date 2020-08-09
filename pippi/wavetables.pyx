@@ -15,7 +15,7 @@ from libc.stdlib cimport malloc, realloc, calloc, free
 from libc cimport math
 
 from pippi.defaults cimport DEFAULT_SAMPLERATE, DEFAULT_WTSIZE
-from pippi cimport interpolation, rand
+from pippi cimport rand
 from pippi import graph
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.lists cimport _scale, _scaleinplace, _snap_mult, _snap_pattern
@@ -307,7 +307,8 @@ cdef class Wavetable:
             object lowvalue=None, 
             object highvalue=None,
             int wtsize=0, 
-            bint window=False):
+            bint window=False,
+            int bl_quality=0):
         cdef bint scaled = False
         cdef bint resized = False
 
@@ -332,6 +333,9 @@ cdef class Wavetable:
 
         if scaled:
             self.data = _scaleinplace(self.data, np.min(self.data), np.max(self.data), self.lowvalue, self.highvalue, False)
+
+        if bl_quality > 0:
+            self.bli_init(bl_quality)
 
 
     ##################################
@@ -833,6 +837,14 @@ cdef class Wavetable:
             path = 'wavetable.wav'
         soundfile.write(path, self.data, samplerate)
 
+    cpdef void bli_init(Wavetable self, int quality):
+        self.bl_data = interpolation._bli_init(self.data, quality, True)
+
+    cpdef double bli_pos(Wavetable self, double pos, double inc):
+        return interpolation._bli_pos(self.bl_data, pos, 1/(self.length*inc))
+
+
+
 
 cdef tuple _parse_polyseg(str score, int length, int wtlength):
     """ score = '1,tri .5,sine,0-.5 sine!.25 tri,.1-.2!.5'
@@ -1156,3 +1168,4 @@ cpdef Wavetable seesaw(object win, int length, double tip=0.5):
     cdef double[:] _win = to_window(win)
     cdef double[:] out = _seesaw(_win, length, tip)
     return Wavetable(out)
+

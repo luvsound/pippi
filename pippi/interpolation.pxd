@@ -30,17 +30,20 @@ ctypedef double (*interp_pos_t)(double[:] data, double pos) nogil
 cdef interp_point_t get_point_interpolator(str flag)
 cdef interp_pos_t get_pos_interpolator(str flag)
 
-cdef class Bandlimit:
+ctypedef struct BLIData:
+    int quality
+    int samples_per_0x
+    int filter_length
+    int table_length
+    int wrap
+    double* filter_table
+    double* table
 
-    cdef int quality
-    cdef int samples_per_0x
-    cdef int filter_length
-    cdef double[:] filter_table
-    cdef int table_length
-    cdef double[:] table
+cdef BLIData* _bli_init(double[:] data, int quality, bint loop)
+cdef double _bli_pos(BLIData* data, double pos, double resampling_factor) nogil
+cdef double _bli_point(BLIData* data, double point, double resampling_factor) nogil
 
-    cdef void _make_filter(self)
-    cdef double _get_filter_coeff(self, double phase) nogil
-    cdef double _process_loop(self, double phase, double resampling_factor) nogil
 
-    cpdef double process(self, double phase, double resampling_factor)
+
+
+

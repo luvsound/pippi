@@ -1,5 +1,8 @@
 #cython: language_level=3
 
+from pippi cimport interpolation
+from pippi.interpolation cimport BLIData
+
 cdef double[:] _adsr(int framelength, int attack, int decay, double sustain, int release)
 cdef double[:] _drink(double[:] wt, double width, double minval, double maxval)
 cdef double[:] _fir(double[:] data, double[:] impulse, bint norm=*)
@@ -13,6 +16,7 @@ cdef class Wavetable:
     cdef public double lowvalue
     cdef public double highvalue
     cdef public int length
+    cdef BLIData* bl_data
 
     cpdef Wavetable clip(Wavetable self, double minval=*, double maxval=*)
     cpdef Wavetable cut(Wavetable self, int start, int length)
@@ -49,6 +53,9 @@ cdef class Wavetable:
     cpdef Wavetable crushed(Wavetable self, int steps)
     cpdef double interp(Wavetable self, double pos, str method=*)
     cpdef list toonsets(Wavetable self, double length=*)
+
+    cpdef void bli_init(Wavetable self, int quality)
+    cpdef double bli_pos(Wavetable self, double pos, double inc)
 
     cpdef void write(Wavetable self, object path=*, int samplerate=*)
 
