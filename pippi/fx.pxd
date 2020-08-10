@@ -6,6 +6,11 @@ from pippi.soundbuffer cimport SoundBuffer
 cdef double[:,:] _norm(double[:,:] snd, double ceiling)
 cdef double[:,:] _fir(double[:,:] snd, double[:,:] out, double[:] impulse, bint norm=*)
 cpdef SoundBuffer fir(SoundBuffer snd, object impulse, bint normalize=*)
+
+cdef double _fold_point(double sample, double last, double samplerate)
+cdef double[:,:] _fold(double[:,:] out, double[:,:] snd, double[:] amp, double samplerate)
+cpdef SoundBuffer fold(SoundBuffer snd, object amp=*, bint norm=*)
+
 cpdef Wavetable envelope_follower(SoundBuffer snd, double window=*)
 cpdef SoundBuffer widen(SoundBuffer snd, object width=*)
 

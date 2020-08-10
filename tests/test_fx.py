@@ -243,3 +243,15 @@ class TestFx(TestCase):
         out = fx.bpf(snd, freq, res)
         out.write('tests/renders/fx_svf_bp-r1.wav')
 
+    def test_fold(self):
+        amp = dsp.win('hannin', 1, 10)
+
+        snd = dsp.read('tests/sounds/guitar1s.wav')
+        out = fx.fold(snd, amp)
+        out.write('tests/renders/fx_fold_guitar.wav')
+
+        snd = oscs.Osc('sine', freq=200).play(1)
+        out = fx.fold(snd, amp)
+        out.write('tests/renders/fx_fold_sine.wav')
+
+               

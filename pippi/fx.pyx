@@ -172,6 +172,36 @@ cpdef SoundBuffer crossover(SoundBuffer snd, object amount, object smooth, objec
     cdef double[:,:] out = np.zeros((len(snd), snd.channels), dtype='d')
     return SoundBuffer(_crossover(snd.frames, out, _amount, _smooth, _fade))
 
+cdef double _fold_point(double sample, double last, double samplerate):
+    # Adapted from https://ccrma.stanford.edu/~jatin/ComplexNonlinearities/Wavefolder.html
+    cdef double z = math.tanh(sample) + (math.tanh(last) * 0.9)
+    return z + (-0.5 * math.sin(2 * PI * sample * (samplerate/2) / samplerate))
+
+cdef double[:,:] _fold(double[:,:] out, double[:,:] snd, double[:] amp, double samplerate):
+    cdef double last=0, sample=0, pos=0
+    cdef int length = len(snd)
+    cdef int channels = snd.shape[1]
+
+    for c in range(channels):
+        last = 0
+        for i in range(length):
+            pos = <double>i / length
+            sample = snd[i,c] * _linear_pos(amp, pos)
+            sample = _fold_point(sample, last, samplerate)
+            last = sample
+            out[i,c] = sample
+
+    return out
+
+cpdef SoundBuffer fold(SoundBuffer snd, object amp=1, bint norm=True):
+    cdef double[:,:] out = np.zeros((len(snd), snd.channels), dtype='d')
+    cdef double[:] _amp = wavetables.to_window(amp)
+    out = _fold(out, snd.frames, _amp, <double>snd.samplerate)
+    if norm:
+        out = _norm(out, snd.mag)
+    return SoundBuffer(out, channels=snd.channels, samplerate=snd.samplerate)
+
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 @cython.cdivision(True)

@@ -1,7 +1,7 @@
 import random
 from unittest import TestCase
 
-from pippi.oscs import Drunk, Osc, Osc2d, Pulsar, Pulsar2d, Alias, Bar, Tukey, DSS, FM, SineOsc
+from pippi.oscs import Drunk, Fold, Osc, Osc2d, Pulsar, Pulsar2d, Alias, Bar, Tukey, DSS, FM, SineOsc
 from pippi.soundbuffer import SoundBuffer
 from pippi.wavesets import Waveset
 from pippi import dsp, fx, tune, shapes
@@ -16,6 +16,11 @@ class TestOscs(TestCase):
         pm = Osc('sine', freq=200.0).play(1).env('tri') * 1000
         out = Osc('sine', freq=pm).play(1)
         out.write('tests/renders/osc_fm.wav')
+
+    def test_fold_osc(self):
+        out = Fold('sine', freq=200, amp=[1,10]).play(1)
+        out = fx.norm(out, 1)
+        out.write('tests/renders/osc_fold.wav')
 
     def test_create_sinewave(self):
         osc = Osc('sine', freq=200.0)

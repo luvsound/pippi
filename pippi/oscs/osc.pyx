@@ -46,7 +46,7 @@ cdef class Osc:
         framelength = <int>(length * self.samplerate)
         return self._play(framelength)
 
-    cdef object _play(self, int length):
+    cdef SoundBuffer _play(self, int length):
         cdef int i = 0
         cdef double sample, freq, amp, pm
         cdef double lastpm = 0

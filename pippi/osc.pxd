@@ -1,5 +1,7 @@
 #cython: language_level=3
 
+from pippi.soundbuffer cimport SoundBuffer
+
 cdef class Osc:
     cdef public double[:] freq
     cdef public double[:] amp
@@ -15,4 +17,4 @@ cdef class Osc:
     cdef public int samplerate
     cdef public int wtsize
 
-    cdef object _play(self, int length)
+    cdef SoundBuffer _play(self, int length)
