@@ -8,6 +8,11 @@ ext_modules = cythonize([
         Extension('pippi.breakpoints', ['pippi/breakpoints.pyx'],
             include_dirs=[np.get_include()], 
         ),
+        Extension('pippi.multiband', ['pippi/multiband.pyx'], 
+            libraries=['soundpipe'], 
+            library_dirs=['/usr/local/lib'],
+            include_dirs=['/usr/local/include']
+        ), 
 
         Extension('pippi.defaults', ['pippi/defaults.pyx']), 
         Extension('pippi.dsp', ['pippi/dsp.pyx']), 

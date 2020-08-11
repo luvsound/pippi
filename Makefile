@@ -1,7 +1,10 @@
-.PHONY: test test-breakpoints test-fft test-soundfont test-grains test-wavesets test-fx test-noise test-shapes test-oscs test-soundbuffer test-lists test-pitches test-graph test-slonimsky test-rhythm build docs deploy
+.PHONY: test test-multiband test-breakpoints test-fft test-soundfont test-grains test-wavesets test-fx test-noise test-shapes test-oscs test-soundbuffer test-lists test-pitches test-graph test-slonimsky test-rhythm build docs deploy
 
 test:
 	python -m unittest discover -s tests -p 'test_*.py' -v
+
+test-multiband:
+	python -m unittest tests/test_multiband.py -v
 
 test-breakpoints:
 	python -m unittest tests/test_breakpoints.py -v
