@@ -1,6 +1,7 @@
 #cython: language_level=3
 
 from pippi.soundbuffer cimport SoundBuffer
+from pippi.interpolation cimport BLIData
 
 cdef class Osc:
     cdef public double[:] freq
@@ -16,5 +17,8 @@ cdef class Osc:
     cdef public int channels
     cdef public int samplerate
     cdef public int wtsize
+
+    cdef BLIData* bl_data
+    cdef bint bandlimit
 
     cdef SoundBuffer _play(self, int length)

@@ -182,7 +182,7 @@ cdef interp_pos_t get_pos_interpolator(str flag):
 
 # Starting with "A flexible sampling-rate conversion method" (Smith and Gosset 1984)
 
-cdef BLIData* _bli_init(double[:] samples, int quality, bint loop):
+cdef BLIData* _bli_init(int quality, bint loop):
 
     cdef BLIData* data = <BLIData*>malloc(sizeof(BLIData))
 
@@ -190,15 +190,10 @@ cdef BLIData* _bli_init(double[:] samples, int quality, bint loop):
     data.samples_per_0x = 512
     data.filter_length = quality * 512
 
-    data.table_length = len(samples)
-    data.table = <double*>malloc(sizeof(double) * data.table_length)
-    for i, sample in enumerate(to_wavetable(samples)):
-        data.table[i] = sample
-
     if loop: 
-        data.wrap = data.table_length
-    else:
         data.wrap = 1
+    else:
+        data.wrap = 0
 
     sinc_domain = np.linspace(0, data.quality, data.filter_length)
     sinc_sample = np.sinc(sinc_domain)
@@ -214,7 +209,6 @@ cdef BLIData* _bli_init(double[:] samples, int quality, bint loop):
 cdef void _bli_goodbye(BLIData* data):
 
     free(data.filter_table)
-    free(data.table)
     free(data)
 
 @cython.boundscheck(False)
@@ -229,7 +223,10 @@ cdef double _get_filter_coeff(BLIData* data, double pos) nogil:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef double _bli_point(BLIData* data, double point, double resampling_factor) nogil:
+cdef double _bli_point(double[:] table, BLIData* data, double point, double resampling_factor, int table_length) nogil:
+
+    cdef int wrap = data.wrap * (table_length - 1)
+    wrap += 1
     
     cdef int left_index = <int>point
     cdef int right_index = (left_index + 1)
@@ -252,7 +249,7 @@ cdef double _bli_point(BLIData* data, double point, double resampling_factor) no
         # increment through the filter indices by the resampling factor
         filter_phasor += resampling_factor
         # for each stop in the filter table, burn a new sample value
-        sample += coeff * data.table[read_index]
+        sample += coeff * table[read_index]
         # next sample on the chopping block is the previous one
         read_index -= 1
         if read_index < 0:
@@ -267,9 +264,9 @@ cdef double _bli_point(BLIData* data, double point, double resampling_factor) no
     while filter_phasor < data.quality:
         coeff = _get_filter_coeff(data, filter_phasor)
         filter_phasor += resampling_factor
-        sample += coeff * data.table[read_index]
+        sample += coeff * table[read_index]
         read_index += 1
-        if read_index > data.table_length - 1:
+        if read_index > table_length - 1:
             read_index -= data.wrap
 
     # return left_index
@@ -277,6 +274,6 @@ cdef double _bli_point(BLIData* data, double point, double resampling_factor) no
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef double _bli_pos(BLIData* data, double pos, double resampling_factor) nogil:
-    return _bli_point(data, pos * data.table_length, resampling_factor)
+cdef double _bli_pos(double[:] table, BLIData* data, double pos, double resampling_factor, int table_length) nogil:
+    return _bli_point(table, data, pos * table_length, resampling_factor, table_length)
 

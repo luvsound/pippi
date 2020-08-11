@@ -838,10 +838,10 @@ cdef class Wavetable:
         soundfile.write(path, self.data, samplerate)
 
     cpdef void bli_init(Wavetable self, int quality):
-        self.bl_data = interpolation._bli_init(self.data, quality, True)
+        self.bl_data = interpolation._bli_init(quality, True)
 
     cpdef double bli_pos(Wavetable self, double pos, double inc):
-        return interpolation._bli_pos(self.bl_data, pos, 1/(self.length*inc))
+        return interpolation._bli_pos(self.data, self.bl_data, pos, 1/(self.length*inc), self.length)
 
 
 

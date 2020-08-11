@@ -25,6 +25,8 @@ cdef class Osc:
             int wtsize=4096,
             int channels=DEFAULT_CHANNELS,
             int samplerate=DEFAULT_SAMPLERATE,
+
+            int quality = 0
         ):
 
         self.freq = wavetables.to_wavetable(freq, self.wtsize)
@@ -41,6 +43,12 @@ cdef class Osc:
         self.wtsize = wtsize
 
         self.wavetable = wavetables.to_wavetable(wavetable, self.wtsize)
+
+        if (quality > 0):
+            self.bl_data = interpolation._bli_init(quality, True)
+            self.bandlimit = True
+        else:
+            self.bandlimit = False
 
     def play(self, length):
         framelength = <int>(length * self.samplerate)
@@ -64,35 +72,76 @@ cdef class Osc:
         cdef double wt_phase_inc = (1.0 / self.samplerate) * self.wtsize
         cdef double[:,:] out = np.zeros((length, self.channels), dtype='d')
 
-        for i in range(length):
-            freq = interpolation._linear_point(self.freq, self.freq_phase)
-            amp = interpolation._linear_point(self.amp, self.amp_phase)
-            pm = interpolation._linear_point(self.pm, self.pm_phase)
-            sample = interpolation._linear_point(self.wavetable, self.wt_phase) * amp
+        cdef double last_inc = 1
 
-            self.freq_phase += freq_phase_inc
-            self.amp_phase += amp_phase_inc
-            self.pm_phase += pm_phase_inc
-            self.wt_phase += freq * wt_phase_inc
-            self.wt_phase += (pm - lastpm) * wt_boundry * .5
-            lastpm = pm
+        # TEMPORARY IF ELSE UNTIL WE PUT OUR HEADS TOGETHER AND WORK OUT A FUNCTION POINTER METHOD THAT WORKS WITH THE BLI
+        # WHICH IS 100% THE GOAL, MAKE BANDLIMITING OPTIONAL ALWAYS SO THINGS CAN RENDER FAST WHEN NEEDED
 
-            if self.wt_phase < 0:
-                self.wt_phase += wt_boundry
-            elif self.wt_phase >= wt_boundry:
-                self.wt_phase -= wt_boundry
+        if self.bandlimit:
 
-            while self.amp_phase >= amp_boundry:
-                self.amp_phase -= amp_boundry
+            for i in range(length):
+                freq = interpolation._linear_point(self.freq, self.freq_phase)
+                amp = interpolation._linear_point(self.amp, self.amp_phase)
+                pm = interpolation._linear_point(self.pm, self.pm_phase)
+                sample = interpolation._bli_point(self.wavetable, self.bl_data, self.wt_phase, 1/last_inc, wt_boundry) * amp
 
-            while self.freq_phase >= freq_boundry:
-                self.freq_phase -= freq_boundry
+                self.freq_phase += freq_phase_inc
+                self.amp_phase += amp_phase_inc
+                self.pm_phase += pm_phase_inc
+                last_inc = freq * wt_phase_inc
+                last_inc += (pm - lastpm) * wt_boundry * .5
+                lastpm = pm
+                self.wt_phase += last_inc
+                
 
-            while self.pm_phase >= pm_boundry:
-                self.pm_phase -= pm_boundry
+                if self.wt_phase < 0:
+                    self.wt_phase += wt_boundry
+                elif self.wt_phase >= wt_boundry:
+                    self.wt_phase -= wt_boundry
 
-            for channel in range(self.channels):
-                out[i][channel] = sample
+                while self.amp_phase >= amp_boundry:
+                    self.amp_phase -= amp_boundry
+
+                while self.freq_phase >= freq_boundry:
+                    self.freq_phase -= freq_boundry
+
+                while self.pm_phase >= pm_boundry:
+                    self.pm_phase -= pm_boundry
+
+                for channel in range(self.channels):
+                    out[i][channel] = sample
+
+        else:
+
+            for i in range(length):
+                freq = interpolation._linear_point(self.freq, self.freq_phase)
+                amp = interpolation._linear_point(self.amp, self.amp_phase)
+                pm = interpolation._linear_point(self.pm, self.pm_phase)
+                sample = interpolation._linear_point(self.wavetable, self.wt_phase) * amp
+
+                self.freq_phase += freq_phase_inc
+                self.amp_phase += amp_phase_inc
+                self.pm_phase += pm_phase_inc
+                self.wt_phase += freq * wt_phase_inc
+                self.wt_phase += (pm - lastpm) * wt_boundry * .5
+                lastpm = pm
+
+                if self.wt_phase < 0:
+                    self.wt_phase += wt_boundry
+                elif self.wt_phase >= wt_boundry:
+                    self.wt_phase -= wt_boundry
+
+                while self.amp_phase >= amp_boundry:
+                    self.amp_phase -= amp_boundry
+
+                while self.freq_phase >= freq_boundry:
+                    self.freq_phase -= freq_boundry
+
+                while self.pm_phase >= pm_boundry:
+                    self.pm_phase -= pm_boundry
+
+                for channel in range(self.channels):
+                    out[i][channel] = sample
 
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
