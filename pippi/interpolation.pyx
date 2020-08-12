@@ -188,7 +188,7 @@ cdef BLIData* _bli_init(int quality, bint loop):
 
     data.quality = quality
     data.samples_per_0x = 512
-    data.filter_length = quality * 512
+    data.filter_length = quality * data.samples_per_0x
 
     if loop: 
         data.wrap = 1
@@ -197,12 +197,14 @@ cdef BLIData* _bli_init(int quality, bint loop):
 
     sinc_domain = np.linspace(0, data.quality, data.filter_length)
     sinc_sample = np.sinc(sinc_domain)
-    window = np.kaiser(data.filter_length * 2, 10)[data.filter_length:]
+    window = np.blackman(data.filter_length * 2)[data.filter_length:]
     sinc_sample *= window
 
     data.filter_table = <double*>malloc(sizeof(double) * (data.filter_length + 1))
-    for i, sample in enumerate(np.append(sinc_sample, [0])):
+    for i, sample in enumerate(sinc_sample):
         data.filter_table[i] = sample
+
+    data.filter_table[data.filter_length] = 0
 
     return data
 
@@ -223,13 +225,18 @@ cdef double _get_filter_coeff(BLIData* data, double pos) nogil:
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef double _bli_point(double[:] table, BLIData* data, double point, double resampling_factor, int table_length) nogil:
+cdef double _bli_point(double[:] table, double point, BLIData* data) nogil:
 
-    cdef int wrap = data.wrap * (table_length - 1)
+    cdef int table_length = data.table_length
+    cdef double resampling_factor = data.resampling_factor
+
+    cdef int wrap = data.wrap * (data.table_length - 1)
     wrap += 1
     
     cdef int left_index = <int>point
     cdef int right_index = (left_index + 1)
+    if right_index > (table_length - 1):
+        right_index -= wrap
     cdef double fractional_part = point - left_index
 
     if resampling_factor > 1: resampling_factor = 1
@@ -253,7 +260,7 @@ cdef double _bli_point(double[:] table, BLIData* data, double point, double resa
         # next sample on the chopping block is the previous one
         read_index -= 1
         if read_index < 0:
-            read_index += data.wrap
+            read_index += wrap
 
     # apply the right hand side of the filter on "future wavetable samples"
     # tricky, the first lookup in the filter is 1 - the fractional part scaled down by the resampling factor
@@ -267,13 +274,13 @@ cdef double _bli_point(double[:] table, BLIData* data, double point, double resa
         sample += coeff * table[read_index]
         read_index += 1
         if read_index > table_length - 1:
-            read_index -= data.wrap
+            read_index -= wrap
 
     # return left_index
     return sample * resampling_factor
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
-cdef double _bli_pos(double[:] table, BLIData* data, double pos, double resampling_factor, int table_length) nogil:
-    return _bli_point(table, data, pos * table_length, resampling_factor, table_length)
+cdef double _bli_pos(double[:] table, double pos, BLIData* data) nogil:
+    return _bli_point(table, pos * data.table_length, data)
 

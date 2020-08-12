@@ -271,40 +271,44 @@ class TestWavetables(TestCase):
     wt_size = 4096
 
     def test_bandlimiting(self):
+        # filler
         wt_size = 4096
-        square = Wavetable(wavetables.to_wavetable('square'), wtsize=wt_size, bl_quality = 6)
-        
+        sine = Wavetable(wavetables.to_wavetable('sine'), wtsize=wt_size, bl_quality = 3)
+
         sr = 96000
         time = 4
         length = sr * time
         render1 = np.zeros((length, 2), dtype='d')
         render2 = np.zeros((length, 2), dtype='d')
-        
+
         sweep = np.logspace(0, 9, length, base = 2) * 30
         sweep /= sr
         phase = 0
 
         for i in range(0, length):
             inc = sweep[i]
-            sample = square.interp(phase, method='linear')
-            render1[i][0] = sample
-            render1[i][1] = sample
             phase += inc
             if phase >= 1:
                 phase -= 1
+            sample1 = sine.interp(phase, method='linear')
+            sample2 = sine.bli_pos(phase, inc)
+            render1[i][0] = sample1
+            render1[i][1] = sample2
 
         out = SoundBuffer(render1, samplerate=sr)
+        square = Wavetable(wavetables.to_wavetable('square'), wtsize=wt_size, bl_quality = 8)
 
         for i in range(0, length):
             inc = sweep[i]
             phase += inc
             if phase >= 1:
                 phase -= 1
-            sample = square.bli_pos(phase, inc)
-            render2[i][0] = sample
-            render2[i][1] = sample
+            sample1 = square.interp(phase, method='linear')
+            sample2 = square.bli_pos(phase, inc)
+            render2[i][0] = sample1
+            render2[i][1] = sample2
 
         out += SoundBuffer(render2, samplerate=sr)
 
-        out.write('tests/renders/wavetables_bl_sweep.wav')
+        out.write('tests/renders/wavetable_bl_sweep.wav')
 

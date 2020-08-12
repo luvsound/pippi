@@ -3,6 +3,8 @@
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.interpolation cimport BLIData
 
+ctypedef double (*osc_interp_point_t)(double[:] data, double point, BLIData* bl_data) nogil
+
 cdef class Osc:
     cdef public double[:] freq
     cdef public double[:] amp
@@ -19,6 +21,7 @@ cdef class Osc:
     cdef public int wtsize
 
     cdef BLIData* bl_data
-    cdef bint bandlimit
+
+    cdef osc_interp_point_t interp_method
 
     cdef SoundBuffer _play(self, int length)

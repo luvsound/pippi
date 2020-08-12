@@ -841,7 +841,12 @@ cdef class Wavetable:
         self.bl_data = interpolation._bli_init(quality, True)
 
     cpdef double bli_pos(Wavetable self, double pos, double inc):
-        return interpolation._bli_pos(self.data, self.bl_data, pos, 1/(self.length*inc), self.length)
+        if inc == 0:
+            self.bl_data.resampling_factor = 1
+        else:
+            self.bl_data.resampling_factor = 1/(self.length*inc)
+        self.bl_data.table_length = self.length
+        return interpolation._bli_pos(self.data, pos, self.bl_data)
 
 
 

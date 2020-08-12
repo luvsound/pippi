@@ -36,10 +36,12 @@ ctypedef struct BLIData:
     int filter_length
     int wrap
     double* filter_table
+    int table_length
+    double resampling_factor
 
 cdef BLIData* _bli_init(int quality, bint loop)
-cdef double _bli_pos(double[:] table, BLIData* data, double pos, double resampling_factor, int table_length) nogil
-cdef double _bli_point(double[:] table, BLIData* data, double point, double resampling_factor, int table_length) nogil
+cdef double _bli_pos(double[:] table, double pos, BLIData* data) nogil
+cdef double _bli_point(double[:] table, double point, BLIData* data) nogil
 
 
 

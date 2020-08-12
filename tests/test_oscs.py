@@ -6,10 +6,20 @@ from pippi.soundbuffer import SoundBuffer
 from pippi.wavesets import Waveset
 from pippi import dsp, fx, tune, shapes
 
+import numpy as np
+
 class TestOscs(TestCase):
+    def test_bandlimiting_osc(self):
+        sr = 44100
+        time = 4
+        length = sr * time
+        sweep = np.logspace(0, 9, length, base = 2) * 30
+        out = Osc('tri', freq=sweep, quality=6).play(time)
+        out.write('tests/renders/osc_bl.wav')
+
     def test_pm_osc(self):
-        pmtest = Osc('sine', freq=[0, 1000, 0]).play(1).env('tri')
-        out = Osc('sine', pm = pmtest).play(1)
+        pmtest = Osc('sine', freq=[0, 800, 0], quality=6).play(1).env('tri')
+        out = Osc('sine', freq=200, pm = pmtest, quality=6).play(1).env("tri")
         out.write('tests/renders/osc_pm.wav')
 
     def test_fm_osc(self):
