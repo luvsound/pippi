@@ -243,6 +243,20 @@ class TestFx(TestCase):
         out = fx.bpf(snd, freq, res)
         out.write('tests/renders/fx_svf_bp-r1.wav')
 
+    def test_svf_stereo(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freql = [20, 10000]
+        freqr = [10000, 20]
+        res = [0, 1]
+        out = fx.bpf(snd, np.asarray([freql, freqr], dtype=np.float64), res)
+        out.write('tests/renders/fx_svf_st-r0.wav')
+
+        freq = [20, 10000]
+        resl = [0, 1]
+        resr = [1, 0]
+        out = fx.bpf(snd, freq, np.asarray([resl, resr], dtype=np.float64))
+        out.write('tests/renders/fx_svf_st-r1.wav')
+
     def test_fold(self):
         amp = dsp.win('hannin', 1, 10)
 

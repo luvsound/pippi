@@ -747,8 +747,23 @@ cdef SoundBuffer _svf(svf_filter_t method, SoundBuffer snd, object freq, object 
     cdef int samplerate = snd.samplerate
     cdef double[:,:] frames = snd.frames
 
-    cdef double[:] _freq = wavetables.to_window(freq)
-    cdef double[:] _res = wavetables.to_window(res)
+    cdef int freq_ch = 1
+    cdef double[:,:] _freq
+    if np.asarray(freq).ndim > 1:
+        _freq = freq
+        freq_ch = len(freq)
+    else:
+        _freq = np.asarray([wavetables.to_window(freq)])
+    
+
+    cdef int res_ch = 1
+    cdef double[:,:] _res
+    if np.asarray(res).ndim > 1:
+        _res = res
+        res_ch = len(res)
+    else:
+        _res = np.asarray([wavetables.to_window(res)])
+        
     cdef double[:,:] out = np.zeros((length, channels), dtype='d')
 
     cdef int c = 0
@@ -759,6 +774,9 @@ cdef SoundBuffer _svf(svf_filter_t method, SoundBuffer snd, object freq, object 
     cdef double pos = 0
 
     cdef SVFData* data = <SVFData*>malloc(sizeof(SVFData))
+
+    cdef int _freq_ch = 0
+    cdef int _res_ch = 0
     for c in range(channels):
         data.Az = [0, 0, 0, 0]
         data.Bz = [0, 0]
@@ -770,10 +788,13 @@ cdef SoundBuffer _svf(svf_filter_t method, SoundBuffer snd, object freq, object 
         data.g = 0
         data.k = 0
 
+        _freq_ch = c % freq_ch
+        _res_ch = c % res_ch
+
         for i in range(length):
             pos = <double>i / length
-            f = min(_linear_pos(_freq, pos) / samplerate, 0.49)
-            r = min(_linear_pos(_res, pos), 0.99999999)
+            f = min(_linear_pos(_freq[ _freq_ch], pos) / samplerate, 0.49)
+            r = min(_linear_pos(_res[_res_ch], pos), 0.99999999)
             val = frames[i,c]
 
             _svf_update_coeff(data, f, r)
