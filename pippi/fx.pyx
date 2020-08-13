@@ -823,4 +823,40 @@ cpdef SoundBuffer bpf(SoundBuffer snd, object freq=None, object res=None, bint n
     cdef svf_filter_t method = _svf_bp
     return _svf(method, snd, freq, res, norm)
 
+# mid/side encoding/decoding
+
+cdef double _m_encode(double left, double right):
+    return (left + right) * .707
+
+cdef double _s_encode(double left, double right):
+    return (left - right) * .707 
+
+cdef double _l_decode(double mid, double side):
+    return (mid + side) * .707
+
+cdef double _r_decode(double mid, double side):
+    return (mid - side) * .707
+
+cpdef SoundBuffer ms_encode(SoundBuffer snd):
+    snd = snd.remix(2)
+    cdef int length = len(snd)
+    cdef double[:,:] out = np.zeros((length, 2), dtype='d')
+    cdef double[:,:] frames = snd.frames
+    for i in range(length):
+        out[i, 0] = _m_encode(snd.frames[i, 0], snd.frames[i, 1])
+        out[i, 1] = _s_encode(snd.frames[i, 0], snd.frames[i, 1])
+    return SoundBuffer(out, channels=2, samplerate=snd.samplerate)
+
+cpdef SoundBuffer ms_decode(SoundBuffer snd):
+    snd = snd.remix(2)
+    cdef int length = len(snd)
+    cdef double[:,:] out = np.zeros((length, 2), dtype='d')
+    cdef double[:,:] frames = snd.frames
+    for i in range(length):
+        out[i, 0] = _l_decode(snd.frames[i, 0], snd.frames[i, 1])
+        out[i, 1] = _r_decode(snd.frames[i, 0], snd.frames[i, 1])
+    return SoundBuffer(out, channels=2, samplerate=snd.samplerate)
+
+
+
 
