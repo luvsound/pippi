@@ -103,6 +103,13 @@ As well as other neat stuff like soundfont rendering support via tinysf!
     # Save copy to your hard disk
     tada.write('tada.wav')
 
+## Tutorials
+
+There are annotated example scripts in the [tutorials](docs/tutorials) directory which introduce some of pippi's functionality.
+
+Beyond arriving at a good-enough stable API for the 2.x series of releases (and fixing bugs), my goal during the 
+beta phase of development is to deal with the lack of documentation for this project.
+
 
 ## Installation
 
@@ -112,28 +119,15 @@ Pippi requires python 3.6+ which can be found here:
 
 The 3.5.x branch of python might work too, but is untested.
 
-To use the most recent release from pip (currently `2.0.0 beta 3`) just:
-
-    pip install pippi
-
-*But!* Please see below about installing the latest version from source, there are a lot of new features in the most recent beta.
-
-## Tutorials
-
-There are annotated example scripts in the [tutorials](docs/tutorials) directory which introduce some of pippi's functionality.
-
-Beyond arriving at a good-enough stable API for the 2.x series of releases (and fixing bugs), my goal during the 
-beta phase of development is to deal with the lack of documentation for this project.
-
-## Install from source
-
 > raspbian buster users: you must install the `libatlas-base-dev` package with `apt` to build the latest version of numpy.
 
 To install pippi:
 
-    make install
+- Clone this repository locally: `git clone https://github.com/luvsound/pippi.git`
+- _(Optional but recommended)_ Create a virtualenv somewhere where you want to work: `cd /my/pippi/projects; python3 -m venv venv; source venv/bin/activate`
+- _(With your virtualenv active)_ Go back to the pippi source directory `cd /path/to/pippi` and run `make install` 
 
-Which does a few things:
+The final command does a few things:
 
 - Installs python deps, so *make sure you're inside a virtual environment* if you want to be!
 - Sets up git submodules for external libs
@@ -141,6 +135,10 @@ Which does a few things:
 - Builds and installs pippi & cython extensions
 
 Please let me know if you run into problems!
+
+### From pypi
+
+At the moment the best place to get pippi is using the method described above. Because of some packaging issues that need to be worked out, the version on pypi is quite a bit older and does not include most of the fun stuff.
 
 ## To run tests
 

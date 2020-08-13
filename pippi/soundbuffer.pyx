@@ -33,34 +33,73 @@ cdef double[:,:] _dub(double[:,:] target, int target_length, double[:,:] todub, 
 
     return target
 
-cdef double[:,:] _pan(double[:,:] out, int length, int channels, double pos, int method):
+cdef double[:,:] _pan(double[:,:] out, int length, int channels, double[:] _pos, int method):
     cdef double left = 0.5
     cdef double right = 0.5
     cdef int i = 0
+    cdef int channel = 0
+    cdef double pos = 0
+    cdef double p = 0
 
     if method == CONSTANT:
-        left = math.sqrt(pos)
-        right = math.sqrt(1 - pos)
+        for channel in range(channels):
+            if channel % 2 == 0:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    left = math.sqrt(pos)
+                    out[i, channel] *= left
+            else:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    right = math.sqrt(1 - pos)
+                    out[i, channel] *= right
 
     elif method == LINEAR:
-        left = pos
-        right = 1 - pos
+        for channel in range(channels):
+            if channel % 2 == 0:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    left = pos
+                    out[i, channel] *= left
+            else:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    right = 1 - pos
+                    out[i, channel] *= right
 
     elif method == SINE:
-        left = math.sin(pos * (math.pi / 2))
-        right = math.cos(pos * (math.pi / 2))
+        for channel in range(channels):
+            if channel % 2 == 0:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    left = math.sin(pos * (math.pi / 2))
+                    out[i, channel] *= left
+            else:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    right = math.cos(pos * (math.pi / 2))
+                    out[i, channel] *= right
 
     elif method == GOGINS:
-        left = math.sin((pos + 0.5) * (math.pi / 2))
-        right = math.cos((pos + 0.5) * (math.pi / 2))
-
-    for channel in range(channels):
-        if channel % 2 == 0:
-            for i in range(length):
-                out[i, channel] *= left
-        else:
-            for i in range(length):
-                out[i, channel] *= right
+        for channel in range(channels):
+            if channel % 2 == 0:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    left = math.sin((pos + 0.5) * (math.pi / 2))
+                    out[i, channel] *= left
+            else:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    right = math.cos((pos + 0.5) * (math.pi / 2))
+                    out[i, channel] *= right
 
     return out
 
@@ -855,7 +894,7 @@ cdef class SoundBuffer:
  
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
-    def pan(self, double pos=0.5, str method=None, int start=0):
+    cpdef SoundBuffer pan(SoundBuffer self, object pos=0.5, str method=None):
         """ Pan a stereo sound from `pos=0` (hard left) to `pos=1` (hard right)
 
             Different panning strategies can be chosen by passing a value to the `method` param.
@@ -871,7 +910,8 @@ cdef class SoundBuffer:
         cdef double[:,:] out = self.frames
         cdef int length = len(self)
         cdef int channel = 0
-        out = _pan(out, length, self.channels, pos, to_flag(method))
+        cdef double[:] _pos = to_window(pos)
+        out = _pan(out, length, self.channels, _pos, to_flag(method))
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
     def remix(self, int channels):

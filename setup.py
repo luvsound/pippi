@@ -11,7 +11,7 @@ ext_modules = cythonize([
         Extension('pippi.multiband', ['pippi/multiband.pyx'], 
             libraries=['soundpipe'], 
             library_dirs=['/usr/local/lib'],
-            include_dirs=['/usr/local/include']
+            include_dirs=['/usr/local/include', np.get_include()]
         ), 
 
         Extension('pippi.defaults', ['pippi/defaults.pyx']), 

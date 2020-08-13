@@ -4,6 +4,8 @@ from pippi.wavetables cimport Wavetable
 from pippi.soundbuffer cimport SoundBuffer
 
 cdef double[:,:] _norm(double[:,:] snd, double ceiling)
+cpdef SoundBuffer norm(SoundBuffer snd, double ceiling)
+
 cdef double[:,:] _fir(double[:,:] snd, double[:,:] out, double[:] impulse, bint norm=*)
 cpdef SoundBuffer fir(SoundBuffer snd, object impulse, bint normalize=*)
 

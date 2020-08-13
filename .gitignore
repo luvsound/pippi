@@ -10,6 +10,14 @@ pippi.world
 
 pippi/*.so
 pippi/*.html
+pippi/*.c
+pippi/*.h
+pippi/oscs/*.html
+pippi/oscs/*.c
+pippi/tune/*.html
+pippi/tune/*.c
+pippi/noise/*.html
+pippi/noise/*.c
 
 tests/renders/*.wav
 tests/renders/*.png

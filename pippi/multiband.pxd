@@ -40,14 +40,6 @@ cdef extern from "soundpipe.h":
     int sp_buthp_init(sp_data*, sp_buthp*)
     int sp_buthp_compute(sp_data*, sp_buthp*, double*, double*)
 
-    ctypedef struct sp_bal:
-        double asig, csig, ihp
-        double c1, c2, prvq, prvr, prva
+cpdef list split(SoundBuffer snd, double interval=*, object drift=*, double driftwidth=*)
+cpdef list customsplit(SoundBuffer snd, list freqs)
 
-    int sp_bal_create(sp_bal**)
-    int sp_bal_destroy(sp_bal**)
-    int sp_bal_init(sp_data*, sp_bal*)
-    int sp_bal_compute(sp_data*, sp_bal*, double*, double*, double*)
-
-
-cpdef list split(SoundBuffer snd, double bandwidth=*, double drift=*)
