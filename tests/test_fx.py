@@ -268,4 +268,16 @@ class TestFx(TestCase):
         out = fx.fold(snd, amp)
         out.write('tests/renders/fx_fold_sine.wav')
 
+    def test_ms(self):
+
+        snd = dsp.read('tests/sounds/guitar1s.wav')
+        ms = fx.ms_encode(snd)
+        lr = fx.ms_decode(ms)
+        lr.write('tests/renders/fx_ms_parity.wav')
+
+        snd1 = oscs.Osc('sine', freq=200).play(1).pan(0)
+        snd2 = oscs.Osc('tri', freq=201).play(1).pan(1)
+        out = fx.ms_decode(snd1 & snd2)
+        out.write('tests/renders/fx_ms_detune.wav')
+
                
