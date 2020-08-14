@@ -19,22 +19,29 @@ cpdef SoundBuffer widen(SoundBuffer snd, object width=*)
 cdef double[:,:] _softclip(double[:,:] out, double[:,:] snd) nogil
 cpdef SoundBuffer softclip(SoundBuffer snd)
 
-ctypedef double (*svf_filter_t)(SVFData* data, double val) 
+ctypedef void (*svf_filter_t)(SVFData* data) 
 
 ctypedef struct SVFData:
     double[4] Az 
     double[2] Bz
+    double[3] Cz
     double[2] X
 
-    double a1
-    double a2
-    double a3
-    double g
-    double k
+    double[3] M
+    double freq
+    double res
+    double gain
+    double shelf
 
 cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
 cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
 cpdef SoundBuffer bpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+cpdef SoundBuffer notchf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+cpdef SoundBuffer peakf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
+
+cpdef SoundBuffer belleq(SoundBuffer snd, object freq=*, object q=*, object gain=*, bint norm=*)
+cpdef SoundBuffer lshelfeq(SoundBuffer snd, object freq=*, object q=*, object gain=*, bint norm=*)
+cpdef SoundBuffer hshelfeq(SoundBuffer snd, object freq=*, object q=*, object gain=*, bint norm=*)
 
 cpdef SoundBuffer buttlpf(SoundBuffer snd, object freq)
 cpdef SoundBuffer butthpf(SoundBuffer snd, object freq)

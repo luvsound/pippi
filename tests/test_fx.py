@@ -243,6 +243,72 @@ class TestFx(TestCase):
         out = fx.bpf(snd, freq, res)
         out.write('tests/renders/fx_svf_bp-r1.wav')
 
+    def test_svf_notchf(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        res = 0
+        out = fx.notchf(snd, freq, res)
+        out.write('tests/renders/fx_svf_notchf-r0.wav')
+
+        freq = [20, 10000]
+        res = .5
+        out = fx.notchf(snd, freq, res)
+        out.write('tests/renders/fx_svf_notchf-r1.wav')
+
+    def test_svf_peakf(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        res = .5
+        out = fx.peakf(snd, freq, res)
+        out.write('tests/renders/fx_svf_peakf-r0.wav')
+
+        freq = [20, 10000]
+        res = 1
+        out = fx.peakf(snd, freq, res)
+        out.write('tests/renders/fx_svf_peakf-r1.wav')
+
+    def test_svf_belleq(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        q = .5
+        gain = -30
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_belleq-q0.wav')
+
+        freq = 600
+        q = .5
+        gain = [-30, 30]
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_belleq-q1.wav')
+
+    def test_svf_hshelfeq(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        q = .5
+        gain = -30
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_hshelfeq-q0.wav')
+
+        freq = 600
+        q = .5
+        gain = [-30, 30]
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_hshelfeq-q1.wav')
+
+    def test_svf_lshelfeq(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        q = .5
+        gain = -30
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_lshelfeq-q0.wav')
+
+        freq = 440
+        q = 8
+        gain = [-30, 30]
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_lshelfeq-q1.wav')
+
     def test_svf_stereo(self):
         snd = dsp.read('tests/sounds/whitenoise10s.wav')
         freql = [20, 10000]
