@@ -334,9 +334,6 @@ cdef class Wavetable:
         if scaled:
             self.data = _scaleinplace(self.data, np.min(self.data), np.max(self.data), self.lowvalue, self.highvalue, False)
 
-        if bl_quality > 0:
-            self.bli_init(bl_quality)
-
 
     ##################################
     # (+) Concatenation operator (+) #
@@ -836,19 +833,6 @@ cdef class Wavetable:
         if path is None:
             path = 'wavetable.wav'
         soundfile.write(path, self.data, samplerate)
-
-    cpdef void bli_init(Wavetable self, int quality):
-        self.bl_data = interpolation._bli_init(quality, True)
-
-    cpdef double bli_pos(Wavetable self, double pos, double inc):
-        if inc == 0:
-            self.bl_data.resampling_factor = 1
-        else:
-            self.bl_data.resampling_factor = 1/(self.length*inc)
-        self.bl_data.table_length = self.length
-        return interpolation._bli_pos(self.data, pos, self.bl_data)
-
-
 
 
 cdef tuple _parse_polyseg(str score, int length, int wtlength):

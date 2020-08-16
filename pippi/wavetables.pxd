@@ -53,10 +53,6 @@ cdef class Wavetable:
     cpdef Wavetable crushed(Wavetable self, int steps)
     cpdef double interp(Wavetable self, double pos, str method=*)
     cpdef list toonsets(Wavetable self, double length=*)
-
-    cpdef void bli_init(Wavetable self, int quality)
-    cpdef double bli_pos(Wavetable self, double pos, double inc)
-
     cpdef void write(Wavetable self, object path=*, int samplerate=*)
 
 cdef int SINE

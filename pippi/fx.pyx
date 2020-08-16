@@ -702,6 +702,16 @@ cpdef SoundBuffer go(SoundBuffer snd,
 # 2nd order state variable filter cookbook adapted from google ipython notebook
 # https://github.com/google/music-synthesizer-for-android/blob/master/lab/Second%20order%20sections%20in%20matrix%20form.ipynb
 # trapezoidal integration from Andrew Simper http://www.cytomic.com/files/dsp/SvfLinearTrapOptimised2.pdf
+cdef bint _is_2d_window(object item):
+    cdef bint all_numbers = True
+    if np.asarray(item).ndim > 1:
+        return True
+    if isinstance(item, list):
+        for thing in item:
+            if not (isinstance(thing, int) or isinstance(thing, float)):
+                all_numbers = False
+        return not all_numbers
+
 cdef void _svf_core(SVFData* data):
     
     data.res = max(min(data.res, 1), 0)
@@ -796,24 +806,34 @@ cdef SoundBuffer _svf(svf_filter_t mode, SoundBuffer snd, object freq, object re
 
     cdef int freq_ch = 1
     cdef double[:,:] _freq
-    if np.asarray(freq).ndim > 1:
-        _freq = freq
+    window = []
+    if _is_2d_window(freq):
+        for channel in freq:
+            window.append(wavetables.to_window(channel))
+        _freq = np.asarray(window)
         freq_ch = len(freq)
+
     else:
         _freq = np.asarray([wavetables.to_window(freq)])
     
     cdef int res_ch = 1
     cdef double[:,:] _res
-    if np.asarray(res).ndim > 1:
-        _res = res
+    window = []
+    if _is_2d_window(res):
+        for channel in res:
+            window.append(wavetables.to_window(channel))
+        _res = np.asarray(window)
         res_ch = len(res)
     else:
         _res = np.asarray([wavetables.to_window(res)])
 
     cdef int gain_ch = 1
     cdef double[:,:] _gain
-    if np.asarray(gain).ndim > 1:
-        _gain = gain
+    window = []
+    if _is_2d_window(gain):
+        for channel in gain:
+            window.append(wavetables.to_window(channel))
+        _gain = np.asarray(window)
         gain_ch = len(gain)
     else:
         _gain = np.asarray([wavetables.to_window(gain)])

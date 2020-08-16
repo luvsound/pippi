@@ -314,13 +314,13 @@ class TestFx(TestCase):
         freql = [20, 10000]
         freqr = [10000, 20]
         res = [0, 1]
-        out = fx.bpf(snd, np.asarray([freql, freqr], dtype=np.float64), res)
+        out = fx.bpf(snd, [freql, freqr], res)
         out.write('tests/renders/fx_svf_st-r0.wav')
 
         freq = [20, 10000]
-        resl = [0, 1]
-        resr = [1, 0]
-        out = fx.bpf(snd, freq, np.asarray([resl, resr], dtype=np.float64))
+        resl = "sine"
+        resr = "cos"
+        out = fx.bpf(snd, freq, [resl, resr])
         out.write('tests/renders/fx_svf_st-r1.wav')
 
     def test_fold(self):
