@@ -19,24 +19,26 @@ to make working with sounds and control structures simpler.
 It also includes a lot of useful methods for doing common and 
 not-so-common transformations to sounds and control structures. 
 
-    from pippi import dsp
+``` python
+from pippi import dsp
 
-    sound1 = dsp.read('sound1.wav')
-    sound2 = dsp.read('sound2.flac')
+sound1 = dsp.read('sound1.wav')
+sound2 = dsp.read('sound2.flac')
 
-    # Mix two sounds
-    both = sound1 & sound2
+# Mix two sounds
+both = sound1 & sound2
 
-    # Apply a skewed hann Wavetable as an envelope to a sound
-    enveloped = sound * dsp.win('hann').skewed(0.6)
+# Apply a skewed hann Wavetable as an envelope to a sound
+enveloped = sound * dsp.win('hann').skewed(0.6)
 
-    # Or the same, via a shortcut method on the `SoundBuffer`
-    enveloped = sound.env('hann')
+# Or the same, via a shortcut method on the `SoundBuffer`
+enveloped = sound.env('hann')
 
-    # Synthesize a 10 second graincloud from the sound, 
-    # with grain length modulating between 20ms and 2s 
-    # over a hann shaped curve.
-    cloudy = enveloped.cloud(10, grainlength=dsp.win('hann', dsp.MS*20, 2))
+# Synthesize a 10 second graincloud from the sound, 
+# with grain length modulating between 20ms and 2s 
+# over a hann shaped curve.
+cloudy = enveloped.cloud(10, grainlength=dsp.win('hann', dsp.MS*20, 2))
+```
 
 It comes with several oscs:
 
@@ -63,45 +65,49 @@ And many built-in effects and transformations:
 - Lots more!
 
 As well as support for pitch and harmony transformations and non-standard tuning systems
+``` python
+from pippi import tune
 
-    from pippi import tune
+# Get a list of frequencies from a list of scale degrees
+frequencies = tune.fromdegrees([1,3,5,9], octave=3, root='a', scale=tune.MINOR, ratios=tune.JUST)
 
-    # Get a list of frequencies from a list of scale degrees
-    frequencies = tune.fromdegrees([1,3,5,9], octave=3, root='a', scale=tune.MINOR, ratios=tune.JUST)
+# Get a list of frequencies from a chord symbol using a tuning system devised by Terry Riley
+frequencies = tune.chord('ii69', key='g#', octave=5, ratios=tune.TERRY)
 
-    # Get a list of frequencies from a chord symbol using a tuning system devised by Terry Riley
-    frequencies = tune.chord('ii69', key='g#', octave=5, ratios=tune.TERRY)
+# Convert MIDI note to frequency
+freq = tune.mtof(60)
 
-    # Convert MIDI note to frequency
-    freq = tune.mtof(60)
+# Convert frequency to MIDI note
+note = tune.ftom(440.0)
 
-    # Convert frequency to MIDI note
-    note = tune.ftom(440.0)
-
-    # Convert a pitch to a frequency
-    freq = tune.ntf('C#3')
-
+# Convert a pitch to a frequency
+freq = tune.ntf('C#3')
+```
 And basic graphing functionality for any `SoundBuffer` or `Wavetable` -- some dumb examples pictured in the banner above.
 
-    from pippi import dsp
+``` python
+from pippi import dsp
 
-    sound = dsp.read('sound.wav')
+sound = dsp.read('sound.wav')
 
-    # Render an image of this sound's waveform
-    sound.graph('mysound.png')
+# Render an image of this sound's waveform
+sound.graph('mysound.png')
 
-    # Render an image of a sinc wavetable with a label and scaled range
-    dsp.win('sinc').graph('sinc.png', label='A sinc wavetable', y=(-.25, 1))
+# Render an image of a sinc wavetable with a label and scaled range
+dsp.win('sinc').graph('sinc.png', label='A sinc wavetable', y=(-.25, 1))
+```
 
 As well as other neat stuff like soundfont rendering support via tinysf!
 
-    from pippi import dsp, soundfont
+``` python
+from pippi import dsp, soundfont
 
-    # Play a piano sound from a soundfont with general MIDI support (program change is zero-indexed)
-    tada = soundfont.play('my-cool-soundfont.sf2', length=30, freq=345.9, amp=0.5, voice=0)
+# Play a piano sound from a soundfont with general MIDI support (program change is zero-indexed)
+tada = soundfont.play('my-cool-soundfont.sf2', length=30, freq=345.9, amp=0.5, voice=0)
 
-    # Save copy to your hard disk
-    tada.write('tada.wav')
+# Save copy to your hard disk
+tada.write('tada.wav')
+```
 
 ## Tutorials
 
