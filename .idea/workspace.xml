@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="5a49352d-cd0a-4a81-aba4-b6e5c416f4d3" name="Default" comment="">
+      <change beforePath="$PROJECT_DIR$/pippi/breakpoints.c" afterPath="$PROJECT_DIR$/pippi/breakpoints.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/dsp.c" afterPath="$PROJECT_DIR$/pippi/dsp.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/fft.c" afterPath="$PROJECT_DIR$/pippi/fft.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/fx.c" afterPath="$PROJECT_DIR$/pippi/fx.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/grains.c" afterPath="$PROJECT_DIR$/pippi/grains.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/graph.c" afterPath="$PROJECT_DIR$/pippi/graph.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/interpolation.c" afterPath="$PROJECT_DIR$/pippi/interpolation.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/interpolation.pxd" afterPath="$PROJECT_DIR$/pippi/interpolation.pxd" />
+      <change beforePath="$PROJECT_DIR$/pippi/interpolation.pyx" afterPath="$PROJECT_DIR$/pippi/interpolation.pyx" />
+      <change beforePath="$PROJECT_DIR$/pippi/lists.c" afterPath="$PROJECT_DIR$/pippi/lists.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/noise/noise.c" afterPath="$PROJECT_DIR$/pippi/noise/noise.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/noise/noise.html" afterPath="$PROJECT_DIR$/pippi/noise/noise.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/alias.c" afterPath="$PROJECT_DIR$/pippi/oscs/alias.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/alias.html" afterPath="$PROJECT_DIR$/pippi/oscs/alias.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/bar.c" afterPath="$PROJECT_DIR$/pippi/oscs/bar.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/bar.html" afterPath="$PROJECT_DIR$/pippi/oscs/bar.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/drunk.c" afterPath="$PROJECT_DIR$/pippi/oscs/drunk.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/drunk.html" afterPath="$PROJECT_DIR$/pippi/oscs/drunk.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/dss.c" afterPath="$PROJECT_DIR$/pippi/oscs/dss.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/dss.html" afterPath="$PROJECT_DIR$/pippi/oscs/dss.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/fm.c" afterPath="$PROJECT_DIR$/pippi/oscs/fm.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/fm.html" afterPath="$PROJECT_DIR$/pippi/oscs/fm.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/fold.c" afterPath="$PROJECT_DIR$/pippi/oscs/fold.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/fold.html" afterPath="$PROJECT_DIR$/pippi/oscs/fold.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/osc.c" afterPath="$PROJECT_DIR$/pippi/oscs/osc.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/osc.html" afterPath="$PROJECT_DIR$/pippi/oscs/osc.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/osc2d.c" afterPath="$PROJECT_DIR$/pippi/oscs/osc2d.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/osc2d.html" afterPath="$PROJECT_DIR$/pippi/oscs/osc2d.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/oscs.html" afterPath="$PROJECT_DIR$/pippi/oscs/oscs.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/pluck.c" afterPath="$PROJECT_DIR$/pippi/oscs/pluck.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/pluck.html" afterPath="$PROJECT_DIR$/pippi/oscs/pluck.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/pulsar.c" afterPath="$PROJECT_DIR$/pippi/oscs/pulsar.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/pulsar.html" afterPath="$PROJECT_DIR$/pippi/oscs/pulsar.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/pulsar2d.c" afterPath="$PROJECT_DIR$/pippi/oscs/pulsar2d.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/pulsar2d.html" afterPath="$PROJECT_DIR$/pippi/oscs/pulsar2d.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/sineosc.c" afterPath="$PROJECT_DIR$/pippi/oscs/sineosc.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/sineosc.html" afterPath="$PROJECT_DIR$/pippi/oscs/sineosc.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/tukey.c" afterPath="$PROJECT_DIR$/pippi/oscs/tukey.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/oscs/tukey.html" afterPath="$PROJECT_DIR$/pippi/oscs/tukey.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/rhythm.c" afterPath="$PROJECT_DIR$/pippi/rhythm.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/sampler.c" afterPath="$PROJECT_DIR$/pippi/sampler.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/shapes.c" afterPath="$PROJECT_DIR$/pippi/shapes.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/soundbuffer.c" afterPath="$PROJECT_DIR$/pippi/soundbuffer.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/soundfont.c" afterPath="$PROJECT_DIR$/pippi/soundfont.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/soundpipe.c" afterPath="$PROJECT_DIR$/pippi/soundpipe.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/tune/midi.html" afterPath="$PROJECT_DIR$/pippi/tune/midi.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/tune/old.html" afterPath="$PROJECT_DIR$/pippi/tune/old.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/tune/slonimsky.c" afterPath="$PROJECT_DIR$/pippi/tune/slonimsky.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/tune/slonimsky.html" afterPath="$PROJECT_DIR$/pippi/tune/slonimsky.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/tune/tune.html" afterPath="$PROJECT_DIR$/pippi/tune/tune.html" />
+      <change beforePath="$PROJECT_DIR$/pippi/wavesets.c" afterPath="$PROJECT_DIR$/pippi/wavesets.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/wavetables.c" afterPath="$PROJECT_DIR$/pippi/wavetables.c" />
+      <change beforePath="$PROJECT_DIR$/pippi/wavetables.pxd" afterPath="$PROJECT_DIR$/pippi/wavetables.pxd" />
+      <change beforePath="$PROJECT_DIR$/pippi/wavetables.pyx" afterPath="$PROJECT_DIR$/pippi/wavetables.pyx" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="TRACKING_ENABLED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileEditorManager">
+    <leaf />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IdeDocumentHistory">
+    <option name="CHANGED_PATHS">
+      <list>
+        <option value="$PROJECT_DIR$/pippi/fx.pyx" />
+        <option value="$PROJECT_DIR$/tests/test_fx.py" />
+      </list>
+    </option>
+  </component>
+  <component name="ProjectFrameBounds">
+    <option name="y" value="23" />
+    <option name="width" value="1414" />
+    <option name="height" value="833" />
+  </component>
+  <component name="ProjectView">
+    <navigator currentView="ProjectPane" proportions="" version="1">
+      <flattenPackages />
+      <showMembers />
+      <showModules />
+      <showLibraryContents />
+      <hideEmptyPackages />
+      <abbreviatePackageNames />
+      <autoscrollToSource />
+      <autoscrollFromSource />
+      <sortByType />
+      <manualOrder />
+      <foldersAlwaysOnTop value="true" />
+    </navigator>
+    <panes>
+      <pane id="Scope" />
+      <pane id="Scratches" />
+      <pane id="ProjectPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="pippi" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pippi" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pippi" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pippi" type="462c0819:PsiDirectoryNode" />
+              <item name="pippi" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="pippi" type="b2602c69:ProjectViewProjectNode" />
+              <item name="pippi" type="462c0819:PsiDirectoryNode" />
+              <item name="tests" type="462c0819:PsiDirectoryNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+    </panes>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="ShelveChangesManager" show_recycled="false">
+    <option name="remove_strategy" value="false" />
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="5a49352d-cd0a-4a81-aba4-b6e5c416f4d3" name="Default" comment="" />
+      <created>1596607778651</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1596607778651</updated>
+    </task>
+    <servers />
+  </component>
+  <component name="ToolWindowManager">
+    <frame x="0" y="23" width="1414" height="833" extended-state="0" />
+    <layout>
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15841584" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
+      <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
+      <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Terminal" active="true" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3298292" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
+      <window_info id="Favorites" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="true" content_ui="tabs" />
+      <window_info id="Cvs" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
+      <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="5" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Debug" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
+    </layout>
+  </component>
+  <component name="VcsContentAnnotationSettings">
+    <option name="myLimit" value="2678400000" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager />
+    <watches-manager />
+  </component>
+</project>
