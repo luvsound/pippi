@@ -990,6 +990,110 @@ cpdef SoundBuffer ms_decode(SoundBuffer snd):
         out[i, 1] = _r_decode(snd.frames[i, 0], snd.frames[i, 1])
     return SoundBuffer(out, channels=2, samplerate=snd.samplerate)
 
+# Efficient power of two up/downsamplers
+# From Fredrick Harris Multirate Signal Processing for Communication Systems
+# Original paper with AG Constantinides
+# https://www.researchgate.net/publication/259753999_Digital_Signal_Processing_with_Efficient_Polyphase_Recursive_All-pass_Filters
+# Think homespun and less optimized version of Laurent De Soras HIIR
+# Nothing fancy w/r/t group delay compensation, maybe someday
+
+cdef double _processHBAP1(HBAP* state, double sample):
+    cdef double out = (sample - state.d2) * state.a0 + state.d1
+    state.d1 = sample
+    state.d2 = out
+    return out
+
+cdef double _processHBAP2(HBAP* state, double sample):
+    cdef double out1 = (sample - state.d2) * state.a0 + state.d1
+    cdef double out2 = (out1 - state.d3) * state.a1 + state.d2
+    state.d1 = sample
+    state.d2 = out1
+    state.d3 = out2
+    return out2
+
+cdef SoundBuffer _decimate(SoundBuffer snd, int factor):
+
+    # limit to defined range 1-5
+    if (factor <= 0):
+        return snd
+    if factor > 5:
+        factor = 5
+
+    # create intermediary buffers for successive stages
+    cdef double** stages = <double**>malloc(sizeof(double*) * factor)
+    cdef int array_size = 2
+
+    # create a buffer of allpass paths, 2 per stage
+    cdef HBAP** filters = <HBAP**>malloc(sizeof(HBAP*) * factor * 2)
+
+    cdef int i
+
+    for i in range(factor):
+        stages[i] = <double*>malloc(sizeof(double) * array_size)
+        array_size *= 2
+        if i < 2:
+            filters[i * 2] = <HBAP*>malloc(sizeof(HBAP))
+            filters[i * 2].a0 = 0.0798664262025582
+            filters[i * 2].a1 = 0.5453236511825826
+            filters[i * 2].process = _processHBAP2
+
+            filters[i * 2 + 1] = <HBAP*>malloc(sizeof(HBAP))
+            filters[i * 2 + 1].a0 = 0.283829344898100
+            filters[i * 2 + 1].a1 = 0.834411891201724
+            filters[i * 2 + 1].process = _processHBAP2
+        else:
+            filters[i * 2] = <HBAP*>malloc(sizeof(HBAP))
+            filters[i * 2].a0 = 0.11192
+            filters[i * 2].process = _processHBAP1
+
+            filters[i * 2 + 1] = <HBAP*>malloc(sizeof(HBAP))
+            filters[i * 2 + 1].a0 = 0.53976
+            filters[i * 2 + 1].process = _processHBAP1
+
+
+    cdef int oversample = 2**factor 
+
+    cdef int length_error = int(len(snd)) % oversample
+    cdef int pad_size = (oversample-length_error)
+
+    cdef int new_length = len(snd)//factor
+    snd = snd.pad(end=2)
+
+    cdef int channels = snd.channels
+
+    cdef double[:,:] out = np.zeros((new_length, channels), dtype='d')
+    cdef double[:,:] frames = snd.frames
+
+    cdef int c, j, m, n, stage
+    cdef int buflength = oversample//2
+
+    print(new_length)
+
+    # for each channel
+    for c in range(channels):
+        # for each sample in the smaller decimated buffer
+        for i in range(new_length):
+            buflength = oversample//2
+            # copy in the samples to be decimated
+            for j in range(oversample):
+                stages[factor - 1][j] = frames[i * oversample + j][c]
+            # perform successive decimation by 2 stages
+            stage = factor - 1
+            while stage > 0:
+                for n in range(buflength):
+                    stages[stage - 1][n] = (filters[stage * 2].process(filters[stage * 2], stages[stage][n * 2 + 1]) + \
+                        filters[stage * 2 + 1].process(filters[stage * 2 + 1], stages[stage][n * 2])) * .5 
+                buflength //= 2
+                stage -= 1
+
+            out[i][c] = (filters[0].process(filters[0], stages[0][1]) + filters[1].process(filters[1], stages[0][0])) * .5 
+
+    return SoundBuffer(out, channels=snd.channels, samplerate=(snd.samplerate / oversample))
+
+cpdef SoundBuffer decimate(SoundBuffer snd, int factor):
+    return _decimate(snd, factor)
+
+
 
 
 

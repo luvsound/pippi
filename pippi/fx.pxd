@@ -22,16 +22,16 @@ cpdef SoundBuffer softclip(SoundBuffer snd)
 ctypedef void (*svf_filter_t)(SVFData* data)
 
 ctypedef struct SVFData:
-    double[4] Az 
-    double[2] Bz
-    double[3] Cz
-    double[2] X
+	double[4] Az 
+	double[2] Bz
+	double[3] Cz
+	double[2] X
 
-    double[3] M
-    double freq
-    double res
-    double gain
-    double shelf
+	double[3] M
+	double freq
+	double res
+	double gain
+	double shelf
 
 cpdef SoundBuffer hpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
 cpdef SoundBuffer lpf(SoundBuffer snd, object freq=*, object res=*, bint norm=*)
@@ -47,3 +47,14 @@ cpdef SoundBuffer buttlpf(SoundBuffer snd, object freq)
 cpdef SoundBuffer butthpf(SoundBuffer snd, object freq)
 cpdef SoundBuffer buttbpf(SoundBuffer snd, object freq)
 cpdef SoundBuffer brf(SoundBuffer snd, object freq)
+
+ctypedef double (*HBAPProcess)(HBAP* data, double sample)
+
+ctypedef struct HBAP:
+	double d1
+	double d2
+	double d3
+	double a0
+	double a1	
+	HBAPProcess process
+
