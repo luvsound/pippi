@@ -1011,6 +1011,11 @@ cdef double _processHBAP2(HBAP* state, double sample):
     state.d3 = out2
     return out2
 
+cdef void _initHBAP(HBAP* state):
+    state.d1 = 0
+    state.d2 = 0
+    state.d3 = 0
+
 cdef SoundBuffer _decimate(SoundBuffer snd, int factor):
 
     # limit to defined range 1-5
@@ -1026,7 +1031,7 @@ cdef SoundBuffer _decimate(SoundBuffer snd, int factor):
     # create a buffer of allpass paths, 2 per stage
     cdef HBAP** filters = <HBAP**>malloc(sizeof(HBAP*) * factor * 2)
 
-    cdef int i
+    cdef int i, j
 
     for i in range(factor):
         stages[i] = <double*>malloc(sizeof(double) * array_size)
@@ -1050,24 +1055,25 @@ cdef SoundBuffer _decimate(SoundBuffer snd, int factor):
             filters[i * 2 + 1].a0 = 0.53976
             filters[i * 2 + 1].process = _processHBAP1
 
+        _initHBAP(filters[i * 2])
+        _initHBAP(filters[i * 2 + 1])
+
 
     cdef int oversample = 2**factor 
 
     cdef int length_error = int(len(snd)) % oversample
     cdef int pad_size = (oversample-length_error)
 
-    cdef int new_length = len(snd)//factor
-    snd = snd.pad(end=2)
+    cdef int new_length = len(snd)//oversample
+    snd = snd.pad(end=pad_size)
 
     cdef int channels = snd.channels
 
     cdef double[:,:] out = np.zeros((new_length, channels), dtype='d')
     cdef double[:,:] frames = snd.frames
 
-    cdef int c, j, m, n, stage
+    cdef int c, m, n, stage
     cdef int buflength = oversample//2
-
-    print(new_length)
 
     # for each channel
     for c in range(channels):

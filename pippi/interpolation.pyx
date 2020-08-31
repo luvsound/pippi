@@ -230,12 +230,12 @@ cdef double _bli_point(double[:] table, double point, BLIData* data) nogil:
     cdef int table_length = data.table_length
     cdef double resampling_factor = data.resampling_factor
 
-    cdef int wrap = data.wrap * (data.table_length - 1)
+    cdef int wrap = data.wrap * (table_length - 1)
     wrap += 1
     
     cdef int left_index = <int>point
     cdef int right_index = (left_index + 1)
-    if right_index > (table_length - 1):
+    if right_index >= table_length:
         right_index -= wrap
     cdef double fractional_part = point - left_index
 
@@ -273,7 +273,7 @@ cdef double _bli_point(double[:] table, double point, BLIData* data) nogil:
         filter_phasor += resampling_factor
         sample += coeff * table[read_index]
         read_index += 1
-        if read_index > table_length - 1:
+        if read_index >= table_length:
             read_index -= wrap
 
     # return left_index

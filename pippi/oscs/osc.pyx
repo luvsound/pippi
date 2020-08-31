@@ -64,10 +64,11 @@ cdef class Osc:
         cdef double lastpm = 0
         cdef double ilength = 1.0 / length
 
-        cdef int freq_boundry = max(len(self.freq)-1, 1)
-        cdef int amp_boundry = max(len(self.amp)-1, 1)
-        cdef int wt_boundry = max(len(self.wavetable)-1, 1)
-        cdef int pm_boundry = max(len(self.pm)-1, 1)
+        cdef int freq_boundry = max(len(self.freq), 1)
+        cdef int amp_boundry = max(len(self.amp), 1)
+        cdef int wt_boundry = max(len(self.wavetable), 1)
+        cdef int pm_boundry = max(len(self.pm), 1)
+        self.bl_data.table_length = wt_boundry
 
         cdef double freq_phase_inc = ilength * freq_boundry
         cdef double amp_phase_inc = ilength * amp_boundry
@@ -84,7 +85,6 @@ cdef class Osc:
             pm = interpolation._linear_point(self.pm, self.pm_phase)
             if last_inc < 1: last_inc = 1
             self.bl_data.resampling_factor = abs(1/last_inc)
-            self.bl_data.table_length = wt_boundry
             sample = self.interp_method(self.wavetable, self.wt_phase, self.bl_data) * amp
 
             self.freq_phase += freq_phase_inc
