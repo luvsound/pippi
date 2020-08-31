@@ -223,7 +223,11 @@ class TestOscs(TestCase):
         length = 10
         out = osc.play(length)
         out.write('tests/renders/osc_alias.wav')
-        self.assertEqual(len(out), int(length * out.samplerate))
+
+        osc = Alias(freq=[200, 300, 400, 600]*4, freq_interpolator='trunc')
+        length = 10
+        out = osc.play(length)
+        out.write('tests/renders/osc_alias_trunc_freq.wav')
 
     def test_create_bar(self):
         length = 1

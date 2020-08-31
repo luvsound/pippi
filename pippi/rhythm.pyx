@@ -12,7 +12,6 @@ from pippi cimport dsp
 from pippi.soundbuffer cimport SoundBuffer
 from pippi cimport seq as _seq
 from pippi cimport rand
-import pyparsing
 import numpy as np
 
 MIN_BEAT = 0.0001

@@ -370,6 +370,8 @@ cdef class Wavetable:
         return self
 
     def __radd__(self, value):
+        if isinstance(value, numbers.Real):
+            return Wavetable(np.append(value, self.data))
         return self + value
 
 
@@ -541,6 +543,9 @@ cdef class Wavetable:
         return self
 
     def __rsub__(self, value):
+        if isinstance(value, numbers.Real):
+            # Subtracting a wavetable from a number doesn't really make any sense
+            return NotImplemented
         return self - value
 
     def __repr__(self):
