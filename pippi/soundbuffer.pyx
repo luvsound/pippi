@@ -907,14 +907,20 @@ cdef class SoundBuffer:
             except TypeError as e:
                 raise TypeError('Please provide a SoundBuffer or list of SoundBuffers for mixing') from e
 
-    def pad(self, double start=0, double end=0):
+    def pad(self, double start=0, double end=0, bint samples=False):
         """ Pad this sound with silence at start or end
         """
         if start <= 0 and end <= 0: 
             return self
 
-        cdef int framestart = <int>(start * self.samplerate)
-        cdef int frameend = <int>(end * self.samplerate)
+        cdef int framestart, frameend
+
+        if not samples:
+            framestart = <int>(start * self.samplerate)
+            frameend = <int>(end * self.samplerate)
+        else:
+            framestart = <int>start
+            frameend = <int>end
 
         cdef double[:,:] out = self.frames
 

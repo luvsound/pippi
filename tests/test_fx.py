@@ -335,7 +335,6 @@ class TestFx(TestCase):
         out.write('tests/renders/fx_fold_sine.wav')
 
     def test_ms(self):
-
         snd = dsp.read('tests/sounds/guitar1s.wav')
         ms = fx.ms_encode(snd)
         lr = fx.ms_decode(ms)
@@ -345,5 +344,21 @@ class TestFx(TestCase):
         snd2 = oscs.Osc('tri', freq=201).play(1).pan(1)
         out = fx.ms_decode(snd1 & snd2)
         out.write('tests/renders/fx_ms_detune.wav')
+
+    def test_decimate(self):
+        length = 4
+        oversample = 5
+        sweep = np.logspace(0, 9 + oversample, 512 * length, base = 2) * 40
+        tone = oscs.Osc('sine', freq=sweep, samplerate=(48000 * 2**oversample)).play(length)
+
+        snd = fx.decimate(tone, oversample)
+        snd.write('tests/renders/fx_decimate.wav')
+
+    def test_upsample(self):
+        length = 4
+        sweep = np.logspace(0, 9, 512 * length, base = 2) * 40
+        snd = oscs.Osc('sine', freq=sweep, samplerate=48000).play(length)
+        snd = fx.upsample(snd, 2)
+        snd.write('tests/renders/fx_upsample.wav')
 
                
