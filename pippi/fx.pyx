@@ -13,7 +13,7 @@ from libc cimport math
 from pippi cimport fft
 from pippi.soundbuffer cimport SoundBuffer
 from pippi cimport wavetables
-from pippi.interpolation cimport _linear_point, _linear_pos
+from pippi.interpolation cimport _linear_point, _linear_pos, _bli_init, _bli_point, BLIData
 from pippi.dsp cimport _mag
 from pippi cimport soundpipe
 from cpython cimport bool
@@ -1121,10 +1121,10 @@ cpdef SoundBuffer decimate(SoundBuffer snd, int factor):
     return _decimate(snd, factor)
 
 
-# @cython.boundscheck(False)
-# @cython.wraparound(False)
-# @cython.cdivision(True)
-# @cython.initializedcheck(False)
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+@cython.initializedcheck(False)
 cdef SoundBuffer _upsample(SoundBuffer snd, int factor):
 
     # same setup as decimator
@@ -1198,6 +1198,98 @@ cdef SoundBuffer _upsample(SoundBuffer snd, int factor):
 
 cpdef SoundBuffer upsample(SoundBuffer snd, int factor):
     return _upsample(snd, factor)
+
+# arbitrary resampler
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.cdivision(True)
+@cython.initializedcheck(False)
+cdef SoundBuffer _resample(SoundBuffer snd, double ratio, int quality, bint resample):
+    if (ratio == 0) or (ratio is None) or (snd is None): return snd
+
+    cdef double factor = 1.0/ratio
+    cdef int new_length = <int>(factor * len(snd))
+
+    cdef double changesr = 1.0
+    if resample: changesr = factor
+
+    if quality < 0: quality = 0
+    cdef BLIData* bl_data = _bli_init(quality, False)
+    bl_data.table_length = len(snd)
+    bl_data.resampling_factor=factor
+
+    cdef double[:,:] out = np.zeros((new_length, snd.channels), dtype='d')
+    cdef double[:,:] frames = snd.frames.T
+
+    cdef int c, i
+    cdef double position
+    for c in range(snd.channels):
+        position = 0
+        for i in range(new_length):
+            out[i][c] = _bli_point(frames[c], position, bl_data)
+            position += ratio
+
+    return SoundBuffer(out, channels=snd.channels, samplerate=(snd.samplerate*changesr))
+
+cpdef SoundBuffer resample(SoundBuffer snd, double ratio, int quality=5):
+    return _resample(snd, ratio, quality, True)
+
+cpdef SoundBuffer repitch(SoundBuffer snd, double ratio, int quality=5):
+    return _resample(snd, ratio, quality, False)
+
+cdef SoundBuffer _vspeed2(SoundBuffer snd, object speed, int quality):
+    if (speed == 0) or (speed is None) or (snd is None): return snd
+
+    cdef int channels = snd.channels
+    cdef int length = len(snd)
+    cdef int samplerate = snd.samplerate
+
+    cdef int speed_ch = 1
+    cdef double[:] _speed = wavetables.to_window(speed)
+    cdef double speed_average = 0
+    cdef int i
+    for i in range(len(_speed)):
+        speed_average += abs(_speed[i])
+    speed_average /= len(_speed)
+    
+    cdef double factor = 1.0/speed_average
+    cdef int new_length = <int>(factor * len(snd))
+
+    cdef double speed_inc = len(_speed) / new_length
+
+    if quality < 0: quality = 0
+    cdef BLIData* bl_data = _bli_init(quality, False)
+    bl_data.table_length = length
+    bl_data.resampling_factor = 1
+
+    cdef double[:,:] out = np.zeros((new_length, snd.channels), dtype='d')
+    cdef double[:,:] frames = snd.frames.T
+
+    cdef int c
+    cdef double position, speed_pos, inc
+    for c in range(snd.channels):
+        position = 0
+        speed_pos = 0
+        for i in range(new_length):
+            out[i][c] = _bli_point(frames[c], position, bl_data)
+            speed_pos += speed_inc
+            inc = _linear_point(_speed, speed_pos)
+            position += inc
+            while position < 0:
+                position += length
+            while position >= length:
+                position -= length
+            if abs(inc) < 1:
+                bl_data.resampling_factor = 1
+            else:
+                bl_data.resampling_factor = abs(1/inc)
+
+    return SoundBuffer(out, channels=snd.channels, samplerate=snd.samplerate)
+
+cpdef SoundBuffer vspeed2(SoundBuffer snd, object speed, int quality):
+    return _vspeed2(snd, speed, quality)
+
+
 
 
 

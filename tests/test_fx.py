@@ -355,10 +355,21 @@ class TestFx(TestCase):
         snd.write('tests/renders/fx_decimate.wav')
 
     def test_upsample(self):
-        length = 4
-        sweep = np.logspace(0, 9, 512 * length, base = 2) * 40
-        snd = oscs.Osc('sine', freq=sweep, samplerate=48000).play(length)
-        snd = fx.upsample(snd, 2)
+        length = 8
+        oversample = 1
+        sweep = np.logspace(0, 9, 512 * length, base = 2) * 24
+        snd = oscs.Osc('sine', freq=sweep, samplerate=24000).play(length)
+        snd = fx.upsample(snd, oversample)
         snd.write('tests/renders/fx_upsample.wav')
+
+    def test_repitch(self):
+        length = .25
+        oversample = 1
+        sweep = np.logspace(0, 9, 512, base = 2) * 24
+        osc = oscs.Osc('sine', freq=sweep, samplerate=48000).play(length)
+        snd = fx.repitch(osc, 16, 20)
+        snd.write('tests/renders/fx_resample_up.wav')
+        snd = fx.repitch(osc, 1/16, 20)
+        snd.write('tests/renders/fx_resample_down.wav')
 
                
