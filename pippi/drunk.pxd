@@ -1,10 +1,14 @@
 #cython: language_level=3
 
+from pippi.interpolation cimport interp_point_t
+
 cdef class Drunk:
     cdef public double[:] freq
     cdef public double[:] width
     cdef public double[:] amp
     cdef public double[:] wavetable
+
+    cdef interp_point_t freq_interpolator
 
     cdef double freq_phase
     cdef double width_phase

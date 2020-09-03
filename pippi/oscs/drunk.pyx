@@ -23,6 +23,8 @@ cdef class Drunk:
             object amp=1.0, 
             double phase=0, 
 
+            object freq_interpolator=None,
+
             int wtsize=4096,
             int channels=DEFAULT_CHANNELS,
             int samplerate=DEFAULT_SAMPLERATE,
@@ -30,14 +32,19 @@ cdef class Drunk:
 
         self.wtsize = wtsize
         self.numpoints = points
-        self.freq = wavetables.to_wavetable(freq, wtsize)
-        self.width = wavetables.to_wavetable(width, wtsize)
-        self.amp = wavetables.to_window(amp, wtsize)
+        self.freq = wavetables.to_wavetable(freq)
+        self.width = wavetables.to_wavetable(width)
+        self.amp = wavetables.to_window(amp)
+
+        if freq_interpolator is None:
+            freq_interpolator = 'linear'
+
+        self.freq_interpolator = interpolation.get_point_interpolator(freq_interpolator)
 
         self.wt_phase = phase
-        self.freq_phase = phase
-        self.width_phase = phase
-        self.amp_phase = phase
+        self.freq_phase = 0
+        self.width_phase = 0
+        self.amp_phase = 0
 
         self.channels = channels
         self.samplerate = samplerate
@@ -66,7 +73,7 @@ cdef class Drunk:
         cdef double[:,:] out = np.zeros((length, self.channels), dtype='d')
 
         for i in range(length):
-            freq = interpolation._linear_point(self.freq, self.freq_phase)
+            freq = self.freq_interpolator(self.freq, self.freq_phase)
             width = interpolation._linear_point(self.width, self.width_phase)
             amp = interpolation._linear_point(self.amp, self.amp_phase)
             sample = interpolation._hermite_point(self.wavetable, self.wt_phase) * amp

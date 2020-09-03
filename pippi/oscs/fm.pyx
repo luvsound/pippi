@@ -26,6 +26,8 @@ cdef class FM:
             object amp=1.0, 
             double phase=0, 
 
+            object freq_interpolator=None,
+
             int wtsize=4096,
             int channels=DEFAULT_CHANNELS,
             int samplerate=DEFAULT_SAMPLERATE,
@@ -45,12 +47,17 @@ cdef class FM:
         self.index = wavetables.to_window(index, self.wtsize)
         self.amp = wavetables.to_window(amp, self.wtsize)
 
+        if freq_interpolator is None:
+            freq_interpolator = 'linear'
+
+        self.freq_interpolator = interpolation.get_point_interpolator(freq_interpolator)
+
         self.cwt_phase = phase
         self.mwt_phase = phase
-        self.freq_phase = phase
-        self.ratio_phase = phase
-        self.index_phase = phase
-        self.amp_phase = phase
+        self.freq_phase = 0
+        self.ratio_phase = 0
+        self.index_phase = 0
+        self.amp_phase = 0
 
         self.channels = channels
         self.samplerate = samplerate
@@ -87,7 +94,7 @@ cdef class FM:
         cdef double[:,:] out = np.zeros((length, self.channels), dtype='d')
 
         for i in range(length):
-            freq = interpolation._linear_point(self.freq, self.freq_phase)
+            freq = self.freq_interpolator(self.freq, self.freq_phase)
             ratio = interpolation._linear_point(self.ratio, self.ratio_phase)
             index = interpolation._linear_point(self.index, self.index_phase)
 

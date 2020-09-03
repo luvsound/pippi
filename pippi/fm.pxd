@@ -1,5 +1,7 @@
 #cython: language_level=3
 
+from pippi.interpolation cimport interp_point_t
+
 cdef class FM:
     cdef public double[:] freq
     cdef public double[:] ratio
@@ -7,6 +9,8 @@ cdef class FM:
     cdef public double[:] amp
     cdef public double[:] carrier
     cdef public double[:] modulator
+
+    cdef interp_point_t freq_interpolator
 
     cdef double freq_phase
     cdef double ratio_phase

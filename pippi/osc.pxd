@@ -2,6 +2,7 @@
 
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.interpolation cimport BLIData
+from pippi.interpolation cimport interp_point_t
 
 ctypedef double (*osc_interp_point_t)(double[:] data, double point, BLIData* bl_data) nogil
 
@@ -10,6 +11,8 @@ cdef class Osc:
     cdef public double[:] amp
     cdef public double[:] wavetable
     cdef public double[:] pm
+
+    cdef interp_point_t freq_interpolator
 
     cdef double freq_phase
     cdef double amp_phase

@@ -25,6 +25,8 @@ cdef class Osc:
             object pm=0.0,
             double phase=0, 
 
+            object freq_interpolator=None,
+
             int wtsize=4096,
             int channels=DEFAULT_CHANNELS,
             int samplerate=DEFAULT_SAMPLERATE,
@@ -36,10 +38,15 @@ cdef class Osc:
         self.amp = wavetables.to_window(amp, self.wtsize)
         self.pm = wavetables.to_wavetable(pm, self.wtsize)
 
+        if freq_interpolator is None:
+            freq_interpolator = 'linear'
+
+        self.freq_interpolator = interpolation.get_point_interpolator(freq_interpolator)
+
         self.wt_phase = phase
-        self.freq_phase = phase
-        self.amp_phase = phase
-        self.pm_phase = phase
+        self.freq_phase = 0
+        self.amp_phase = 0
+        self.pm_phase = 0
 
         self.channels = channels
         self.samplerate = samplerate
@@ -80,7 +87,7 @@ cdef class Osc:
         cdef double last_inc = 1
 
         for i in range(length):
-            freq = interpolation._linear_point(self.freq, self.freq_phase)
+            freq = self.freq_interpolator(self.freq, self.freq_phase)
             amp = interpolation._linear_point(self.amp, self.amp_phase)
             pm = interpolation._linear_point(self.pm, self.pm_phase)
             if last_inc < 1: last_inc = 1
