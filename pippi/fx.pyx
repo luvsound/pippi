@@ -1244,18 +1244,22 @@ cdef SoundBuffer _vspeed2(SoundBuffer snd, object speed, int quality):
     cdef int length = len(snd)
     cdef int samplerate = snd.samplerate
 
-    cdef int speed_ch = 1
     cdef double[:] _speed = wavetables.to_window(speed)
     cdef double speed_average = 0
     cdef int i
-    for i in range(len(_speed)):
-        speed_average += abs(_speed[i])
-    speed_average /= len(_speed)
+    if len(_speed) > 1:
+        for i in range(1, len(_speed)):
+            speed_average += (_speed[i] + _speed[i - 1]) * .5
+        speed_average /= (len(_speed) - 1)
+        if speed_average == 0: speed_average = .5
+
+    else:
+        speed_average = abs(_speed[0])
     
     cdef double factor = 1.0/speed_average
-    cdef int new_length = <int>(factor * len(snd))
+    cdef int new_length = <int>(factor * length)
 
-    cdef double speed_inc = len(_speed) / new_length
+    cdef double speed_inc = (len(_speed) - 1) / new_length
 
     if quality < 0: quality = 0
     cdef BLIData* bl_data = _bli_init(quality, False)

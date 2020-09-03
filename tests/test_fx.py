@@ -366,10 +366,23 @@ class TestFx(TestCase):
         length = .25
         oversample = 1
         sweep = np.logspace(0, 9, 512, base = 2) * 24
-        osc = oscs.Osc('sine', freq=sweep, samplerate=48000).play(length)
-        snd = fx.repitch(osc, 16, 20)
+        osc = oscs.Osc('sine', freq=sweep, samplerate=12000).play(length)
+        sample = dsp.read('tests/sounds/guitar1s.wav')
+        snd = fx.repitch(sample, 4, 20)
         snd.write('tests/renders/fx_resample_up.wav')
-        snd = fx.repitch(osc, 1/16, 20)
+        snd = fx.repitch(sample, 1/4, 20)
         snd.write('tests/renders/fx_resample_down.wav')
+        snd = fx.resample(osc, 4, 20)
+        snd.write('tests/renders/fx_resample_upsample.wav')
+
+    def test_vspeed2(self):
+        quality = 20
+        sample = dsp.read('tests/sounds/linux.wav')
+        snd = fx.vspeed2(sample, [1, 2, 1], quality)
+        snd.write('tests/renders/fx_vspeed2.wav')
+        snd = fx.vspeed2(sample, -1, 20)
+        snd.write('tests/renders/fx_vspeed2_rev.wav')
+        snd = fx.vspeed2(sample, [-1, 2, 1], 20)
+        snd.write('tests/renders/fx_vspeed2_bipolar.wav')
 
                
