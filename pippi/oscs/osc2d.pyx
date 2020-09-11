@@ -20,10 +20,12 @@ cdef class Osc2d:
     def __cinit__(
             self, 
               list stack=None,
-            double freq=440, 
-            double amp=1, 
+            object freq=440, 
+            object amp=1, 
             double pulsewidth=1,
             double phase=0, 
+
+            object freq_interpolator=None,
 
             object window=None, 
             double win_phase=0, 
@@ -41,9 +43,14 @@ cdef class Osc2d:
             int samplerate=DEFAULT_SAMPLERATE,
         ):
 
-        self.freq = freq
-        self.amp = amp
+        self.freq = wavetables.to_wavetable(freq)
+        self.amp = wavetables.to_window(amp)
         self.phase = phase
+
+        if freq_interpolator is None:
+            freq_interpolator = 'linear'
+
+        self.freq_interpolator = interpolation.get_point_interpolator(freq_interpolator)
 
         self.channels = channels
         self.samplerate = samplerate
@@ -67,8 +74,8 @@ cdef class Osc2d:
 
     def play(self, 
              length, 
-             freq=-1, 
-             amp=-1, 
+             freq=None, 
+             amp=None, 
              pulsewidth=-1,
              mod_freq=-1,
              mod_range=-1,
@@ -76,11 +83,11 @@ cdef class Osc2d:
 
         framelength = <int>(length * self.samplerate)
 
-        if freq > 0:
-            self.freq = freq
+        if freq is not None:
+            self.freq = wavetables.to_wavetable(freq)
 
-        if amp >= 0:
-            self.amp = amp 
+        if amp is not None:
+            self.amp = wavetables.to_window(amp)
 
         if pulsewidth > 0:
             self.pulsewidth = pulsewidth 
@@ -98,10 +105,16 @@ cdef class Osc2d:
         cdef double[:,:] stack = np.column_stack(self.wavetables)
         cdef int stack_depth = len(self.wavetables)
         cdef double isamplerate = (1.0 / self.samplerate)
+        cdef double ilength = 1.0 / length
         cdef double wt_lfo_phase_inc = len(self.lfo) * (1.0 / length)
-        cdef double phase_inc = self.freq * self.wtsize * isamplerate
-        cdef double wt_phase_inc = self.freq * self.wtsize * isamplerate
 
+        cdef int freq_boundry = max(len(self.freq)-1, 1)
+        cdef int amp_boundry = max(len(self.amp)-1, 1)
+
+        cdef double freq_phase_inc = ilength * freq_boundry
+        cdef double amp_phase_inc = ilength * amp_boundry
+
+        cdef double phase_inc, wt_phase_inc, freq, amp
         cdef double wt_lfo_phase, wt_lfo_frac, wt_lfo_y0, wt_lfo_y1, wt_lfo_pos
         cdef double stack_frac, stack_phase
         cdef double phase, frac, y0, y1, val
@@ -117,6 +130,12 @@ cdef class Osc2d:
         cdef double wt_mod_phase_inc = self.mod_freq * (1.0 / length) * wt_mod_length
 
         for i in range(length):
+            freq = self.freq_interpolator(self.freq, self.freq_phase)
+            amp = interpolation._linear_point(self.amp, self.amp_phase)
+
+            phase_inc = freq * self.wtsize * isamplerate
+            wt_phase_inc = freq * self.wtsize * isamplerate
+
             if self.mod is not None:
                 wt_mod_i = <int>self.mod_phase % wt_mod_length
                 if wt_mod_i < wt_mod_boundry:
@@ -148,8 +167,14 @@ cdef class Osc2d:
             y1 = self.wavetables[(stack_x + 1) % stack_depth][wt_x % self.wtsize]
             val = (1.0 - stack_frac) * y0 + (stack_frac * y1)
 
+            while self.amp_phase >= amp_boundry:
+                self.amp_phase -= amp_boundry
+
+            while self.freq_phase >= freq_boundry:
+                self.freq_phase -= freq_boundry
+
             for channel in range(self.channels):
-                out[i][channel] = val * self.amp
+                out[i][channel] = val * amp
 
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 

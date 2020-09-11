@@ -6,3 +6,4 @@ cpdef list scale(list source, double fromlow=*, double fromhigh=*, double tolow=
 cdef double[:] _snap_pattern(double[:] out, double[:] source, double[:] pattern)
 cdef double[:] _snap_mult(double[:] out, double[:] source, double mult)
 cpdef list snap(list source, double mult=*, object pattern=*)
+cpdef rotate(list l, int offset=*)

@@ -21,6 +21,8 @@ cdef class Fold:
             object amp=1.0,
             double phase=0, 
 
+            object freq_interpolator=None,
+
             int wtsize=4096,
             int channels=DEFAULT_CHANNELS,
             int samplerate=DEFAULT_SAMPLERATE,
@@ -28,6 +30,11 @@ cdef class Fold:
 
         self.freq = wavetables.to_wavetable(freq, self.wtsize)
         self.amp = wavetables.to_window(amp, self.wtsize)
+
+        if freq_interpolator is None:
+            freq_interpolator = 'linear'
+
+        self.freq_interpolator = interpolation.get_point_interpolator(freq_interpolator)
 
         self.wt_phase = phase
         self.freq_phase = 0
@@ -61,7 +68,7 @@ cdef class Fold:
         cdef double last = 0
 
         for i in range(length):
-            freq = interpolation._linear_point(self.freq, self.freq_phase)
+            freq = self.freq_interpolator(self.freq, self.freq_phase)
             amp = interpolation._linear_point(self.amp, self.amp_phase)
             sample = interpolation._linear_point(self.wavetable, self.wt_phase) * amp
             sample = _fold_point(sample, last, <double>self.samplerate)

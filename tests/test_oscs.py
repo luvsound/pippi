@@ -36,6 +36,10 @@ class TestOscs(TestCase):
         out = fx.norm(out, 1)
         out.write('tests/renders/osc_fold.wav')
 
+        out = Fold('sine', freq=[200, 300, 700, 900]*3, amp=[1,10], freq_interpolator='trunc').play(1)
+        out = fx.norm(out, 1)
+        out.write('tests/renders/osc_fold_trunc.wav')
+
     def test_create_sinewave(self):
         osc = Osc('sine', freq=200.0)
         length = 1
@@ -103,17 +107,17 @@ class TestOscs(TestCase):
         out = SineOsc(freq=130.81).play(5).env('hannout') * 0.25
         out.write('tests/renders/osc_sineosc-basic.wav')
 
-    def test_create_wt_stack(self):
+    def test_create_osc2d(self):
         wtA = [ random.random() for _ in range(random.randint(10, 1000)) ]
         wtB = dsp.wt([ random.random() for _ in range(random.randint(10, 1000)) ])
         wtC = SoundBuffer(filename='tests/sounds/guitar1s.wav')
         stack = ['rnd', wtA, wtB, wtC] * 10
-        osc = Osc2d(stack, freq=200.0)
-        length = 10
-        out = osc.play(length)
+
+        out = Osc2d(stack, freq=200.0).play(10)
         out.write('tests/renders/osc2d_RND_randlist_randwt_guitar_10x.wav')
 
-        self.assertEqual(len(out), int(length * out.samplerate))
+        out = Osc2d(['tri', 'sine'], freq=[200.0, 400, 600], freq_interpolator='trunc').play(10)
+        out.write('tests/renders/osc2d_freq_trunc.wav')
 
     def test_create_tukey(self):
         length = 10
@@ -212,7 +216,7 @@ class TestOscs(TestCase):
         out.write('tests/renders/osc_waveset_pulsar2d.wav')
 
     def test_freq_interpolation_pulsar2d(self):
-        freqs = tune.fromdegrees([1,3,5,9,2,4,6,5,1], octave=3, root='a') * 10
+        freqs = tune.degrees([1,3,5,9,2,4,6,5,1], octave=3, key='a') * 10
         out = Pulsar2d(['sine', 'tri', 'square', 'hann'], ['hann'], 
             freq=freqs, 
             freq_interpolator='trunc',

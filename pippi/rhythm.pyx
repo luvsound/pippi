@@ -10,6 +10,7 @@ from pippi cimport interpolation
 from pippi import dsp
 from pippi cimport dsp
 from pippi.soundbuffer cimport SoundBuffer
+from pippi.lists cimport rotate
 from pippi cimport seq as _seq
 from pippi cimport rand
 import numpy as np
@@ -396,11 +397,6 @@ def eu(length, numbeats, offset=0, reps=None, reverse=False):
         pattern = [ p for p in reversed(pattern) ]
 
     return pattern
-
-def rotate(pattern, offset=0):
-    """ Rotate a pattern list by a given offset
-    """
-    return pattern[-offset % len(pattern):] + pattern[:-offset % len(pattern)]
 
 def repeat(onsets, reps):
     """ Repeat a sequence of onsets a given number of times

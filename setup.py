@@ -90,6 +90,10 @@ ext_modules = cythonize([
 
         # Tuning / scales / harmony / melody
         Extension('pippi.midi', ['pippi/tune/midi.pyx']), 
+        Extension('pippi.scales', ['pippi/tune/scales.pyx']), 
+        Extension('pippi.intervals', ['pippi/tune/intervals.pyx']), 
+        Extension('pippi.frequtils', ['pippi/tune/frequtils.pyx']), 
+        Extension('pippi.chords', ['pippi/tune/chords.pyx']), 
         Extension('pippi.old', ['pippi/tune/old.pyx']), 
         Extension('pippi.slonimsky', ['pippi/tune/slonimsky.pyx'], 
             include_dirs=[np.get_include()], 
