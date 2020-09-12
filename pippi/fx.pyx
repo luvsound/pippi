@@ -1237,7 +1237,7 @@ cpdef SoundBuffer resample(SoundBuffer snd, double ratio, int quality=5):
 cpdef SoundBuffer repitch(SoundBuffer snd, double ratio, int quality=5):
     return _resample(snd, ratio, quality, False)
 
-cdef SoundBuffer _vspeed2(SoundBuffer snd, object speed, int quality):
+cdef SoundBuffer _vspeed2(SoundBuffer snd, object speed, int quality, bint normalize):
     if (speed == 0) or (speed is None) or (snd is None): return snd
 
     cdef int channels = snd.channels
@@ -1256,8 +1256,11 @@ cdef SoundBuffer _vspeed2(SoundBuffer snd, object speed, int quality):
     else:
         speed_average = abs(_speed[0])
     
-    cdef double factor = 1.0/speed_average
-    cdef int new_length = <int>(factor * length)
+    cdef double factor = 1.0/abs(speed_average)
+    cdef double normalizer
+    if normalize: normalizer = abs(speed_average)
+    else: normalizer = 1
+    cdef int new_length = <int>(factor * length * normalizer)
 
     cdef double speed_inc = (len(_speed) - 1) / new_length
 
@@ -1278,7 +1281,7 @@ cdef SoundBuffer _vspeed2(SoundBuffer snd, object speed, int quality):
             out[i][c] = _bli_point(frames[c], position, bl_data)
             speed_pos += speed_inc
             inc = _linear_point(_speed, speed_pos)
-            position += inc
+            position += inc / normalizer
             while position < 0:
                 position += length
             while position >= length:
@@ -1290,8 +1293,8 @@ cdef SoundBuffer _vspeed2(SoundBuffer snd, object speed, int quality):
 
     return SoundBuffer(out, channels=snd.channels, samplerate=snd.samplerate)
 
-cpdef SoundBuffer vspeed2(SoundBuffer snd, object speed, int quality):
-    return _vspeed2(snd, speed, quality)
+cpdef SoundBuffer vspeed2(SoundBuffer snd, object speed, int quality=5, bint normalize=False):
+    return _vspeed2(snd, speed, quality, normalize)
 
 
 
