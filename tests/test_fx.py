@@ -1,5 +1,5 @@
 from unittest import TestCase
-from pippi import dsp, interpolation, wavetables, fx, oscs
+from pippi import dsp, interpolation, wavetables, fx, oscs, noise
 import numpy as np
 import random
 
@@ -175,31 +175,214 @@ class TestFx(TestCase):
         out = fx.saturator(snd, drive, dcoffset, dcblock)
         out.write('tests/renders/fx_saturator_dc.wav')
 
-    def test_butlp(self):
+    def test_buttlp(self):
         snd = dsp.read('tests/sounds/guitar1s.wav')
         freq = 100
 
-        out = fx.lpf(snd, freq)
-        out.write('tests/renders/fx_lpf.wav')
+        out = fx.buttlpf(snd, freq)
+        out.write('tests/renders/fx_buttlpf.wav')
 
-    def test_buthp(self):
+    def test_butthp(self):
         snd = dsp.read('tests/sounds/guitar1s.wav')
         freq = 1000
 
-        out = fx.hpf(snd, freq)
-        out.write('tests/renders/fx_hpf.wav')
+        out = fx.butthpf(snd, freq)
+        out.write('tests/renders/fx_butthpf.wav')
 
-    def test_butbp(self):
+    def test_buttbp(self):
         snd = dsp.read('tests/sounds/guitar1s.wav')
         freq = 500
 
-        out = fx.bpf(snd, freq)
-        out.write('tests/renders/fx_bpf.wav')
+        out = fx.buttbpf(snd, freq)
+        out.write('tests/renders/fx_buttbpf.wav')
 
-    def test_butbr(self):
+    def test_buttbr(self):
         snd = dsp.read('tests/sounds/guitar1s.wav')
         freq = 500
 
         out = fx.brf(snd, freq)
-        out.write('tests/renders/fx_brf.wav')
+        out.write('tests/renders/fx_buttbrf.wav')
 
+    def test_softclip(self):
+        out = oscs.SineOsc(freq=[30, 10000], amp=10).play(1).softclip()
+        out.write('tests/renders/fx_softclip.wav')
+
+    def test_svf_lp(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        res = 0
+        out = fx.lpf(snd, freq, res)
+        out.write('tests/renders/fx_svf_lp-r0.wav')
+
+        freq = [20, 10000]
+        res = 1
+        out = fx.lpf(snd, freq, res)
+        out.write('tests/renders/fx_svf_lp-r1.wav')
+
+    def test_svf_hp(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        res = 0
+        out = fx.hpf(snd, freq, res)
+        out.write('tests/renders/fx_svf_hp-r0.wav')
+
+        freq = [20, 10000]
+        res = 1
+        out = fx.hpf(snd, freq, res)
+        out.write('tests/renders/fx_svf_hp-r1.wav')
+
+    def test_svf_bp(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        res = 0
+        out = fx.bpf(snd, freq, res)
+        out.write('tests/renders/fx_svf_bp-r0.wav')
+
+        freq = [20, 10000]
+        res = 1
+        out = fx.bpf(snd, freq, res)
+        out.write('tests/renders/fx_svf_bp-r1.wav')
+
+    def test_svf_notchf(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        res = 0
+        out = fx.notchf(snd, freq, res)
+        out.write('tests/renders/fx_svf_notchf-r0.wav')
+
+        freq = [20, 10000]
+        res = .5
+        out = fx.notchf(snd, freq, res)
+        out.write('tests/renders/fx_svf_notchf-r1.wav')
+
+    def test_svf_peakf(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        res = .5
+        out = fx.peakf(snd, freq, res)
+        out.write('tests/renders/fx_svf_peakf-r0.wav')
+
+        freq = [20, 10000]
+        res = 1
+        out = fx.peakf(snd, freq, res)
+        out.write('tests/renders/fx_svf_peakf-r1.wav')
+
+    def test_svf_belleq(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        q = .5
+        gain = -30
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_belleq-q0.wav')
+
+        freq = 600
+        q = .5
+        gain = [-30, 30]
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_belleq-q1.wav')
+
+    def test_svf_hshelfeq(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        q = .5
+        gain = -30
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_hshelfeq-q0.wav')
+
+        freq = 600
+        q = .5
+        gain = [-30, 30]
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_hshelfeq-q1.wav')
+
+    def test_svf_lshelfeq(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freq = [20, 10000]
+        q = .5
+        gain = -30
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_lshelfeq-q0.wav')
+
+        freq = 440
+        q = 8
+        gain = [-30, 30]
+        out = fx.belleq(snd, freq, q, gain)
+        out.write('tests/renders/fx_svf_lshelfeq-q1.wav')
+
+    def test_svf_stereo(self):
+        snd = dsp.read('tests/sounds/whitenoise10s.wav')
+        freql = [20, 10000]
+        freqr = [10000, 20]
+        res = [0, 1]
+        out = fx.bpf(snd, [freql, freqr], res)
+        out.write('tests/renders/fx_svf_st-r0.wav')
+
+        freq = [20, 10000]
+        resl = "sine"
+        resr = "cos"
+        out = fx.bpf(snd, freq, [resl, resr])
+        out.write('tests/renders/fx_svf_st-r1.wav')
+
+    def test_fold(self):
+        amp = dsp.win('hannin', 1, 10)
+
+        snd = dsp.read('tests/sounds/guitar1s.wav')
+        out = fx.fold(snd, amp)
+        out.write('tests/renders/fx_fold_guitar.wav')
+
+        snd = oscs.Osc('sine', freq=200).play(1)
+        out = fx.fold(snd, amp)
+        out.write('tests/renders/fx_fold_sine.wav')
+
+    def test_ms(self):
+        snd = dsp.read('tests/sounds/guitar1s.wav')
+        ms = fx.ms_encode(snd)
+        lr = fx.ms_decode(ms)
+        lr.write('tests/renders/fx_ms_parity.wav')
+
+        snd1 = oscs.Osc('sine', freq=200).play(1).pan(0)
+        snd2 = oscs.Osc('tri', freq=201).play(1).pan(1)
+        out = fx.ms_decode(snd1 & snd2)
+        out.write('tests/renders/fx_ms_detune.wav')
+
+    def test_decimate(self):
+        length = 4
+        oversample = 5
+        sweep = np.logspace(0, 9 + oversample, 512 * length, base = 2) * 40
+        tone = oscs.Osc('sine', freq=sweep, samplerate=(48000 * 2**oversample)).play(length)
+
+        snd = fx.decimate(tone, oversample)
+        snd.write('tests/renders/fx_decimate.wav')
+
+    def test_upsample(self):
+        length = 8
+        oversample = 1
+        sweep = np.logspace(0, 9, 512 * length, base = 2) * 24
+        snd = oscs.Osc('sine', freq=sweep, samplerate=24000).play(length)
+        snd = fx.upsample(snd, oversample)
+        snd.write('tests/renders/fx_upsample.wav')
+
+    def test_repitch(self):
+        length = .25
+        oversample = 1
+        sweep = np.logspace(0, 9, 512, base = 2) * 24
+        osc = oscs.Osc('sine', freq=sweep, samplerate=12000).play(length)
+        sample = dsp.read('tests/sounds/guitar1s.wav')
+        snd = fx.repitch(sample, 4, 20)
+        snd.write('tests/renders/fx_resample_up.wav')
+        snd = fx.repitch(sample, 1/4, 20)
+        snd.write('tests/renders/fx_resample_down.wav')
+        snd = fx.resample(osc, 4, 20)
+        snd.write('tests/renders/fx_resample_upsample.wav')
+
+    def test_vspeed2(self):
+        quality = 20
+        sample = dsp.read('tests/sounds/linux.wav')
+        snd = fx.vspeed2(sample, [1, 2, 1], quality)
+        snd.write('tests/renders/fx_vspeed2.wav')
+        snd = fx.vspeed2(sample, -1, 20)
+        snd.write('tests/renders/fx_vspeed2_rev.wav')
+        snd = fx.vspeed2(sample, [-1, 2, 1], 20)
+        snd.write('tests/renders/fx_vspeed2_bipolar.wav')
+
+               

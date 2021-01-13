@@ -1,5 +1,7 @@
 #cython: language_level=3
 
+from pippi.interpolation cimport interp_point_t
+
 cdef class Pulsar2d:
     cdef public double[:] freq
     cdef public double[:] amp
@@ -10,6 +12,8 @@ cdef class Pulsar2d:
 
     cdef double[:,:] wavetables
     cdef double[:,:] windows
+
+    cdef interp_point_t freq_interpolator
 
     cdef int wt_count
     cdef int wt_length

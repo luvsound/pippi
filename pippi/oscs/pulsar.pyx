@@ -24,6 +24,8 @@ cdef class Pulsar:
             object amp=1.0, 
             double phase=0, 
 
+            object freq_interpolator=None,
+
             tuple burst=None,
             object mask=0.0,
 
@@ -34,6 +36,11 @@ cdef class Pulsar:
         self.freq = wavetables.to_wavetable(freq)
         self.amp = wavetables.to_window(amp)
         self.mask = wavetables.to_window(mask)
+
+        if freq_interpolator is None:
+            freq_interpolator = 'linear'
+
+        self.freq_interpolator = interpolation.get_point_interpolator(freq_interpolator)
 
         if burst is not None:
             self.burst_length = burst[0] + burst[1]
@@ -91,7 +98,7 @@ cdef class Pulsar:
         cdef double mask_phase_inc = ilength * mask_boundry
 
         for i in range(length):
-            freq = interpolation._linear_point(self.freq, self.freq_phase)
+            freq = self.freq_interpolator(self.freq, self.freq_phase)
             pulsewidth = max(interpolation._linear_point(self.pulsewidth, self.pw_phase), MIN_PULSEWIDTH)
             amp = interpolation._linear_point(self.amp, self.amp_phase)
             mask_prob = interpolation._linear_point(self.mask, self.mask_phase)
@@ -101,8 +108,8 @@ cdef class Pulsar:
             wt_boundry_p = <int>max((ipulsewidth * wt_length)-1, 1)
             win_boundry_p = <int>max((ipulsewidth * win_length)-1, 1)
 
-            sample = interpolation._linear_point(self.wavetable, self.wt_phase, pulsewidth)
-            sample *= interpolation._linear_point(self.window, self.win_phase, pulsewidth)
+            sample = interpolation._linear_point_pw(self.wavetable, self.wt_phase, pulsewidth)
+            sample *= interpolation._linear_point_pw(self.window, self.win_phase, pulsewidth)
             sample *= amp * burst * mask
 
             self.freq_phase += freq_phase_inc

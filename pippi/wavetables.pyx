@@ -14,8 +14,9 @@ from cpython.array cimport array, clone
 from libc.stdlib cimport malloc, realloc, calloc, free
 from libc cimport math
 
-from pippi.defaults cimport DEFAULT_SAMPLERATE, DEFAULT_WTSIZE
-from pippi cimport interpolation, rand
+from pippi.defaults cimport DEFAULT_SAMPLERATE, DEFAULT_WTSIZE, PI
+from pippi cimport interpolation
+from pippi cimport rand
 from pippi import graph
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.lists cimport _scale, _scaleinplace, _snap_mult, _snap_pattern
@@ -52,6 +53,10 @@ cdef int TRUNC = 13
 cdef int HERMITE = 14
 cdef int CONSTANT = 15
 cdef int GOGINS = 16
+
+cdef int HP = 29
+cdef int LP = 30
+cdef int BP = 31
 
 cdef int LEN_WINDOWS = 17
 cdef int* ALL_WINDOWS = [
@@ -123,6 +128,9 @@ cdef int to_flag(str value):
         'gaussout': GAUSSOUT,
         'pluckin': PLUCKIN,
         'pluckout': PLUCKOUT,
+        'lp': LP,
+        'hp': HP,
+        'bp': BP,
     }
 
     return flags[value]
@@ -156,6 +164,14 @@ cdef double[:] _mul1d(double[:] output, double[:] values):
 
     return out
 
+cdef double[:] _drink(double[:] wt, double width, double minval, double maxval):
+    cdef int i = 0
+    cdef int wlength = len(wt)-2
+
+    for i in range(wlength):
+        wt[i+1] = max(minval, min(wt[i+1] + rand.rand(-width, width), maxval))
+    
+    return wt
 
 @cython.boundscheck(False)
 @cython.wraparound(False)
@@ -286,6 +302,8 @@ cdef double[:] _normalize(double[:] data, double ceiling):
 
     return data
 
+cpdef object rebuild_wavetable(double[:] data):
+    return Wavetable(data)
 
 cdef class Wavetable:
     def __cinit__(self, object values, 
@@ -318,6 +336,8 @@ cdef class Wavetable:
         if scaled:
             self.data = _scaleinplace(self.data, np.min(self.data), np.max(self.data), self.lowvalue, self.highvalue, False)
 
+    def __reduce__(self):
+        return (rebuild_wavetable, (np.asarray(self.data),))
 
     ##################################
     # (+) Concatenation operator (+) #
@@ -354,6 +374,8 @@ cdef class Wavetable:
         return self
 
     def __radd__(self, value):
+        if isinstance(value, numbers.Real):
+            return Wavetable(np.append(value, self.data))
         return self + value
 
 
@@ -420,7 +442,7 @@ cdef class Wavetable:
 
     def __getitem__(self, position):
         if isinstance(position, int):
-            return self.data[position]
+            return self.data[<int>position]
         return Wavetable(self.data[position])
 
     def __len__(self):
@@ -525,6 +547,9 @@ cdef class Wavetable:
         return self
 
     def __rsub__(self, value):
+        if isinstance(value, numbers.Real):
+            # Subtracting a wavetable from a number doesn't really make any sense
+            return NotImplemented
         return self - value
 
     def __repr__(self):
@@ -549,21 +574,14 @@ cdef class Wavetable:
         cdef double[:] _impulse = to_window(impulse)
         return Wavetable(_fir(self.data, _impulse, norm))
 
-    cpdef void drink(Wavetable self, double width=0.1, object minval=None, object maxval=None, list indexes=None, bint wrap=False):
+    cpdef void drink(Wavetable self, double width=0.1, object minval=None, object maxval=None):
         if minval is None:
             minval = np.min(self.data)
 
         if maxval is None:
             maxval = np.max(self.data)
 
-        if indexes is None:
-            indexes = list(range(len(self.data)))
-
-        for i in indexes:
-            self.data[i] = max(minval, min(self.data[i] + rand.rand(-width, width), maxval))
-
-        if wrap:
-            self.data[len(self.data)-1] = self.data[0]
+        self.data = _drink(self.data, width, minval, maxval)
 
     cpdef Wavetable harmonics(Wavetable self, object harmonics=None, object weights=None):
         if harmonics is None:
@@ -802,6 +820,8 @@ cdef class Wavetable:
             return interpolation._linear_pos(self.data, pos)
         elif _method == TRUNC:
             return interpolation._trunc_pos(self.data, pos)
+        elif _method == HERMITE:
+            return interpolation._hermite_pos(self.data, pos)
         else:
             raise ValueError('%s is not a valid interpolation method' % method)
 
@@ -904,16 +924,16 @@ cdef double[:] _window(int window_type, int length):
         wt = _window(window_type, length)
 
     elif window_type == SINE:
-        wt = np.sin(np.linspace(0, np.pi, length, dtype='d'))
+        wt = np.sin(np.linspace(0, PI, length, dtype='d'))
 
     elif window_type == SINEIN:
-        wt = np.sin(np.linspace(0, np.pi/2, length, dtype='d'))
+        wt = np.sin(np.linspace(0, PI/2, length, dtype='d'))
 
     elif window_type == SINEOUT:
-        wt = np.sin(np.linspace(np.pi/2, np.pi, length, dtype='d'))
+        wt = np.sin(np.linspace(PI/2, PI, length, dtype='d'))
 
     elif window_type == COS:
-        wt = (np.cos(np.linspace(0, np.pi*2, length, dtype='d')) + 1) * 0.5
+        wt = (np.cos(np.linspace(0, PI*2, length, dtype='d')) + 1) * 0.5
 
     elif window_type == TRI:
         wt = np.bartlett(length)
@@ -1146,3 +1166,4 @@ cpdef Wavetable seesaw(object win, int length, double tip=0.5):
     cdef double[:] _win = to_window(win)
     cdef double[:] out = _seesaw(_win, length, tip)
     return Wavetable(out)
+

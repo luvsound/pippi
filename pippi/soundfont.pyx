@@ -7,37 +7,39 @@ from libc.stdlib cimport malloc, free
 import numpy as np
 cimport numpy as np
 
+from pippi.events cimport Event
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.tune import ftom
 
 np.import_array()
 
-SAMPLERATE = 44100
-CHANNELS = 2
-BLOCKSIZE = 64
-NOTE_ON = 0
-NOTE_OFF = 1
+cdef int SAMPLERATE = 44100
+cdef int CHANNELS = 2
+cdef int BLOCKSIZE = 64
+cdef int NOTE_ON = 0
+cdef int NOTE_OFF = 1
 
 
 cdef list parsemessages(list events, int samplerate):
     cdef list messages = []
-    cdef dict e, m
+    cdef dict m
+    cdef Event e
     cdef str _id
     cdef int note
     cdef double fnote, frac
-    cdef size_t start
-    cdef size_t end
+    cdef long start
+    cdef long end
     
     for e in events:
-        fnote = ftom(e['freq'])
+        fnote = ftom(e.freq)
         note = <int>fnote
         frac = fnote - note
-        start = <int>(e['start'] * samplerate)
-        end = <int>(e['length'] * samplerate) + start
+        start = <long>(e.onset * samplerate)
+        end = <long>(e.length * samplerate) + start
         _id = str(uuid.uuid4())
 
-        messages += [dict(id=_id, type=NOTE_ON, note=note, frac=frac, pos=start, amp=e['amp'], instrument=e['voice'])]
-        messages += [dict(id=_id, type=NOTE_OFF, note=note, pos=end, instrument=e['voice'])]
+        messages += [dict(id=_id, type=NOTE_ON, note=note, frac=frac, pos=start, amp=e.amp, instrument=e.voice)]
+        messages += [dict(id=_id, type=NOTE_OFF, note=note, pos=end, instrument=e.voice)]
 
     return sorted(messages, key=lambda x: x['pos'])
 
@@ -46,7 +48,7 @@ cdef double[:,:] render(str font, list events, int voice, int channels, int samp
     cdef tsf* TSF = tsf_load_filename(font.encode('UTF-8'))
 
     # Total length is last event onset time + length + 3 seconds of slop for the tail
-    cdef int length = <int>(events[-1]['start'] + events[-1]['length'] + 3) * samplerate
+    cdef long length = <long>(events[-1].onset + events[-1].length + 3) * samplerate
 
     # TSF only supports stereo or mono
     if channels == 1:
@@ -58,9 +60,10 @@ cdef double[:,:] render(str font, list events, int voice, int channels, int samp
     cdef double[:,:] out = np.zeros((length, channels), dtype='d')
     cdef float* block = <float*>malloc(sizeof(float) * BLOCKSIZE * 2)
 
-    cdef int elapsed = 0
-    cdef size_t c=0, i=0
-    cdef size_t offset = 0
+    cdef long elapsed = 0
+    cdef long i = 0
+    cdef int offset = 0
+    cdef int c = 0
     cdef int channel = 0
 
     cdef list messages = parsemessages(events, samplerate)
@@ -99,8 +102,8 @@ cdef double[:,:] render(str font, list events, int voice, int channels, int samp
                         # If this event is playing, find the channel and cleanup
                         channel = event_map[msg['id']]
                         channel_map[channel].pop(channel_map[channel].index(msg['note']))
-                        del event_map[msg['id']]
                         tsf_channel_note_off(TSF, channel, msg['note'])
+                        del event_map[msg['id']]
 
                 messages.pop(messages.index(msg))
 
@@ -118,11 +121,12 @@ cdef double[:,:] render(str font, list events, int voice, int channels, int samp
             break
 
     free(block)
+    tsf_close(TSF)
 
     return out
 
 cpdef SoundBuffer play(str font, double length=1, double freq=440, double amp=1, int voice=1, int channels=CHANNELS, int samplerate=SAMPLERATE):
-    cdef list events = [dict(start=0, length=length, freq=freq, amp=amp, voice=voice)]
+    cdef list events = [Event(onset=0, length=length, freq=freq, amp=amp, voice=voice)]
     return SoundBuffer(render(font, events, voice, channels, samplerate), channels=channels, samplerate=samplerate)
 
 cpdef SoundBuffer playall(str font, object events, int voice=1, int channels=CHANNELS, int samplerate=SAMPLERATE):

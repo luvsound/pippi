@@ -209,7 +209,7 @@ cpdef double[:,:] mincer(double[:,:] snd, double length, double[:] time, double 
 cdef double[:,:] _saturator(double[:,:] snd, double[:,:] out, double drive, double dcoffset, int length, int channels, bint dcblock)
 cpdef double[:,:] saturator(double[:,:] snd, double drive, double dcoffset, bint dcblock)
 
-cdef double[:,:] _compressor(double[:,:] snd, double[:,:] out, double ratio, double thresh, double atk, double rel, int length, int channels)
+cdef double[:,:] _compressor(double[:,:] snd, double[:,:] out, double ratio, double thresh, double atk, double rel, long length, int channels)
 cpdef double[:,:] compressor(double[:,:] snd, double ratio, double thresh, double atk, double rel)
 
 cdef double[:,:] _paulstretch(double[:,:] snd, double[:,:] out, double windowsize, double stretch, int length, int outlength, int channels)

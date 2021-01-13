@@ -25,7 +25,7 @@ cdef class Waveset:
     def __cinit__(
             Waveset self, 
             object values=None, 
-            int crossings=3, 
+            object crossings=3, 
             int offset=-1,
             int limit=-1, 
             int modulo=1, 
@@ -34,10 +34,11 @@ cdef class Waveset:
         ):
 
         self.samplerate = samplerate
-        crossings = max(crossings, 2)
+        #crossings = max(crossings, 2)
+        cdef double[:] _crossings = to_window(crossings)
 
         if values is not None:
-            self._load(values, crossings, offset, limit, modulo)
+            self._load(values, _crossings, offset, limit, modulo)
         elif wavesets is not None:
             self._import(wavesets)
 
@@ -65,7 +66,7 @@ cdef class Waveset:
             copy = np.array(wavesets[i], dtype='d')
             self.wavesets += [ copy ]
 
-    cdef void _load(Waveset self, object values, int crossings, int offset, int limit, int modulo):
+    cdef void _load(Waveset self, object values, double[:] crossings, int offset, int limit, int modulo):
         cdef double[:] raw
         cdef double[:] waveset
         cdef double original_mag = 0
@@ -93,6 +94,8 @@ cdef class Waveset:
         if self.samplerate <= 0:
             self.samplerate = DEFAULT_SAMPLERATE
 
+        cdef double pos = 0
+        cdef int _crossings = <int>crossings[0]
         cdef int length = len(raw)
         last = raw[0]
 
@@ -100,7 +103,9 @@ cdef class Waveset:
             if (signbit(last) and not signbit(raw[i])) or (not signbit(last) and signbit(raw[i])):
                 crossing_count += 1
 
-                if crossing_count == crossings:
+                pos = <double>start / length
+                _crossings = <int>interpolation._trunc_pos(crossings, pos)
+                if crossing_count >= _crossings:
                     waveset_count += 1
                     mod_count += 1
                     crossing_count = 0

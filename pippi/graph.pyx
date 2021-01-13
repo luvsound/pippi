@@ -1,14 +1,22 @@
 #cython: language_level=3
 
 import random
+# FIXME -- when dropping support for python 3.8 and below, 
+# switch to stdlib for built-in importlib.resources support.
+from importlib_resources import files 
+from pathlib import Path
+import sys
+
 from PIL import Image, ImageDraw, ImageFont
+import numpy as np
+
+import pippi
 from pippi cimport interpolation
 from pippi cimport dsp
 from pippi.defaults cimport MIN_FLOAT
 from pippi.soundbuffer cimport SoundBuffer
 from pippi.wavetables cimport Wavetable
-import sys
-import numpy as np
+
 
 
 cdef int ycoord(double point, int canvas_height, double minval, double maxval):
@@ -100,16 +108,18 @@ def write(object data,
             label_bottom = label
 
         if label_top is not None:
+            CHI = str(files(pippi).joinpath('chicago.ttf'))
             fontsize = fontsize * upsample_mult
-            font = ImageFont.truetype('modules/pixeldroid-console/pixeldroidConsoleRegular.ttf', fontsize)
+            font = ImageFont.truetype(CHI, fontsize)
             fontwidth, fontheight = font.getsize(label_top)
             fontx = width//2 - (fontwidth//2)
             fonty = 10
             draw.text((fontx, fonty), label_top, font=font, fill=(0, 0, 0, 200))
 
         if label_bottom is not None:
+            CHI = str(files(pippi).joinpath('chicago.ttf'))
             fontsize = fontsize * upsample_mult
-            font = ImageFont.truetype('modules/pixeldroid-console/pixeldroidConsoleRegular.ttf', fontsize)
+            font = ImageFont.truetype(CHI, fontsize)
             fontwidth, fontheight = font.getsize(label_bottom)
             fontx = width//2 - (fontwidth//2)
             fonty = height - int(fontheight*2)

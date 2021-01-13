@@ -24,4 +24,3 @@ echo ":: Updating permissions..."
 chmod -R 755 pippi.world
 
 echo ":: Done!"
-

@@ -4,6 +4,6 @@ from pippi.wavetables cimport Wavetable
 
 cdef class Seq:
     cdef double[:] beat
-    cdef public dict drums
+    cdef public dict instruments
 
 

@@ -66,17 +66,17 @@ while elapsed < 30:
     beat = time_lfo.interp(pos)
     elapsed += beat
 
-# Add a butterworth lowpass with a 3k cutoff
-out = fx.lpf(out, 3000)
+# Add a butterworth lowpass with a 3k cutoff -- multiply output by 0.5 to attenuate signal to 50%
+out = fx.lpf(out, 3000) * 0.5
 out.write('docs/tutorials/renders/002-hats-slipping-on-ice.flac')
 
-def makekick(length=0.15):
+def makekick(length=0.25):
     out = noise.bln('square', length, [dsp.rand(80, 100), dsp.rand(50, 100)], [dsp.rand(150, 200), dsp.rand(50, 70)])
-    out = fx.crush(out, dsp.rand(6,10), dsp.rand(11000, 44100))
+    out = fx.fold(out, amp=dsp.win('saw', 1, dsp.rand(6,10)))
     out = fx.lpf(out, 200).vspeed([1, 0.5])
     return out.env('pluckout').taper(0.02) * dsp.rand(0.6, 1)
 
-kick = makekick()
+kick = dsp.join([ makekick().pad(end=0.2) for _ in range(8) ]) # render a few kicks
 kick.write('docs/tutorials/renders/002-kick.flac')
 
 
@@ -84,6 +84,9 @@ def makeclap(length=dsp.MS*80):
     lowhz = dsp.win('rnd', 3000, 6000)
     highhz = dsp.win('rnd', 2000, 8000)
     return noise.bln('tri', length, lowhz, highhz).env(pluckout)
+
+clap = dsp.join([ makeclap().pad(end=0.2) for _ in range(8) ]) # render a few claps
+clap.write('docs/tutorials/renders/002-clap.flac')
 
 
 from pippi import shapes
@@ -207,21 +210,21 @@ kick_lfo = dsp.win(shapes.win('sine'), 0.05, 0.1)
 clap_lfo = dsp.win(shapes.win('sine'), 0.01, 0.1) 
 time_lfo = dsp.win('hann', 0.001, 0.2)
 
-def makehat(pos, count):
-    length = hat_lfo.interp(pos)
+def makehat(ctx):
+    length = hat_lfo.interp(ctx.pos)
     lowhz = dsp.win('rnd', 9000, 11000)
     highhz = dsp.win('rnd', 12000, 14000)
     return noise.bln('sine', length, lowhz, highhz).env('pluckout') * 0.5
 
-def makekick(pos, count):
-    length = kick_lfo.interp(pos)
+def makekick(ctx):
+    length = kick_lfo.interp(ctx.pos)
     out = noise.bln('square', length, [dsp.rand(80, 100), dsp.rand(50, 100)], [dsp.rand(150, 200), dsp.rand(50, 70)])
     out = fx.crush(out, dsp.rand(6,10), dsp.rand(11000, 44100))
     out = fx.lpf(out, 200).vspeed([1, 0.5])
     return out.env('pluckout').taper(0.02) * dsp.rand(0.6, 1)
 
-def makeclap(pos, count):
-    length = clap_lfo.interp(pos)
+def makeclap(ctx):
+    length = clap_lfo.interp(ctx.pos)
     lowhz = dsp.win('rnd', 3000, 6000)
     highhz = dsp.win('rnd', 2000, 8000)
     return noise.bln('tri', length, lowhz, highhz).env('pluckout')

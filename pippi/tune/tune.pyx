@@ -1,9 +1,8 @@
 #cython: language_level=3
 
-#import numpy as np
-#cimport numpy as np
-#np.import_array()
-
-from pippi.midi cimport *
-from pippi.midi import *
-from pippi.old import *
+from pippi.chords import *
+from pippi.frequtils import *
+from pippi.intervals import *
+from pippi.midi cimport mtof, ftom, ftomi
+from pippi.midi import mtof, ftom, ftomi
+from pippi.scales import *

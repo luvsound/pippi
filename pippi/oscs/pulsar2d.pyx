@@ -23,6 +23,8 @@ cdef class Pulsar2d:
             object amp=1.0, 
             double phase=0, 
 
+            object freq_interpolator=None,
+
             object wt_mod=None, 
             object win_mod=None, 
 
@@ -39,11 +41,16 @@ cdef class Pulsar2d:
         if win_mod is None:
             win_mod = 'saw'
 
+        if freq_interpolator is None:
+            freq_interpolator = 'linear'
+
         self.freq = wts.to_wavetable(freq)
         self.amp = wts.to_window(amp)
         self.wt_mod = wts.to_window(wt_mod)
         self.win_mod = wts.to_window(win_mod)
         self.mask = wts.to_window(mask)
+
+        self.freq_interpolator = interpolation.get_point_interpolator(freq_interpolator)
 
         if burst is not None:
             self.burst_length = len(burst)
@@ -53,12 +60,12 @@ cdef class Pulsar2d:
             self.burst = np.array([1], dtype='long')
 
         self.wt_phase = phase
-        self.win_phase = phase
-        self.freq_phase = phase
-        self.pw_phase = phase
-        self.amp_phase = phase
-        self.burst_phase = phase
-        self.mask_phase = phase
+        self.win_phase = 0
+        self.freq_phase = 0
+        self.pw_phase = 0
+        self.amp_phase = 0
+        self.burst_phase = 0
+        self.mask_phase = 0
 
         self.channels = channels
         self.samplerate = samplerate
@@ -169,7 +176,7 @@ cdef class Pulsar2d:
         cdef double win_out_b = 0
 
         for i in range(length):
-            freq = interpolation._linear_point(self.freq, self.freq_phase)
+            freq = self.freq_interpolator(self.freq, self.freq_phase)
             mask_prob = interpolation._linear_point(self.mask, self.mask_phase)
             burst = self.burst[<int>self.burst_phase]
 
@@ -184,23 +191,23 @@ cdef class Pulsar2d:
                 self.win_pos = interpolation._linear_point(self.win_mod, self.win_mod_phase)
 
                 if self.wt_count == 1:
-                    sample = interpolation._linear_point(self.wavetables[0], self.wt_phase, pulsewidth) 
+                    sample = interpolation._linear_point_pw(self.wavetables[0], self.wt_phase, pulsewidth) 
                 else:
-                    wi_phase = self.wt_pos * (self.wt_count-2)
+                    wi_phase = self.wt_pos * (self.wt_count-1)
                     wi = <int>wi_phase
                     wi_frac = wi_phase - wi
-                    wt_out_a = interpolation._linear_point(self.wavetables[wi], self.wt_phase, pulsewidth)
-                    wt_out_b = interpolation._linear_point(self.wavetables[wi+1], self.wt_phase, pulsewidth)
+                    wt_out_a = interpolation._linear_point_pw(self.wavetables[wi], self.wt_phase, pulsewidth)
+                    wt_out_b = interpolation._linear_point_pw(self.wavetables[wi+1], self.wt_phase, pulsewidth)
                     sample = (1.0 - wi_frac) * wt_out_a + (wi_frac * wt_out_b)
 
                 if self.win_count == 1:
-                    sample *= interpolation._linear_point(self.windows[0], self.win_phase, pulsewidth)
+                    sample *= interpolation._linear_point_pw(self.windows[0], self.win_phase, pulsewidth)
                 else:
-                    wi_phase = self.win_pos * (self.win_count-2)
+                    wi_phase = self.win_pos * (self.win_count-1)
                     wi = <int>wi_phase
                     wi_frac = wi_phase - wi
-                    win_out_a = interpolation._linear_point(self.windows[wi], self.win_phase, pulsewidth)
-                    win_out_b = interpolation._linear_point(self.windows[wi+1], self.win_phase, pulsewidth)
+                    win_out_a = interpolation._linear_point_pw(self.windows[wi], self.win_phase, pulsewidth)
+                    win_out_b = interpolation._linear_point_pw(self.windows[wi+1], self.win_phase, pulsewidth)
                     sample *= (1.0 - wi_frac) * win_out_a + (wi_frac * win_out_b)
 
                 sample *= amp
@@ -223,7 +230,9 @@ cdef class Pulsar2d:
                 else:
                     mask = 1
 
-            while self.wt_phase >= wt_boundry_p:
+            if self.wt_phase < 0:
+                self.wt_phase += wt_boundry_p
+            elif self.wt_phase >= wt_boundry_p:
                 self.wt_phase -= wt_boundry_p
 
             while self.win_phase >= win_boundry_p:

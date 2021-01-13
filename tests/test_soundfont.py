@@ -18,8 +18,8 @@ class TestSoundfont(TestCase):
         length = 10
 
         while pos < length:
-            events += [dict(
-                start=pos, 
+            events += [dsp.event(
+                onset=pos, 
                 length=dsp.rand(0.2, 3), 
                 freq=30*dsp.randint(1, 10), 
                 amp=dsp.rand(), 

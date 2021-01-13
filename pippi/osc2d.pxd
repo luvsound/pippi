@@ -1,8 +1,12 @@
 #cython: language_level=3
 
+from pippi.interpolation cimport interp_point_t
+
 cdef class Osc2d:
-    cdef public double freq
-    cdef public double amp
+    cdef public double[:] freq
+    cdef public double[:] amp
+
+    cdef interp_point_t freq_interpolator
 
     cdef list wavetables
     cdef public double lfo_freq
@@ -18,6 +22,8 @@ cdef class Osc2d:
     cdef public double phase
     cdef public double win_phase
     cdef public double mod_phase
+    cdef double freq_phase
+    cdef double amp_phase
 
     cdef public int channels
     cdef public int samplerate

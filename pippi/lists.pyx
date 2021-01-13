@@ -107,3 +107,9 @@ cpdef list snap(list source, double mult=0, object pattern=None):
     cdef double[:] _pattern = to_window(pattern)
     return np.array(_snap_pattern(out, _source, _pattern), dtype='d').tolist()
 
+cpdef rotate(list l, int offset=0):
+    """ Rotate a list by a given offset
+    """
+    return l[-offset % len(l):] + l[:-offset % len(l)]
+
+

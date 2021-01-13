@@ -16,51 +16,80 @@ from pippi cimport interpolation
 from pippi cimport fx
 from pippi cimport fft
 from pippi import graph
-from pippi.defaults cimport DEFAULT_SAMPLERATE, DEFAULT_CHANNELS, DEFAULT_SOUNDFILE
+from pippi.defaults cimport DEFAULT_SAMPLERATE, DEFAULT_CHANNELS, DEFAULT_SOUNDFILE, PI
 from pippi cimport grains
 from pippi cimport soundpipe
 
 cdef double VSPEED_MIN = 0.0001
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
-cdef double[:,:] _dub(double[:,:] target, int target_length, double[:,:] todub, int todub_length, int channels, int framepos) nogil:
-    cdef int i = 0
-    cdef int c = 0
-    for i in range(todub_length):
-        for c in range(channels):
-            target[framepos+i, c] += todub[i, c]
-
-    return target
-
-cdef double[:,:] _pan(double[:,:] out, int length, int channels, double pos, int method):
+cdef double[:,:] _pan(double[:,:] out, int length, int channels, double[:] _pos, int method):
     cdef double left = 0.5
     cdef double right = 0.5
     cdef int i = 0
+    cdef int channel = 0
+    cdef double pos = 0
+    cdef double p = 0
+    cdef double PIH = PI / 2.0
 
     if method == CONSTANT:
-        left = math.sqrt(pos)
-        right = math.sqrt(1 - pos)
+        for channel in range(channels):
+            if channel % 2 == 0:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    left = math.sqrt(pos)
+                    out[i, channel] *= left
+            else:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    right = math.sqrt(1 - pos)
+                    out[i, channel] *= right
 
     elif method == LINEAR:
-        left = pos
-        right = 1 - pos
+        for channel in range(channels):
+            if channel % 2 == 0:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    left = pos
+                    out[i, channel] *= left
+            else:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    right = 1 - pos
+                    out[i, channel] *= right
 
     elif method == SINE:
-        left = math.sin(pos * (math.pi / 2))
-        right = math.cos(pos * (math.pi / 2))
+        for channel in range(channels):
+            if channel % 2 == 0:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    left = math.sin(pos * PIH)
+                    out[i, channel] *= left
+            else:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    right = math.cos(pos * PIH)
+                    out[i, channel] *= right
 
     elif method == GOGINS:
-        left = math.sin((pos + 0.5) * (math.pi / 2))
-        right = math.cos((pos + 0.5) * (math.pi / 2))
-
-    for channel in range(channels):
-        if channel % 2 == 0:
-            for i in range(length):
-                out[i, channel] *= left
-        else:
-            for i in range(length):
-                out[i, channel] *= right
+        for channel in range(channels):
+            if channel % 2 == 0:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    left = math.sin((pos + 0.5) * PIH)
+                    out[i, channel] *= left
+            else:
+                for i in range(length):
+                    p = <double>i / length
+                    pos = interpolation._linear_pos(_pos, p)
+                    right = math.cos((pos + 0.5) * PIH)
+                    out[i, channel] *= right
 
     return out
 
@@ -280,6 +309,9 @@ cdef class SoundBuffer:
         if isinstance(value, numbers.Real):
             out = np.add(self.frames, value)
         elif isinstance(value, SoundBuffer):
+            if value.channels != self.channels:
+                value = value.remix(self.channels)
+
             if value.frames is None:
                 out = self.frames.copy()
             else:
@@ -304,8 +336,14 @@ cdef class SoundBuffer:
             else:
                 return SoundBuffer(value, channels=self.channels, samplerate=self.samplerate)
 
+        cdef SoundBuffer out
+
         if isinstance(value, numbers.Real):
             self.frames = np.add(self.frames, value)
+        elif isinstance(value, SoundBuffer):
+            if value.channels != self.channels:
+                value = value.remix(self.channels)
+            self.dub(value, self.dur)
         else:
             try:
                 self.frames = np.vstack((self.frames, value))
@@ -337,6 +375,7 @@ cdef class SoundBuffer:
         cdef double[:,:] out
         cdef double[:,:] a, b
         cdef int i, c
+        cdef int channels = self.channels
 
         if isinstance(value, SoundBuffer):
             if len(self.frames) > len(value.frames):
@@ -354,12 +393,18 @@ cdef class SoundBuffer:
                 a = np.array(value, dtype='d')
                 b = self.frames
 
+        if a.shape[1] > b.shape[1]:
+            b = _remix(b, len(b), a.shape[1])
+            channels = a.shape[1]
+        elif b.shape[1] > a.shape[1]:
+            a = _remix(a, len(a), b.shape[1])
+
         out = a.copy()
         for i in range(len(b)):
-            for c in range(self.channels):
+            for c in range(channels):
                 out[i,c] += b[i,c]
 
-        return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
+        return SoundBuffer(out, channels=channels, samplerate=self.samplerate)
 
     def __iand__(SoundBuffer self, object value):
         """ Mix in place two SoundBuffers or two 2d arrays with compatible dimensions
@@ -369,6 +414,7 @@ cdef class SoundBuffer:
         cdef double[:,:] out
         cdef double[:,:] a, b
         cdef int i, c
+        cdef int channels = self.channels
 
         if isinstance(value, SoundBuffer):
             if len(self.frames) > len(value.frames):
@@ -386,12 +432,19 @@ cdef class SoundBuffer:
                 a = np.array(value, dtype='d')
                 b = self.frames
 
+        if a.shape[1] > b.shape[1]:
+            b = _remix(b, len(b), a.shape[1])
+            channels = a.shape[1]
+        elif b.shape[1] > a.shape[1]:
+            a = _remix(a, len(a), b.shape[1])
+
         out = a.copy()
         for i in range(len(b)):
-            for c in range(self.channels):
+            for c in range(channels):
                 out[i,c] += b[i,c]
 
         self.frames = out
+        self.channels = channels
         return self
 
     def __rand__(SoundBuffer self, object value):
@@ -631,6 +684,9 @@ cdef class SoundBuffer:
 
     def clip(self, minval=-1, maxval=1):
         return SoundBuffer(np.clip(self.frames, minval, maxval), channels=self.channels, samplerate=self.samplerate)
+
+    def softclip(SoundBuffer self):
+        return fx.softclip(self)
         
     cpdef SoundBuffer convolve(SoundBuffer self, object impulse, bint norm=True):
         cdef double[:,:] _impulse
@@ -704,10 +760,10 @@ cdef class SoundBuffer:
         cdef double start = random.triangular(0, maxlen)
         return self.cut(start, length)
 
-    cdef void _dub(SoundBuffer self, SoundBuffer sound, int framepos):
-        cdef int target_length = len(self)
-        cdef int todub_length = len(sound)
-        cdef int total_length = framepos + todub_length
+    cdef void _dub(SoundBuffer self, SoundBuffer sound, long framepos):
+        cdef long target_length = len(self)
+        cdef long todub_length = len(sound)
+        cdef long total_length = framepos + todub_length
         cdef int channels = self.channels
 
         if target_length == 0:
@@ -720,9 +776,13 @@ cdef class SoundBuffer:
                 ))
             target_length = len(self)
 
-        self.frames = _dub(self.frames, target_length, sound.frames, todub_length, channels, framepos)
+        cdef long i = 0
+        cdef int c = 0
+        for i in range(todub_length):
+            for c in range(channels):
+                self.frames[framepos+i, c] += sound.frames[i, c]
 
-    def dub(self, sounds, double pos=-1, int framepos=0):
+    def dub(self, sounds, double pos=-1, long framepos=0):
         """ Dub a sound or iterable of sounds into this soundbuffer
             starting at the given position in fractional seconds.
 
@@ -736,7 +796,7 @@ cdef class SoundBuffer:
         cdef int sound_index
 
         if pos >= 0:
-            framepos = <int>(pos * self.samplerate)
+            framepos = <long>(pos * self.samplerate)
 
         if isinstance(sounds, SoundBuffer):
             self._dub(sounds, framepos)
@@ -798,8 +858,16 @@ cdef class SoundBuffer:
             If a second length is given, iterate in randomly-sized 
             grains, given the minimum and maximum sizes.
         """
+        minlength = min(max(0, minlength), self.dur)
+        if maxlength > 0:
+            maxlength = min(self.dur, maxlength)
+
+        if minlength == 0 or minlength == maxlength:
+            yield self
+            return
+
         cdef int framesread = 0
-        cdef int maxframes = <int>(maxlength * self.samplerate)
+        cdef int maxframes = <int>(maxlength * self.samplerate) 
         cdef int minframes = <int>(minlength * self.samplerate)
         cdef int grainlength = minframes
         cdef int sourcelength = len(self)
@@ -833,14 +901,20 @@ cdef class SoundBuffer:
             except TypeError as e:
                 raise TypeError('Please provide a SoundBuffer or list of SoundBuffers for mixing') from e
 
-    def pad(self, double start=0, double end=0):
+    def pad(self, double start=0, double end=0, bint samples=False):
         """ Pad this sound with silence at start or end
         """
         if start <= 0 and end <= 0: 
             return self
 
-        cdef int framestart = <int>(start * self.samplerate)
-        cdef int frameend = <int>(end * self.samplerate)
+        cdef int framestart, frameend
+
+        if not samples:
+            framestart = <int>(start * self.samplerate)
+            frameend = <int>(end * self.samplerate)
+        else:
+            framestart = <int>start
+            frameend = <int>end
 
         cdef double[:,:] out = self.frames
 
@@ -852,7 +926,7 @@ cdef class SoundBuffer:
  
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
-    def pan(self, double pos=0.5, str method=None, int start=0):
+    cpdef SoundBuffer pan(SoundBuffer self, object pos=0.5, str method=None):
         """ Pan a stereo sound from `pos=0` (hard left) to `pos=1` (hard right)
 
             Different panning strategies can be chosen by passing a value to the `method` param.
@@ -868,7 +942,8 @@ cdef class SoundBuffer:
         cdef double[:,:] out = self.frames
         cdef int length = len(self)
         cdef int channel = 0
-        out = _pan(out, length, self.channels, pos, to_flag(method))
+        cdef double[:] _pos = to_window(pos)
+        out = _pan(out, length, self.channels, _pos, to_flag(method))
         return SoundBuffer(out, channels=self.channels, samplerate=self.samplerate)
 
     def remix(self, int channels):
@@ -876,11 +951,16 @@ cdef class SoundBuffer:
 
     def repeat(self, int reps=2):
         if reps <= 1:
-            return SoundBuffer(self.frames, samplerate=self.samplerate, channels=self.channels)
+            return self
 
-        out = SoundBuffer(self.frames, samplerate=self.samplerate, channels=self.channels)
-        for _ in range(reps-1):
-            out += self
+        cdef double length = reps * self.dur
+        out = SoundBuffer(length=length, channels=self.channels, samplerate=self.samplerate)
+
+        cdef double pos = 0
+        cdef int r = 0
+        for r in range(reps):
+            out.dub(self, pos)
+            pos += self.dur
 
         return out
 

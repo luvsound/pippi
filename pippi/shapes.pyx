@@ -135,7 +135,7 @@ cdef double[:] _table(double[:] out, unsigned int length, double[:] wt, double[:
 
     return out
 
-cpdef Wavetable win(object waveform, double length=1, object density=0.5, object periodicity=0.5, object stability=0.5, double minfreq=0, double maxfreq=0, int samplerate=DEFAULT_SAMPLERATE):
+cpdef Wavetable win(object waveform, double lowvalue=0, double highvalue=1, double length=1, object density=0.5, object periodicity=0.5, object stability=0.5, double minfreq=0, double maxfreq=0, int samplerate=DEFAULT_SAMPLERATE):
     if minfreq <= 0:
         minfreq = MIN_WT_FREQ
 
@@ -150,9 +150,9 @@ cpdef Wavetable win(object waveform, double length=1, object density=0.5, object
     cdef unsigned int framelength = <unsigned int>(length * samplerate)
     cdef double[:] out = np.zeros(framelength, dtype='d')
 
-    return Wavetable(_table(out, framelength, _wt, _density, _periodicity, _stability, maxfreq, minfreq, samplerate))
+    return Wavetable(_table(out, framelength, _wt, _density, _periodicity, _stability, maxfreq, minfreq, samplerate), lowvalue, highvalue)
 
-cpdef Wavetable wt(object waveform, double length=1, object density=0.5, object periodicity=0.5, object stability=0.5, double minfreq=0, double maxfreq=0, int samplerate=DEFAULT_SAMPLERATE):
+cpdef Wavetable wt(object waveform, double lowvalue=-1, double highvalue=1, double length=1, object density=0.5, object periodicity=0.5, object stability=0.5, double minfreq=0, double maxfreq=0, int samplerate=DEFAULT_SAMPLERATE):
     if minfreq <= 0:
         minfreq = MIN_WT_FREQ
 
@@ -167,5 +167,5 @@ cpdef Wavetable wt(object waveform, double length=1, object density=0.5, object 
     cdef unsigned int framelength = <unsigned int>(length * samplerate)
     cdef double[:] out = np.zeros(framelength, dtype='d')
 
-    return Wavetable(_table(out, framelength, _wt, _density, _periodicity, _stability, maxfreq, minfreq, samplerate))
+    return Wavetable(_table(out, framelength, _wt, _density, _periodicity, _stability, maxfreq, minfreq, samplerate), lowvalue, highvalue)
 

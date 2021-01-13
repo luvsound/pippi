@@ -19,6 +19,7 @@ cdef class Alias:
             object freq=440.0, 
             object amp=1.0, 
             double phase=0, 
+            object freq_interpolator=None,
 
             int channels=DEFAULT_CHANNELS,
             int samplerate=DEFAULT_SAMPLERATE,
@@ -26,6 +27,11 @@ cdef class Alias:
 
         self.freq = wavetables.to_wavetable(freq)
         self.amp = wavetables.to_window(amp)
+
+        if freq_interpolator is None:
+            freq_interpolator = 'linear'
+
+        self.freq_interpolator = interpolation.get_point_interpolator(freq_interpolator)
 
         self.freq_phase = phase
         self.amp_phase = phase
@@ -53,7 +59,7 @@ cdef class Alias:
         cdef double[:,:] out = np.zeros((length, self.channels), dtype='d')
 
         for i in range(length):
-            freq = interpolation._linear_point(self.freq, self.freq_phase)
+            freq = self.freq_interpolator(self.freq, self.freq_phase)
             amp = interpolation._linear_point(self.amp, self.amp_phase)
 
             if self.pulse_phase == 0:

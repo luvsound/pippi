@@ -215,12 +215,12 @@ cpdef double[:,:] butlp(double[:,:] snd, double[:] freq):
     cdef double[:,:] out = np.zeros((length, channels), dtype='d')
     return _butlp(snd, out, freq, length, channels)
 
-cdef double[:,:] _compressor(double[:,:] snd, double[:,:] out, double ratio, double thresh, double atk, double rel, int length, int channels):
+cdef double[:,:] _compressor(double[:,:] snd, double[:,:] out, double ratio, double thresh, double atk, double rel, long length, int channels):
     cdef sp_data* sp
     cdef sp_compressor* compressor
     cdef double sample = 0
     cdef double output = 0
-    cdef int i = 0
+    cdef long i = 0
     cdef int c = 0
 
     sp_create(&sp)
@@ -246,7 +246,7 @@ cdef double[:,:] _compressor(double[:,:] snd, double[:,:] out, double ratio, dou
     return out
 
 cpdef double[:,:] compressor(double[:,:] snd, double ratio, double thresh, double atk, double rel):
-    cdef int length = <int>len(snd)
+    cdef long length = <long>len(snd)
     cdef int channels = <int>snd.shape[1]
     cdef double[:,:] out = np.zeros((length, channels), dtype='d')
     return _compressor(snd, out, ratio, thresh, atk, rel, length, channels)

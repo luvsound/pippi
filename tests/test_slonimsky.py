@@ -16,8 +16,8 @@ class TestSlonimsky(TestCase):
             freqs = [ (r[1][0] / r[1][1]) * r[0] * note for r in freqs ]
 
             for freq in freqs:
-                events += [dict(
-                    start=pos, 
+                events += [dsp.event(
+                    onset=pos, 
                     length=0.5, 
                     freq=freq,
                     amp=dsp.rand(0.5, 0.55), 

@@ -31,6 +31,23 @@ class TestSoundBuffer(TestCase):
 
         self.assertEqual(snd1.dur, snd2.dur)
 
+    def test_mix_mismatched_channels(self):
+        snd1 = SoundBuffer(filename='tests/sounds/guitar1s.wav').remix(1)
+        snd2 = SoundBuffer(filename='tests/sounds/LittleTikes-A1.wav')
+        channels = max(snd1.channels, snd2.channels)
+
+        out = snd1 & snd2
+        self.assertEqual(out.channels, channels)
+
+        out = snd2 & snd1
+        self.assertEqual(out.channels, channels)
+
+        snd2 &= snd1
+        self.assertEqual(snd2.channels, channels)
+        self.assertEqual(snd1.channels, 1) # Right side should have no side effects
+
+        snd1 &= snd2
+        self.assertEqual(snd1.channels, channels)
 
     def test_create_stereo_buffer_from_soundfile(self):
         sound = SoundBuffer(filename='tests/sounds/guitar1s.wav')
@@ -113,40 +130,36 @@ class TestSoundBuffer(TestCase):
         self.assertTrue(path.isfile(filename.format('ogg')))
 
     def test_split_buffer(self):
-        sound = SoundBuffer(filename='tests/sounds/guitar1s.wav')
+        def _split(length):
+            sound = SoundBuffer(filename='tests/sounds/guitar1s.wav')
 
-        length = random.triangular(0.1, sound.dur) 
-        framelength = int(length * sound.samplerate)
-        durations = []
-        for grain in sound.grains(length):
-            durations += [ grain.dur ]
+            total = 0
+            for grain in sound.grains(length):
+                total += len(grain)
 
-        # The final grain isn't padded with silence, 
-        # so it should only be the grain length if 
-        # it can be divided equally into the total 
-        # length.
-        for grain_length in durations[:-1]:
-            self.assertEqual(int(grain_length * sound.samplerate), framelength)
+            # Check that the remainder grain is not 0
+            self.assertNotEqual(len(grain), 0)
 
-        # Check that the remainder grain is the correct length
-        remainderframes = int((sound.dur - sum(durations[:-1])) * sound.samplerate)
-        self.assertEqual(int(durations[-1] * sound.samplerate), remainderframes)
+            # Check that all the grains add up
+            self.assertEqual(total, len(sound))
 
-        # Check that all the grains add up
-        self.assertEqual(sum(durations), sound.dur)
+        lengths = [-1, 0, 0.01, 0.121212, 0.3, 0.5599, 0.75, 0.999, 1, 2]
+        for length in lengths:
+            _split(length)
 
     def test_random_split_buffer(self):
-        sound = SoundBuffer(filename='tests/sounds/guitar1s.wav')
+        for _ in range(100):
+            sound = SoundBuffer(filename='tests/sounds/guitar1s.wav')
 
-        durations = []
-        for grain in sound.grains(0.001, sound.dur):
-            durations += [ grain.dur ]
+            total = 0
+            for grain in sound.grains(0.001, sound.dur):
+                total += len(grain)
 
-        # Check that the remainder grain is not 0
-        self.assertNotEqual(durations[-1], 0)
+            # Check that the remainder grain is not 0
+            self.assertNotEqual(len(grain), 0)
 
-        # Check that all the grains add up
-        self.assertEqual(sum(durations), sound.dur)
+            # Check that all the grains add up
+            self.assertEqual(total, len(sound))
 
     def test_window(self):
         sound = SoundBuffer(filename='tests/sounds/guitar1s.wav')

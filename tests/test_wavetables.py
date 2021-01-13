@@ -4,7 +4,10 @@ import re
 
 from unittest import TestCase
 from pippi import wavetables, dsp
+from pippi.soundbuffer import SoundBuffer
+from pippi.wavetables import Wavetable
 from pippi.oscs import Osc
+import numpy as np
 
 class TestWavetables(TestCase):
     def test_random_window(self):
@@ -229,8 +232,7 @@ class TestWavetables(TestCase):
         self.assertEqual(dsp.win([1,3,5]) * win, dsp.win([1,6,15]))
         self.assertEqual(win, dsp.win([1,2,3]))
 
-        with self.assertRaises(TypeError):
-            2 * win
+        self.assertEqual(2 * win, dsp.win([2,4,6]))
         self.assertEqual(win, dsp.win([1,2,3]))
 
     def test_add_wavetables(self):
@@ -245,8 +247,7 @@ class TestWavetables(TestCase):
         self.assertEqual(dsp.win([1,3,5]) + win, dsp.win([1,3,5,1,2,3]))
         self.assertEqual(win, dsp.win([1,2,3]))
 
-        with self.assertRaises(TypeError):
-            2 + win
+        self.assertEqual(2 + win, dsp.win([2,1,2,3]))
         self.assertEqual(win, dsp.win([1,2,3]))
 
     def test_sub_wavetables(self):
@@ -264,4 +265,3 @@ class TestWavetables(TestCase):
         with self.assertRaises(TypeError):
             2 - win
         self.assertEqual(win, dsp.win([1,2,3]))
-
