@@ -4,7 +4,7 @@ importlib_resources==4.0.0
 librosa==0.8.0
 mido==1.2.9
 numpy==1.19.4
-Pillow==8.0.1
+Pillow==8.1.1
 PySoundFile==0.9.0.post1
 python-rtmidi==1.4.6
 wheel==0.36.2
