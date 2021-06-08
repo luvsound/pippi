@@ -5,7 +5,7 @@ librosa==0.8.0
 mido==1.2.9
 numba==0.53.1
 numpy==1.20.3
-Pillow==8.1.1
+Pillow==8.2.0
 PySoundFile==0.9.0.post1
 python-rtmidi==1.4.6
 wheel==0.36.2
