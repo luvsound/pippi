@@ -4,7 +4,7 @@ importlib-resources==5.2.2
 librosa==0.8.1
 mido==1.2.10
 numpy==1.21.2
-Pillow==8.3.2
+Pillow==9.0.0
 pysndfile==1.4.3
 python-rtmidi==1.4.9
 wheel==0.37.0
