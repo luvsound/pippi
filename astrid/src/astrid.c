@@ -9,14 +9,14 @@ int lpsampler_get_length(lpsampler_t * sampler, size_t * length) {
     fl.l_len = sizeof(size_t);
 
     if(fcntl(sampler->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a read lock on sampler length.\n");
+        perror("Could not aquire a read lock on sampler length.\n");
         return -1;
     } else {
         memcpy(length, sampler->buf+sampler->length_offset, sizeof(size_t));
 
         fl.l_type = F_UNLCK;
         if(fcntl(sampler->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock sampler length read lock.\n");
+            perror("Could not unlock sampler length read lock.\n");
             return -1;
         }
     }
@@ -32,14 +32,14 @@ int lpsampler_get_samplerate(lpsampler_t * sampler, int * samplerate) {
     fl.l_len = sizeof(int);
 
     if(fcntl(sampler->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a read lock on sampler samplerate.\n");
+        perror("Could not aquire a read lock on sampler samplerate.\n");
         return -1;
     } else {
         memcpy(samplerate, sampler->buf+sampler->samplerate_offset, sizeof(int));
 
         fl.l_type = F_UNLCK;
         if(fcntl(sampler->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock sampler samplerate read lock.\n");
+            perror("Could not unlock sampler samplerate read lock.\n");
             return -1;
         }
     }
@@ -55,14 +55,14 @@ int lpsampler_get_channels(lpsampler_t * sampler, int * channels) {
     fl.l_len = sizeof(int);
 
     if(fcntl(sampler->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a read lock on sampler channels.\n");
+        perror("Could not aquire a read lock on sampler channels.\n");
         return -1;
     } else {
         memcpy(channels, sampler->buf+sampler->channels_offset, sizeof(int));
 
         fl.l_type = F_UNLCK;
         if(fcntl(sampler->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock sampler channels read lock.\n");
+            perror("Could not unlock sampler channels read lock.\n");
             return -1;
         }
     }
@@ -78,7 +78,7 @@ lpsampler_t * lpsampler_create_from(int bankid, lpbuffer_t * buf) {
     snprintf(sampler->name, SAMPLER_NAME_SIZE, SAMPLER_NAME_TEMPLATE, bankid);
     sampler->fd = shm_open(sampler->name, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);
     if(sampler->fd == -1) {
-        fprintf(stderr, "Could not get a handle to sampler shared memory.\n");
+        perror("Could not get a handle to sampler shared memory.\n");
         return NULL;
     }
 
@@ -94,13 +94,13 @@ lpsampler_t * lpsampler_create_from(int bankid, lpbuffer_t * buf) {
     sampler->total_bytes = sampler->buffer_offset + (sizeof(lpfloat_t) * sampler->length * sampler->channels);
 
     if(ftruncate(sampler->fd, sampler->total_bytes) == -1) {
-        fprintf(stderr, "Could not resize sampler.\n");
+        perror("Could not resize sampler.\n");
         return NULL;
     }
 
     sampler->buf = mmap(NULL, sampler->total_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, sampler->fd, 0);
     if(sampler->buf == MAP_FAILED) {
-        fprintf(stderr, "Could not mmap sampler.\n");
+        perror("Could not mmap sampler.\n");
         return NULL;
     }
 
@@ -121,13 +121,13 @@ lpsampler_t * lpsampler_open(int bankid) {
     snprintf(sampler->name, SAMPLER_NAME_SIZE, SAMPLER_NAME_TEMPLATE, bankid);
     sampler->fd = shm_open(sampler->name, O_RDONLY, 0);
     if(sampler->fd == -1) {
-        fprintf(stderr, "lpadc_open: Could not open a handle to sampler shared memory.\n");
+        perror("lpadc_open: Could not open a handle to sampler shared memory.\n");
         return NULL;
     }
 
     /* fstat check size */
     if(fstat(sampler->fd, &buffdstat) == -1) {
-        fprintf(stderr, "lpadc_open: Could not fstat sampler shared memory.\n");
+        perror("lpadc_open: Could not fstat sampler shared memory.\n");
         return NULL;
     }
 
@@ -140,22 +140,22 @@ lpsampler_t * lpsampler_open(int bankid) {
 
     sampler->buf = mmap(NULL, sampler->total_bytes, PROT_READ, MAP_SHARED, sampler->fd, 0);
     if(sampler->buf == MAP_FAILED) {
-        fprintf(stderr, "lpadc_open: Could not mmap sampler.\n");
+        perror("lpadc_open: Could not mmap sampler.\n");
         return NULL;
     }
 
     if(lpsampler_get_length(sampler, &sampler->length) == -1) {
-        fprintf(stderr, "Could not read sampler length from shm\n");
+        perror("Could not read sampler length from shm\n");
         return NULL;
     }
 
     if(lpsampler_get_samplerate(sampler, &sampler->samplerate) == -1) {
-        fprintf(stderr, "Could not read sampler samplerate from shm\n");
+        perror("Could not read sampler samplerate from shm\n");
         return NULL;
     }
 
     if(lpsampler_get_channels(sampler, &sampler->channels) == -1) {
-        fprintf(stderr, "Could not read sampler channels from shm\n");
+        perror("Could not read sampler channels from shm\n");
         return NULL;
     }
 
@@ -172,13 +172,13 @@ lpsampler_t * lpsampler_dub(int bankid, lpbuffer_t * buf) {
     snprintf(sampler->name, SAMPLER_NAME_SIZE, SAMPLER_NAME_TEMPLATE, bankid);
     sampler->fd = shm_open(sampler->name, O_RDWR, 0);
     if(sampler->fd == -1) {
-        fprintf(stderr, "lpadc_open: Could not open a handle to sampler shared memory.\n");
+        perror("lpadc_open: Could not open a handle to sampler shared memory.\n");
         return NULL;
     }
 
     /* fstat check size */
     if(fstat(sampler->fd, &buffdstat) == -1) {
-        fprintf(stderr, "lpadc_open: Could not fstat sampler shared memory.\n");
+        perror("lpadc_open: Could not fstat sampler shared memory.\n");
         return NULL;
     }
 
@@ -191,22 +191,22 @@ lpsampler_t * lpsampler_dub(int bankid, lpbuffer_t * buf) {
 
     sampler->buf = mmap(NULL, sampler->total_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, sampler->fd, 0);
     if(sampler->buf == MAP_FAILED) {
-        fprintf(stderr, "lpadc_open: Could not mmap sampler.\n");
+        perror("lpadc_open: Could not mmap sampler.\n");
         return NULL;
     }
 
     if(lpsampler_get_length(sampler, &sampler->length) == -1) {
-        fprintf(stderr, "Could not read sampler length from shm\n");
+        perror("Could not read sampler length from shm\n");
         return NULL;
     }
 
     if(lpsampler_get_samplerate(sampler, &sampler->samplerate) == -1) {
-        fprintf(stderr, "Could not read sampler samplerate from shm\n");
+        perror("Could not read sampler samplerate from shm\n");
         return NULL;
     }
 
     if(lpsampler_get_channels(sampler, &sampler->channels) == -1) {
-        fprintf(stderr, "Could not read sampler channels from shm\n");
+        perror("Could not read sampler channels from shm\n");
         return NULL;
     }
 
@@ -244,7 +244,7 @@ lpfloat_t lpsampler_read_sample(lpsampler_t * sampler, size_t frame, int channel
 
 int lpsampler_close(lpsampler_t * sampler) {
     if(close(sampler->fd) == -1) {
-        fprintf(stderr, "Could not close sampler fd.\n");
+        perror("Could not close sampler fd.\n");
         return -1;
     }
     return 0;
@@ -252,7 +252,7 @@ int lpsampler_close(lpsampler_t * sampler) {
 
 int lpsampler_destroy(lpsampler_t * sampler) {
     if(shm_unlink(sampler->name) == -1) {
-        fprintf(stderr, "Could not unlink sampler fd.\n");
+        perror("Could not unlink sampler fd.\n");
         return -1;
     }
     free(sampler->name);
@@ -268,14 +268,14 @@ int lpadc_get_pos(lpadcbuf_t * adcbuf, size_t * pos) {
     fl.l_len = sizeof(size_t);
 
     if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a lock on adcbuf pos lock.\n");
+        perror("Could not aquire a lock on adcbuf pos lock.\n");
         return -1;
     } else {
         memcpy(pos, adcbuf->buf+adcbuf->pos_offset, sizeof(size_t));
 
         fl.l_type = F_UNLCK;
         if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock adcbuf pos lock.\n");
+            perror("Could not unlock adcbuf pos lock.\n");
             return -1;
         }
     }
@@ -291,14 +291,14 @@ int lpadc_set_pos(lpadcbuf_t * adcbuf, size_t pos) {
     fl.l_len = sizeof(size_t);
 
     if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a read lock on adcbuf pos.\n");
+        perror("Could not aquire a read lock on adcbuf pos.\n");
         return -1;
     } else {
         memcpy(adcbuf->buf+adcbuf->pos_offset, &pos, sizeof(size_t));
 
         fl.l_type = F_UNLCK;
         if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock read lock adcbuf pos.\n");
+            perror("Could not unlock read lock adcbuf pos.\n");
             return -1;
         }
     }
@@ -315,14 +315,14 @@ size_t lpadc_get_length(lpadcbuf_t * adcbuf) {
     fl.l_len = sizeof(size_t);
 
     if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a read lock on adcbuf length.\n");
+        perror("Could not aquire a read lock on adcbuf length.\n");
         return -1;
     } else {
         memcpy(&length, adcbuf->buf+adcbuf->length_offset, sizeof(size_t));
 
         fl.l_type = F_UNLCK;
         if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock adcbuf length read lock.\n");
+            perror("Could not unlock adcbuf length read lock.\n");
             return -1;
         }
     }
@@ -338,14 +338,14 @@ int lpadc_set_length(lpadcbuf_t * adcbuf, size_t length) {
     fl.l_len = sizeof(size_t);
 
     if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a write lock on adcbuf length.\n");
+        perror("Could not aquire a write lock on adcbuf length.\n");
         return -1;
     } else {
         memcpy(adcbuf->buf+adcbuf->length_offset, &length, sizeof(size_t));
 
         fl.l_type = F_UNLCK;
         if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock write lock adcbuf length.\n");
+            perror("Could not unlock write lock adcbuf length.\n");
             return -1;
         }
     }
@@ -362,14 +362,14 @@ int lpadc_get_channels(lpadcbuf_t * adcbuf) {
     fl.l_len = sizeof(size_t);
 
     if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a read lock on adcbuf channels.\n");
+        perror("Could not aquire a read lock on adcbuf channels.\n");
         return -1;
     } else {
         memcpy(&channels, adcbuf->buf+adcbuf->channels_offset, sizeof(int));
 
         fl.l_type = F_UNLCK;
         if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock adcbuf channel read lock.\n");
+            perror("Could not unlock adcbuf channel read lock.\n");
             return -1;
         }
     }
@@ -385,14 +385,14 @@ int lpadc_set_channels(lpadcbuf_t * adcbuf, int channels) {
     fl.l_len = sizeof(size_t);
 
     if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-        fprintf(stderr, "Could not aquire a write lock on adcbuf channels.\n");
+        perror("Could not aquire a write lock on adcbuf channels.\n");
         return -1;
     } else {
         memcpy(adcbuf->buf+adcbuf->channels_offset, &channels, sizeof(int));
 
         fl.l_type = F_UNLCK;
         if(fcntl(adcbuf->fd, F_SETLK, &fl) == -1) {
-            fprintf(stderr, "Could not unlock write lock adcbuf channels.\n");
+            perror("Could not unlock write lock adcbuf channels.\n");
             return -1;
         }
     }
@@ -410,8 +410,8 @@ lpadcbuf_t * lpadc_create() {
     // open the shared memory buffer and store the file descriptor
     adcbuf->fd = shm_open(LPADC_BUFNAME, O_CREAT | O_EXCL | O_RDWR, S_IRUSR | S_IWUSR);
     if(adcbuf->fd == -1) {
-        fprintf(stderr, "Could not get a handle to adcbuf shared memory.\n");
-        exit(1);
+        perror("Could not get a handle to adcbuf shared memory.\n");
+        return NULL;
     }
 
     /* FIXME get samplerate & channels from context */
@@ -431,7 +431,7 @@ lpadcbuf_t * lpadc_create() {
 
     // Initialize the shared memory buffer to the appropriate size
     if(ftruncate(adcbuf->fd, adcbuf->total_bytes) == -1) {
-        fprintf(stderr, "Could not resize adcbuf.\n");
+        perror("Could not resize adcbuf.\n");
         return NULL;
     }
 
@@ -439,7 +439,7 @@ lpadcbuf_t * lpadc_create() {
     // opening it for reading and writing
     adcbuf->buf = mmap(NULL, adcbuf->total_bytes, PROT_READ | PROT_WRITE, MAP_SHARED, adcbuf->fd, 0);
     if(adcbuf->buf == MAP_FAILED) {
-        fprintf(stderr, "Could not mmap adcbuf.\n");
+        perror("Could not mmap adcbuf.\n");
         return NULL;
     }
 
@@ -459,13 +459,13 @@ lpadcbuf_t * lpadc_open() {
     adcbuf = (lpadcbuf_t *)calloc(sizeof(lpadcbuf_t), 1);
     adcbuf->fd = shm_open(LPADC_BUFNAME, O_RDONLY, 0);
     if(adcbuf->fd == -1) {
-        fprintf(stderr, "lpadc_open: Could not open a handle to adcbuf shared memory.\n");
+        perror("lpadc_open: Could not open a handle to adcbuf shared memory.\n");
         return NULL;
     }
 
     /* fstat check size */
     if(fstat(adcbuf->fd, &buffdstat) == -1) {
-        fprintf(stderr, "lpadc_open: Could not fstat adcbuf shared memory.\n");
+        perror("lpadc_open: Could not fstat adcbuf shared memory.\n");
         return NULL;
     }
 
@@ -473,7 +473,7 @@ lpadcbuf_t * lpadc_open() {
 
     adcbuf->buf = mmap(NULL, adcbuf->total_bytes, PROT_READ, MAP_SHARED, adcbuf->fd, 0);
     if(adcbuf->buf == MAP_FAILED) {
-        fprintf(stderr, "lpadc_open: Could not mmap adcbuf.\n");
+        perror("lpadc_open: Could not mmap adcbuf.\n");
         return NULL;
     }
 
@@ -550,7 +550,7 @@ size_t lpadc_write_sample(
 
 int lpadc_close(lpadcbuf_t * adcbuf) {
     if(close(adcbuf->fd) == -1) {
-        fprintf(stderr, "Could not close adcbuf fd.\n");
+        perror("Could not close adcbuf fd.\n");
         return -1;
     }
     return 0;
@@ -558,7 +558,7 @@ int lpadc_close(lpadcbuf_t * adcbuf) {
 
 int lpadc_destroy(lpadcbuf_t * adcbuf) {
     if(shm_unlink(LPADC_BUFNAME) == -1) {
-        fprintf(stderr, "Could not unlink adcbuf fd.\n");
+        perror("Could not unlink adcbuf fd.\n");
         return -1;
     }
     free(adcbuf);
@@ -700,7 +700,7 @@ int get_play_message(char * instrument_name, lpmsg_t * msg) {
 
     umask(0);
     if(mkfifo(qname, S_IRUSR | S_IWUSR | S_IWGRP) == -1 && errno != EEXIST) {
-        fprintf(stderr, "Error creating named pipe\n");
+        perror("Error creating named pipe\n");
         return -1;
     }
 
@@ -711,7 +711,7 @@ int get_play_message(char * instrument_name, lpmsg_t * msg) {
     }
 
     if(close(qfd) == -1) {
-        fprintf(stderr, "Error closing q...\n");
+        perror("Error closing q...\n");
         return -1; 
     }
 
@@ -729,12 +729,12 @@ int astrid_playq_open(char * instrument_name) {
 
     umask(0);
     if(mkfifo(qname, S_IRUSR | S_IWUSR | S_IWGRP) == -1 && errno != EEXIST) {
-        fprintf(stderr, "Error creating play queue FIFO\n");
+        perror("Error creating play queue FIFO\n");
         return -1;
     }
 
     if((qfd = open(qname, O_RDWR)) < 0) {
-        fprintf(stderr, "Error opening play queue FIFO\n");
+        perror("Error opening play queue FIFO\n");
     };
 
     return qfd;
@@ -742,7 +742,7 @@ int astrid_playq_open(char * instrument_name) {
 
 int astrid_playq_close(int qfd) {
     if(close(qfd) == -1) {
-        fprintf(stderr, "Error closing q...\n");
+        perror("Error closing q...\n");
         return -1; 
     }
 
@@ -779,7 +779,7 @@ int send_play_message(lpeventctx_t * ctx) {
 
     umask(0);
     if(mkfifo(qname, S_IRUSR | S_IWUSR | S_IWGRP) == -1 && errno != EEXIST) {
-        fprintf(stderr, "Error creating named pipe\n");
+        perror("Error creating named pipe\n");
         return -1;
     }
 
@@ -789,12 +789,12 @@ int send_play_message(lpeventctx_t * ctx) {
     msg.timestamp = 0;
 
     if(write(qfd, &msg, sizeof(lpmsg_t)) != sizeof(lpmsg_t)) {
-        fprintf(stderr, "Could not write to q...\n");
+        perror("Could not write to q...\n");
         return -1;
     }
 
     if(close(qfd) == -1) {
-        fprintf(stderr, "Error closing play q...\n");
+        perror("Error closing play q...\n");
         return -1; 
     }
 

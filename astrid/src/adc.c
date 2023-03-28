@@ -37,15 +37,19 @@ void miniaudio_callback(
 
     if(adc_is_capturing == 0) return;
 
-    lpadc_get_pos(adcbuf, &frame);
+    if (lpadc_get_pos(adcbuf, &frame) < 0) goto exit_callback_with_error;
     for(i=0; i < count; i++) {
         for(c=0; c < ASTRID_CHANNELS; c++) {
             sample = (lpfloat_t)*in++;
-            lpadc_write_sample(adcbuf, sample, frame, c, i);
+            if (lpadc_write_sample(adcbuf, sample, frame, c, i) < 0) goto exit_callback_with_error;
         }
 
     }
-    lpadc_increment_pos(adcbuf, count);
+    if (lpadc_increment_pos(adcbuf, count) < 0) goto exit_callback_with_error;
+    return;
+
+exit_callback_with_error:
+    adc_is_running = 0;
 }
 
 int main() {
@@ -70,7 +74,8 @@ int main() {
     adcbuf = lpadc_create();
     if(adcbuf == NULL) {
         fprintf(stderr, "Runtime Error while attempting to create shared memory buffer\n");
-        goto exit_with_error;
+        lpadc_destroy(adcbuf);
+        return 1;
     }
 
     /* Configure miniaudio for capture mode */
