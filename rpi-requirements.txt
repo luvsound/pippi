@@ -2,4 +2,4 @@ Cython==3.0.0a11
 importlib-resources==5.4.0
 soundfile==0.11.0
 python-rtmidi==1.5.4
-wheel==0.37.1
+wheel==0.38.1

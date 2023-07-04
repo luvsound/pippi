@@ -4,4 +4,4 @@ mido==1.2.10
 numpy==1.24.2
 Pillow==9.4.0
 soundfile==0.12.1
-wheel==0.40.0
+wheel==0.38.1
